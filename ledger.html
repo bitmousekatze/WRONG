@@ -18,37 +18,24 @@
 html { scroll-behavior: smooth; }
 body { background: var(--black); color: var(--white); font-family: var(--font-body); overflow-x: hidden; }
 
-nav {
-  position: fixed; top:0; left:0; right:0; z-index:100;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 1rem 2rem; background: rgba(10,10,10,0.95);
-  backdrop-filter: blur(12px); border-bottom: 1px solid var(--grey-mid);
-}
-nav .logo { font-family: var(--font-display); font-size: 1.4rem; letter-spacing: 2px; color: var(--red-bright); text-decoration:none; }
+nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:1rem 2rem; background:rgba(10,10,10,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--grey-mid); }
+nav .logo { font-family:var(--font-display); font-size:1.4rem; letter-spacing:2px; color:var(--red-bright); text-decoration:none; }
 nav .links { display:flex; gap:1.5rem; }
-nav .links a { color: var(--grey-text); text-decoration:none; font-family:var(--font-mono); font-size:0.75rem; letter-spacing:1px; text-transform:uppercase; transition:color 0.3s; }
-nav .links a:hover, nav .links a.active { color: var(--white); }
+nav .links a { color:var(--grey-text); text-decoration:none; font-family:var(--font-mono); font-size:0.75rem; letter-spacing:1px; text-transform:uppercase; }
+nav .links a:hover, nav .links a.active { color:var(--white); }
 
-.page-header { padding: 8rem 2rem 3rem; max-width: 1100px; margin: 0 auto; }
+.page-header { padding:8rem 2rem 3rem; max-width:1100px; margin:0 auto; }
 .section-label { font-family:var(--font-mono); font-size:0.65rem; letter-spacing:4px; text-transform:uppercase; color:var(--red); margin-bottom:1rem; }
-.page-header h1 { font-family: var(--font-display); font-size: clamp(2.5rem,6vw,4.5rem); line-height:1; }
+.page-header h1 { font-family:var(--font-display); font-size:clamp(2.5rem,6vw,4.5rem); line-height:1; }
 .page-header p { color:var(--grey-text); font-weight:300; margin-top:1rem; max-width:600px; line-height:1.7; }
 
 .chain-outer { max-width:1100px; margin:0 auto 1.5rem; padding:0 2rem; }
 .chain-bar { display:flex; align-items:center; justify-content:space-between; background:var(--grey); border:1px solid var(--grey-mid); padding:0.7rem 1.2rem; flex-wrap:wrap; gap:0.8rem; }
-.chain-left { display:flex; align-items:center; gap:0.8rem; }
-.chain-dot { width:8px; height:8px; border-radius:50%; background:var(--grey-text); flex-shrink:0; transition:background 0.3s; }
+.chain-dot { width:8px; height:8px; border-radius:50%; background:var(--grey-text); flex-shrink:0; }
 .chain-dot.live { background:var(--green); box-shadow:0 0 8px rgba(39,174,96,0.6); animation:blink 2s infinite; }
-.chain-dot.error { background:var(--red-bright); }
 .chain-dot.loading { background:var(--yellow); animation:blink 0.7s infinite; }
 .chain-text { font-family:var(--font-mono); font-size:0.65rem; color:var(--grey-text); }
 .chain-text strong { color:var(--white); }
-.chain-right { display:flex; align-items:center; gap:1.2rem; flex-wrap:wrap; }
-.chain-stat { font-family:var(--font-mono); font-size:0.65rem; color:var(--grey-text); }
-.chain-stat b { color:var(--red-bright); }
-.refresh-btn { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:1px; text-transform:uppercase; background:transparent; border:1px solid var(--grey-mid); color:var(--grey-text); padding:0.3rem 0.8rem; cursor:pointer; transition:all 0.3s; }
-.refresh-btn:hover:not(:disabled) { border-color:var(--white); color:var(--white); }
-.refresh-btn:disabled { opacity:0.4; cursor:default; }
 
 .summary-outer { max-width:1100px; margin:0 auto; padding:0 2rem 2rem; }
 .summary-strip { display:flex; gap:1px; background:var(--grey-mid); border:1px solid var(--grey-mid); }
@@ -58,97 +45,16 @@ nav .links a:hover, nav .links a.active { color: var(--white); }
 
 .notice-outer, .cta-outer, .ledger-memo-warning, .filters-outer { max-width:1100px; margin:0 auto 1.5rem; padding:0 2rem; }
 .notice-box, .lmw-box { border:1px solid var(--red); border-left:4px solid var(--red); background:rgba(192,57,43,0.05); padding:1rem 1.5rem; display:flex; gap:1rem; align-items:flex-start; }
-.n-label, .lmw-icon { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:3px; text-transform:uppercase; color:var(--red); flex-shrink:0; }
-.notice-box p, .lmw-text { font-family:var(--font-mono); font-size:0.72rem; color:var(--grey-text); line-height:1.7; }
-.lmw-text strong { color:var(--red-bright); }
-.btn-cta, .lmw-link { padding:0.6rem 1.2rem; font-family:var(--font-mono); font-size:0.65rem; letter-spacing:1px; text-transform:uppercase; text-decoration:none; border:1px solid var(--red); background:var(--red); color:var(--white); transition:all 0.3s; white-space:nowrap; display:inline-block; }
-.btn-cta:hover, .lmw-link:hover { background:var(--red-bright); }
+.burn-event-btn { display:inline-flex; align-items:center; gap:0.4rem; font-family:var(--font-mono); font-size:0.62rem; letter-spacing:1px; text-transform:uppercase; padding:0.5rem 1rem; background:rgba(192,57,43,0.1); border:1px solid var(--red); color:var(--red-bright); transition:all 0.2s; }
+.burn-event-btn:hover { background:var(--red); color:var(--white); }
 
-.filters { display:flex; gap:0.5rem; flex-wrap:wrap; }
-.filter-btn { padding:0.5rem 1rem; font-family:var(--font-mono); font-size:0.65rem; letter-spacing:1px; text-transform:uppercase; background:var(--grey); border:1px solid var(--grey-mid); color:var(--grey-text); cursor:pointer; transition:all 0.3s; }
-.filter-btn:hover { border-color:var(--grey-text); color:var(--white); }
-.filter-btn.active { border-color:var(--red); color:var(--red-bright); background:rgba(192,57,43,0.1); }
+.toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#e74c3c; color:white; padding:1rem 1.5rem; border-radius:8px; font-family:var(--font-mono); font-size:0.85rem; white-space:pre-line; z-index:9999; opacity:0; transition:all 0.3s; display:none; text-align:center; max-width:90%; box-shadow:0 10px 30px rgba(231,76,60,0.4); }
+.toast.show { display:block; opacity:1; }
 
-.events-outer { max-width:1100px; margin:0 auto; padding:0 2rem 4rem; }
 .events-grid { display:grid; gap:1px; background:var(--grey-mid); border:1px solid var(--grey-mid); }
-
-.loading-placeholder { background:var(--black); padding:4rem; text-align:center; }
-.spinner { width:28px; height:28px; border:2px solid var(--grey-mid); border-top-color:var(--red); border-radius:50%; animation:spin 0.7s linear infinite; margin:0 auto 1rem; }
-
 .event-card { background:var(--black); }
 .event-card-main { padding:1.5rem; cursor:pointer; transition:background 0.2s; }
 .event-card-main:hover { background:rgba(255,255,255,0.015); }
-.event-header { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; }
-.event-meta { display:flex; align-items:center; gap:0.7rem; flex-wrap:wrap; }
-.event-date { font-family:var(--font-mono); font-size:0.7rem; color:var(--grey-text); }
-.event-ref { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text); letter-spacing:1px; padding:0.15rem 0.5rem; border:1px solid var(--grey-mid); background:rgba(255,255,255,0.03); }
-.event-cat { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:1px; text-transform:uppercase; padding:0.2rem 0.5rem; }
-.cat-airstrike { background:rgba(243,156,18,0.1); color:var(--yellow); border:1px solid rgba(243,156,18,0.25); }
-.cat-infrastructure { background:rgba(230,126,34,0.1); color:#e67e22; border:1px solid rgba(230,126,34,0.25); }
-.cat-soldier { background:rgba(192,57,43,0.1); color:var(--red); border:1px solid rgba(192,57,43,0.25); }
-.cat-civilian { background:rgba(231,76,60,0.15); color:var(--red-bright); border:1px solid rgba(231,76,60,0.3); }
-.cat-protected { background:rgba(142,68,173,0.1); color:#9b59b6; border:1px solid rgba(142,68,173,0.25); }
-.event-right { text-align:right; flex-shrink:0; }
-.event-target { font-family:var(--font-mono); font-size:0.85rem; color:var(--red-bright); font-weight:700; }
-.event-target-label { font-family:var(--font-mono); font-size:0.55rem; letter-spacing:1px; text-transform:uppercase; color:var(--grey-text); margin-top:2px; }
-.event-desc { font-size:0.9rem; color:var(--white); margin-bottom:0.4rem; line-height:1.5; }
-.event-source { font-family:var(--font-mono); font-size:0.62rem; color:var(--grey-text); margin-bottom:1rem; }
-
-.prog-numbers { display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:0.65rem; margin-bottom:0.4rem; }
-.prog-burned-num { color:var(--white); font-weight:700; }
-.prog-remain-num { color:var(--grey-text); }
-.prog-track { height:4px; background:var(--grey-mid); border-radius:2px; overflow:hidden; }
-.prog-fill { height:100%; border-radius:2px; transition:width 1.1s ease; }
-.prog-fill.c-complete { background:var(--green); }
-.prog-fill.c-active { background:var(--red-bright); }
-.prog-fill.c-open { background:var(--grey-mid); width:0% !important; }
-.prog-footer { display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem; }
-.prog-contrib-label { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text); }
-.prog-status { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:1px; text-transform:uppercase; }
-.s-complete { color:var(--green); }
-.s-active { color:var(--red-bright); }
-.s-open { color:var(--grey-text); }
-
-.toggle-row { display:flex; align-items:center; gap:0.5rem; margin-top:0; font-family:var(--font-mono); font-size:0.62rem; color:var(--grey-text); cursor:pointer; width:fit-content; transition:color 0.2s; }
-.toggle-row:hover { color:var(--white); }
-.toggle-arrow { display:inline-block; transition:transform 0.25s; font-size:0.55rem; }
-.toggle-arrow.open { transform:rotate(90deg); }
-
-.burn-event-btn {
-  display:inline-flex; align-items:center; gap:0.4rem;
-  font-family:var(--font-mono); font-size:0.62rem; letter-spacing:1px; text-transform:uppercase;
-  padding:0.4rem 0.9rem; background:rgba(192,57,43,0.1); border:1px solid var(--red);
-  color:var(--red-bright); transition:all 0.2s;
-}
-.burn-event-btn:hover { background:var(--red); color:var(--white); }
-
-.contributors-panel { display:none; border-top:1px solid var(--grey-mid); }
-.contributors-panel.open { display:block; }
-.contrib-table-head { display:grid; grid-template-columns: 1fr 160px 110px 90px; padding:0.5rem 1.5rem; background:rgba(255,255,255,0.03); }
-.contrib-table-head span { font-family:var(--font-mono); font-size:0.55rem; letter-spacing:2px; text-transform:uppercase; color:var(--grey-text); }
-.contrib-row { display:grid; grid-template-columns: 1fr 160px 110px 90px; padding:0.75rem 1.5rem; border-top:1px solid rgba(42,42,42,0.7); align-items:center; transition:background 0.15s; }
-.contrib-row:hover { background:rgba(255,255,255,0.02); }
-.contrib-wallet { font-family:var(--font-mono); font-size:0.72rem; }
-.contrib-wallet a { color:var(--white); text-decoration:none; }
-.contrib-wallet a:hover { color:var(--red-bright); }
-.contrib-wallet .full-addr { display:none; font-size:0.6rem; color:var(--grey-text); margin-top:2px; }
-.contrib-row:hover .full-addr { display:block; }
-.contrib-amount { font-family:var(--font-mono); font-size:0.75rem; color:var(--red-bright); font-weight:700; }
-.contrib-date { font-family:var(--font-mono); font-size:0.65rem; color:var(--grey-text); }
-.contrib-tx a { font-family:var(--font-mono); font-size:0.65rem; color:var(--green); text-decoration:none; }
-.no-burns-msg { padding:2rem 1.5rem; text-align:center; border-top:1px solid var(--grey-mid); }
-
-footer { padding:2rem; text-align:center; border-top:1px solid var(--grey-mid); }
-footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text); letter-spacing:1px; line-height:1.8; }
-
-.toast {
-  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
-  background:#e74c3c; color:white; padding:1rem 1.5rem; border-radius:8px;
-  font-family:var(--font-mono); font-size:0.85rem; white-space:pre-line;
-  z-index:9999; opacity:0; transition:all 0.3s; display:none; text-align:center;
-  max-width:90%; box-shadow:0 10px 30px rgba(231,76,60,0.4);
-}
-.toast.show { display:block; opacity:1; }
 
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 @keyframes spin { to{transform:rotate(360deg)} }
@@ -197,15 +103,15 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
 
 <div class="notice-outer">
   <div class="notice-box">
-    <div class="n-label">Notice</div>
-    <p><strong>Retroactive Burns (Mar 24 – Apr 6, 2026):</strong> Burn toward any event by sending $WRONG to the burn address with the event's ref code as memo.</p>
+    <div class="n-label">NOTICE</div>
+    <p><strong>Click any button below</strong> — it copies the burn address + exact memo you need.</p>
   </div>
 </div>
 
 <div class="cta-outer">
   <div class="cta-bar">
-    <p><strong>How to burn:</strong> Click any button below → it copies the address + memo. Paste into Phantom.</p>
-    <a href="burn.html" class="btn-cta">Step-by-step guide</a>
+    <p><strong>How to burn:</strong> Click button → paste address + memo into Phantom.</p>
+    <a href="burn.html" class="btn-cta">STEP-BY-STEP GUIDE</a>
   </div>
 </div>
 
@@ -252,12 +158,12 @@ const CONFIG = {
   BURN_WALLET:    'Gvtbu5MoXa8HyBrDofmA3GA2FE2SJaX8PDV3fXcgkkkr',
   TOKEN_MINT:     '812pAsnde96fKVXKhdRQQPzmPwe3J9Dg7Uusnv9Gpump',
   TOKEN_DECIMALS: 6,
-  RPC_URL:        'https://mainnet.helius-rpc.com/?api-key=842be62f-1509-4ee6-b4ce-cfb8f99083fa',
+  RPC_URL:        'https://api.mainnet-beta.solana.com',   // public RPC (reliable)
   TX_LIMIT:       100,
 };
 
 // ================================================================
-// EVENT LIST (full list - no changes)
+// EVENT LIST
 // ================================================================
 const EVENTS = [
   { ref:'W-E002', date:'2026-04-06', type:'civilian', desc:'23 killed including 6 children in Baharestan County residential strikes', count:'23 confirmed', target:23000000, source:'UN OHCHR' },
@@ -310,6 +216,9 @@ const EVENTS = [
   { ref:'W-E049', date:'2026-03-24', type:'soldier', desc:'Iranian military personnel killed (IRGC, Army, Air Force) — 2 week window estimate', count:'~500 est.', target:50000000, source:'UN OHCHR' }
 ];
 
+const REF_KEY_MAP = {};
+EVENTS.forEach(ev => { REF_KEY_MAP[ev.refKey || ev.ref] = ev; });
+
 // ================================================================
 // STATE
 // ================================================================
@@ -318,16 +227,16 @@ let currentFilter = 'all';
 let isLoading = false;
 
 // ================================================================
-// NEW SIMPLE BURN METHOD (copy address + memo)
+// SIMPLE BURN - COPY ADDRESS + MEMO
 // ================================================================
 function triggerBurn(ref) {
   const ev = EVENTS.find(e => e.ref === ref);
   if (!ev) return alert("Event not found");
 
-  const text = `Burn Address:\n${CONFIG.BURN_WALLET}\n\nMemo (copy this exactly):\n${ev.ref}\n\nEvent: ${ev.desc}`;
+  const text = `Burn Address:\n${CONFIG.BURN_WALLET}\n\nMemo (paste exactly):\n${ev.ref}\n\nEvent: ${ev.desc}`;
 
   navigator.clipboard.writeText(text).then(() => {
-    showToast(`✅ Copied for ${ev.ref}\n\n1. Open Phantom\n2. Send any amount of $WRONG to the address\n3. Paste the memo "${ev.ref}" in the MEMO field\n\nBurn will appear on ledger in ~60 seconds`);
+    showToast(`✅ Copied for ${ev.ref}\n\n1. Open Phantom\n2. Send any amount of $WRONG\n3. Paste "${ev.ref}" in the MEMO field\n\nYour burn will appear here in ~60 seconds`);
   }).catch(() => {
     alert("Manual copy:\n\nBurn Address: " + CONFIG.BURN_WALLET + "\nMemo: " + ev.ref);
   });
@@ -341,19 +250,241 @@ function showToast(html) {
 }
 
 // ================================================================
-// ALL OTHER FUNCTIONS (unchanged from your original)
+// FETCH TRANSACTIONS (full function)
 // ================================================================
-async function fetchBurnTransactions() { /* your original fetch function here */ }
-async function loadChainData() { /* your original load function here */ }
-function setStatus(state, msg) { /* your original */ }
-function showGridLoading() { /* your original */ }
-function updateStats() { /* your original */ }
-const CAT = { airstrike:'Airstrike', infrastructure:'Infrastructure', soldier:'Soldier', civilian:'Civilian', protected:'Protected Site' };
-function renderEvents(filter) { /* your original renderEvents with the new button */ }
-function buildContribTable(contribs, ref) { /* your original */ }
-function togglePanel(ref) { /* your original */ }
+async function fetchBurnTransactions() {
+  try {
+    const sigRes = await fetch(CONFIG.RPC_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 1,
+        method: 'getSignaturesForAddress',
+        params: [CONFIG.BURN_WALLET, { limit: CONFIG.TX_LIMIT }]
+      })
+    });
+    const sigJson = await sigRes.json();
+    if (sigJson.error) throw new Error(sigJson.error.message);
+    const sigs = (sigJson.result || []).map(s => s.signature);
+    if (!sigs.length) return { ok: true, txCount: 0, burns: {} };
 
-// FILTERS + INIT
+    const burns = {};
+    let txCount = 0;
+    const BATCH = 10;
+
+    for (let i = 0; i < sigs.length; i += BATCH) {
+      const batch = sigs.slice(i, i + BATCH);
+      const requests = batch.map((sig, idx) => ({
+        jsonrpc: '2.0', id: idx,
+        method: 'getTransaction',
+        params: [sig, { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }]
+      }));
+
+      const txRes = await fetch(CONFIG.RPC_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requests)
+      });
+      const txJson = await txRes.json();
+      const txArr = Array.isArray(txJson) ? txJson : [txJson];
+
+      for (const item of txArr) {
+        const tx = item.result;
+        if (!tx || tx.meta?.err) continue;
+        txCount++;
+
+        const accounts = tx.transaction?.message?.accountKeys || [];
+        let matched = null;
+
+        for (const a of accounts) {
+          const pubkey = a.pubkey || a;
+          if (REF_KEY_MAP[pubkey]) {
+            matched = REF_KEY_MAP[pubkey];
+            break;
+          }
+        }
+
+        if (!matched) {
+          const allIx = [
+            ...(tx.transaction?.message?.instructions || []),
+            ...(tx.meta?.innerInstructions?.flatMap(ii => ii.instructions) || [])
+          ];
+          for (const ix of allIx) {
+            if (ix.program === 'spl-memo' || ix.programId?.includes('Memo')) {
+              const memoStr = String(ix.parsed || ix.data || '').toUpperCase();
+              matched = EVENTS.find(ev => memoStr.includes(ev.ref));
+              if (matched) break;
+            }
+          }
+        }
+
+        if (!matched) continue;
+
+        const postBals = tx.meta?.postTokenBalances || [];
+        const preBals = tx.meta?.preTokenBalances || [];
+        let burnAmount = 0;
+        for (const post of postBals) {
+          if (post.owner === CONFIG.BURN_WALLET && post.mint === CONFIG.TOKEN_MINT) {
+            const pre = preBals.find(p => p.accountIndex === post.accountIndex);
+            const preAmt = pre ? Number(pre.uiTokenAmount.amount) : 0;
+            burnAmount = Math.max(0, Number(post.uiTokenAmount.amount) - preAmt);
+            break;
+          }
+        }
+        if (burnAmount === 0) continue;
+
+        const sender = accounts.find(a => a.signer && a.pubkey !== CONFIG.BURN_WALLET)?.pubkey || 'Unknown';
+        const date = tx.blockTime ? new Date(tx.blockTime * 1000).toISOString().split('T')[0] : '—';
+        const sig = tx.transaction?.signatures?.[0] || '';
+
+        if (!burns[matched.ref]) burns[matched.ref] = [];
+        burns[matched.ref].push({ wallet: sender, amount: burnAmount / Math.pow(10, CONFIG.TOKEN_DECIMALS), tx: sig, date });
+      }
+    }
+    return { ok: true, txCount, burns };
+  } catch (err) {
+    console.error(err);
+    return { ok: false, reason: err.message };
+  }
+}
+
+// ================================================================
+// LOAD + RENDER (full)
+// ================================================================
+async function loadChainData() {
+  if (isLoading) return;
+  isLoading = true;
+  setStatus('loading', 'Connecting to Solana...');
+  document.getElementById('refreshBtn').disabled = true;
+  showGridLoading();
+
+  const result = await fetchBurnTransactions();
+
+  if (!result.ok) {
+    setStatus('error', `RPC error — ${result.reason}`);
+  } else {
+    chainBurns = result.burns;
+    document.getElementById('txScanned').textContent = result.txCount;
+    document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+    setStatus('live', 'Live — reading directly from Solana');
+  }
+
+  updateStats();
+  renderEvents(currentFilter);
+  isLoading = false;
+  document.getElementById('refreshBtn').disabled = false;
+}
+
+function setStatus(state, msg) {
+  document.getElementById('chainDot').className = 'chain-dot ' + state;
+  document.getElementById('chainText').innerHTML = `<strong>${{live:'LIVE', error:'OFFLINE', loading:'SYNCING'}[state]}</strong> — ${msg}`;
+}
+
+function showGridLoading() {
+  document.getElementById('eventsGrid').innerHTML = '<div class="loading-placeholder"><div class="spinner"></div><p>Reading from Solana...</p></div>';
+}
+
+function updateStats() {
+  const totalBurned = EVENTS.reduce((s, ev) => s + (chainBurns[ev.ref] || []).reduce((a, b) => a + b.amount, 0), 0);
+  const supply = 1000000000;
+  const remaining = supply - totalBurned;
+  const pct = ((totalBurned / supply) * 100).toFixed(2);
+
+  document.getElementById('statBurned').textContent = totalBurned > 0 ? totalBurned.toLocaleString() : '0';
+  document.getElementById('statSupply').textContent = remaining.toLocaleString();
+  document.getElementById('statPct').textContent = pct + '%';
+}
+
+const CAT = { airstrike:'Airstrike', infrastructure:'Infrastructure', soldier:'Soldier', civilian:'Civilian', protected:'Protected Site' };
+
+function renderEvents(filter) {
+  const grid = document.getElementById('eventsGrid');
+  grid.innerHTML = '';
+  const list = filter === 'all' ? EVENTS : EVENTS.filter(e => e.type === filter);
+
+  list.forEach(ev => {
+    const contribs = (chainBurns[ev.ref] || []).slice().sort((a,b) => b.amount - a.amount);
+    const burned = contribs.reduce((s, c) => s + c.amount, 0);
+    const pct = ev.target > 0 ? Math.min(100, (burned / ev.target) * 100) : 0;
+    const done = pct >= 100;
+    const hasAny = burned > 0;
+
+    const fillCls = done ? 'c-complete' : hasAny ? 'c-active' : 'c-open';
+    const statusCls = done ? 's-complete' : hasAny ? 's-active' : 's-open';
+    const statusTxt = done ? '● COMPLETE' : hasAny ? '● ACTIVE' : '○ OPEN';
+    const contribLbl = contribs.length === 0 ? 'No burns yet — be first' : `${contribs.length} burner${contribs.length !== 1 ? 's' : ''}`;
+    const remainTxt = done ? 'Target reached' : (ev.target - burned).toLocaleString() + ' remaining';
+
+    const card = document.createElement('div');
+    card.className = 'event-card';
+    card.innerHTML = `
+      <div class="event-card-main" onclick="togglePanel('${ev.ref}')">
+        <div class="event-header">
+          <div class="event-meta">
+            <span class="event-date">${ev.date}</span>
+            <span class="event-cat cat-${ev.type}">${CAT[ev.type]}</span>
+            <span class="event-ref">${ev.ref}</span>
+          </div>
+          <div class="event-right">
+            <div class="event-target">${ev.target.toLocaleString()}</div>
+            <div class="event-target-label">burn target</div>
+          </div>
+        </div>
+        <div class="event-desc">${ev.desc}</div>
+        <div class="event-source">📎 ${ev.source} · ${ev.count}</div>
+        <div class="prog-numbers">
+          <span class="prog-burned-num">${burned > 0 ? burned.toLocaleString() : '0'} burned</span>
+          <span class="prog-remain-num">${remainTxt}</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill ${fillCls}" style="width:0%" data-pct="${pct.toFixed(2)}"></div></div>
+        <div class="prog-footer">
+          <span class="prog-contrib-label">${contribLbl}</span>
+          <span class="prog-status ${statusCls}">${statusTxt}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1rem;flex-wrap:wrap;gap:0.8rem;">
+          <div class="toggle-row" id="toggle-${ev.ref}">
+            <span class="toggle-arrow" id="arrow-${ev.ref}">▶</span>
+            <span id="toggle-label-${ev.ref}">${contribs.length > 0 ? 'Show burners (' + contribs.length + ')' : 'No burns yet'}</span>
+          </div>
+          <button onclick="triggerBurn('${ev.ref}'); event.stopPropagation()" class="burn-event-btn">
+            🔥 Copy Burn Info for ${ev.ref}
+          </button>
+        </div>
+      </div>
+      <div class="contributors-panel" id="panel-${ev.ref}">
+        ${buildContribTable(contribs, ev.ref)}
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    document.querySelectorAll('.prog-fill[data-pct]').forEach(el => el.style.width = el.dataset.pct + '%');
+  }));
+}
+
+function buildContribTable(contribs, ref) {
+  if (!contribs.length) return `<div class="no-burns-msg"><p>No burns yet for this event.<br>Include <strong>${ref}</strong> as memo.</p></div>`;
+  return `<div class="contrib-table-head"><span>Wallet</span><span>Amount</span><span>Date</span><span>TX</span></div>` + contribs.map(c => `
+    <div class="contrib-row">
+      <div class="contrib-wallet"><a href="https://solscan.io/account/${c.wallet}" target="_blank">${c.wallet.slice(0,5)}...${c.wallet.slice(-5)}</a></div>
+      <div class="contrib-amount">${c.amount.toLocaleString()}</div>
+      <div class="contrib-date">${c.date}</div>
+      <div class="contrib-tx"><a href="https://solscan.io/tx/${c.tx}" target="_blank">↗ Solscan</a></div>
+    </div>`).join('');
+}
+
+function togglePanel(ref) {
+  const panel = document.getElementById('panel-' + ref);
+  const arrow = document.getElementById('arrow-' + ref);
+  const label = document.getElementById('toggle-label-' + ref);
+  const count = (chainBurns[ref] || []).length;
+  const isOpen = panel.classList.toggle('open');
+  arrow.classList.toggle('open', isOpen);
+  label.textContent = isOpen ? 'Hide burners' : count > 0 ? `Show burners (${count})` : 'No burns yet';
+}
+
+// FILTERS
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -363,6 +494,7 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
   });
 });
 
+// INIT
 loadChainData();
 setInterval(() => { if (!isLoading) loadChainData(); }, 60000);
 </script>
