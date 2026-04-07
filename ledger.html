@@ -408,12 +408,12 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
     <div class="bm-desc" id="bm-desc">Loading event...</div>
 
     <div class="bm-qr-wrap">
-      <canvas id="bm-qr-canvas"></canvas>
+      <div id="bm-qr-div"></div>
     </div>
     <div class="bm-qr-label">Scan with Phantom mobile to burn instantly</div>
 
     <div class="bm-options">
-      <a class="bm-opt-btn primary" id="bm-direct-link" href="#" target="_blank" rel="noopener">
+      <a class="bm-opt-btn primary" id="bm-direct-link" href="#">
         Open in Phantom (desktop extension)
         <small>Click this link — if Phantom is installed it will open automatically</small>
       </a>
@@ -546,28 +546,21 @@ function burnFor(ev) {
   const link = document.getElementById('bm-direct-link');
   link.href  = url;
 
-  // Generate QR code
-  const canvas = document.getElementById('bm-qr-canvas');
-  canvas.width  = 220;
-  canvas.height = 220;
-  if (_qrInstance) {
-    // QRCode.js doesn't have a clean update — clear and re-render
-    const wrap = document.querySelector('.bm-qr-wrap');
-    wrap.innerHTML = '<canvas id="bm-qr-canvas" width="220" height="220"></canvas>';
-  }
-  // Use QRCode library loaded from CDN
+  // Generate QR code into a fresh div (qrcodejs needs a clean div target)
+  const wrap = document.querySelector('.bm-qr-wrap');
+  wrap.innerHTML = '<div id="bm-qr-div"></div>';
   try {
-    new QRCode(document.getElementById('bm-qr-canvas'), {
-      text:           url,
-      width:          220,
-      height:         220,
-      colorDark:      '#000000',
-      colorLight:     '#ffffff',
-      correctLevel:   QRCode.CorrectLevel.M,
+    new QRCode(document.getElementById('bm-qr-div'), {
+      text:         url,
+      width:        220,
+      height:       220,
+      colorDark:    '#000000',
+      colorLight:   '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M,
     });
     _qrInstance = true;
   } catch(e) {
-    document.querySelector('.bm-qr-wrap').innerHTML =
+    wrap.innerHTML =
       '<p style="font-family:var(--font-mono);font-size:0.65rem;color:var(--grey-text);text-align:center;padding:1rem;">QR unavailable — use the link below</p>';
   }
 
