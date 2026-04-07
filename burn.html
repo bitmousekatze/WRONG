@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>$WRONG — How To Burn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #0a0a0a; --white: #e8e4df; --red: #c0392b; --red-bright: #e74c3c;
+  --red-glow: rgba(231,76,60,0.25); --grey: #1a1a1a; --grey-mid: #2a2a2a;
+  --grey-text: #888; --green: #27ae60;
+  --font-display: 'Anton', sans-serif; --font-mono: 'JetBrains Mono', monospace; --font-body: 'Space Grotesk', sans-serif;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--black); color: var(--white); font-family: var(--font-body); overflow-x: hidden; }
+
+nav {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 2rem; background: rgba(10,10,10,0.95);
+  backdrop-filter: blur(12px); border-bottom: 1px solid var(--grey-mid);
+}
+nav .logo { font-family: var(--font-display); font-size: 1.4rem; letter-spacing: 2px; color: var(--red-bright); text-decoration:none; }
+nav .links { display:flex; gap:1.5rem; }
+nav .links a { color: var(--grey-text); text-decoration: none; font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s; }
+nav .links a:hover, nav .links a.active { color: var(--white); }
+
+.page-header { padding: 8rem 2rem 4rem; max-width: 800px; margin: 0 auto; }
+.section-label { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 4px; text-transform: uppercase; color: var(--red); margin-bottom: 1rem; }
+.page-header h1 { font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 4.5rem); line-height: 1; }
+.page-header p { color: var(--grey-text); font-weight:300; margin-top:1rem; max-width:600px; line-height:1.7; }
+
+/* BURN ADDRESS BOX */
+.burn-address-section { max-width: 800px; margin: 0 auto; padding: 0 2rem 3rem; }
+.burn-address-box {
+  background: rgba(39,174,96,0.06); border: 1px solid var(--green);
+  padding: 2rem; position: relative;
+}
+.burn-address-box .ba-label { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase; color: var(--green); margin-bottom: 0.8rem; }
+.burn-address-box .ba-title { font-family: var(--font-display); font-size: 1.3rem; margin-bottom: 0.5rem; }
+.burn-address-box .ba-desc { font-size: 0.85rem; color: var(--grey-text); margin-bottom: 1.2rem; line-height: 1.6; }
+.address-display {
+  background: var(--black); border: 1px solid var(--grey-mid);
+  padding: 1rem 1.2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  flex-wrap: wrap;
+}
+.address-display .addr { font-family: var(--font-mono); font-size: 0.8rem; color: var(--white); word-break: break-all; }
+.copy-btn {
+  font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase;
+  background: var(--grey); border: 1px solid var(--grey-mid); color: var(--grey-text);
+  padding: 0.4rem 0.8rem; cursor: pointer; transition: all 0.3s; white-space: nowrap; flex-shrink: 0;
+}
+.copy-btn:hover { border-color: var(--green); color: var(--green); }
+.copy-btn.copied { border-color: var(--green); color: var(--green); }
+.burn-address-box .verify-note { font-family: var(--font-mono); font-size: 0.65rem; color: var(--grey-text); margin-top: 0.8rem; }
+.burn-address-box .verify-note a { color: var(--green); text-decoration: underline; }
+
+/* STEPS */
+.steps-section { max-width: 800px; margin: 0 auto; padding: 0 2rem 4rem; }
+.step-block {
+  display: grid; grid-template-columns: 70px 1fr;
+  gap: 1.5rem; margin-bottom: 0;
+  padding: 2rem 0; border-bottom: 1px solid var(--grey-mid);
+  opacity:0; transform: translateY(16px); transition: all 0.5s;
+}
+.step-block:first-child { border-top: 1px solid var(--grey-mid); }
+.step-block.visible { opacity:1; transform: translateY(0); }
+.step-num-big { font-family: var(--font-display); font-size: 3rem; color: var(--red); line-height: 1; }
+.step-content .step-title { font-family: var(--font-display); font-size: 1.4rem; margin-bottom: 0.5rem; }
+.step-content .step-desc { color: var(--grey-text); font-weight: 300; line-height: 1.7; font-size: 0.95rem; margin-bottom: 0.8rem; }
+.step-content .step-note {
+  background: var(--grey); border-left: 2px solid var(--red);
+  padding: 0.8rem 1rem; font-family: var(--font-mono); font-size: 0.7rem;
+  color: var(--grey-text); line-height: 1.5;
+}
+.step-content .step-note strong { color: var(--white); }
+.step-link {
+  display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.8rem;
+  font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase;
+  text-decoration: none; color: var(--red-bright); border-bottom: 1px solid rgba(231,76,60,0.3);
+  padding-bottom: 1px; transition: border-color 0.3s;
+}
+.step-link:hover { border-color: var(--red-bright); }
+
+/* AMOUNT GUIDE */
+.amounts-section { background: var(--grey); border-top: 1px solid var(--grey-mid); border-bottom: 1px solid var(--grey-mid); padding: 4rem 2rem; }
+.amounts-inner { max-width: 800px; margin: 0 auto; }
+.amounts-inner h2 { font-family: var(--font-display); font-size: clamp(1.8rem,4vw,2.8rem); margin-bottom: 1.5rem; }
+.amounts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 1px; background: var(--grey-mid); border: 1px solid var(--grey-mid); margin-top: 1.5rem; }
+.amount-card { background: var(--black); padding: 1.8rem 1.5rem; }
+.amount-card .ac-amount { font-family: var(--font-display); font-size: 1.6rem; color: var(--red-bright); margin-bottom: 0.3rem; }
+.amount-card .ac-equiv { font-family: var(--font-mono); font-size: 0.65rem; color: var(--green); margin-bottom: 0.6rem; }
+.amount-card .ac-desc { font-size: 0.85rem; color: var(--grey-text); font-weight: 300; line-height: 1.5; }
+
+/* DISCORD SECTION */
+.discord-section { max-width: 800px; margin: 0 auto; padding: 4rem 2rem; }
+.discord-section h2 { font-family: var(--font-display); font-size: clamp(1.8rem,4vw,2.8rem); margin-bottom: 1.5rem; }
+.discord-steps { display: grid; gap: 1px; background: var(--grey-mid); border: 1px solid var(--grey-mid); }
+.ds-row { background: var(--black); display: grid; grid-template-columns: 36px 1fr; gap: 1rem; padding: 1.2rem 1.5rem; align-items: start; }
+.ds-n { font-family: var(--font-mono); font-size: 0.7rem; color: var(--red); font-weight: 700; }
+.ds-text { font-size: 0.9rem; color: var(--grey-text); line-height: 1.5; }
+.ds-text strong { color: var(--white); }
+.ds-text code { font-family: var(--font-mono); font-size: 0.8rem; color: var(--red-bright); background: rgba(231,76,60,0.1); padding: 0.1rem 0.3rem; }
+
+/* FAQ */
+.faq-section { background: var(--grey); border-top: 1px solid var(--grey-mid); padding: 4rem 2rem; }
+.faq-inner { max-width: 800px; margin: 0 auto; }
+.faq-inner h2 { font-family: var(--font-display); font-size: clamp(1.8rem,4vw,2.8rem); margin-bottom: 2rem; }
+.faq-item { border-bottom: 1px solid var(--grey-mid); padding: 1.2rem 0; cursor: pointer; }
+.faq-item:first-of-type { border-top: 1px solid var(--grey-mid); }
+.faq-q { display: flex; justify-content: space-between; align-items: center; }
+.faq-q h3 { font-family: var(--font-body); font-size: 0.95rem; font-weight: 400; }
+.faq-q .toggle { font-family: var(--font-mono); font-size: 1.2rem; color: var(--red); transition: transform 0.3s; flex-shrink: 0; margin-left: 1rem; }
+.faq-item.open .faq-q .toggle { transform: rotate(45deg); }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s; }
+.faq-item.open .faq-a { max-height: 300px; padding-top: 0.8rem; }
+.faq-a p { color: var(--grey-text); font-weight: 300; line-height: 1.7; font-size: 0.9rem; }
+.faq-a code { font-family: var(--font-mono); font-size: 0.8rem; color: var(--red-bright); }
+
+/* CTA */
+.cta { padding: 5rem 2rem; text-align: center; position: relative; }
+.cta::before { content:''; position:absolute; inset:0; background: radial-gradient(ellipse 50% 60% at 50% 50%, var(--red-glow), transparent); pointer-events:none; }
+.cta h2 { font-family: var(--font-display); font-size: clamp(2rem,6vw,4rem); position:relative; }
+.cta p { margin-top:1rem; color:var(--grey-text); font-weight:300; position:relative; }
+.cta-buttons { display:flex; gap:1rem; justify-content:center; margin-top:2rem; position:relative; flex-wrap:wrap; }
+.btn { display:inline-flex; align-items:center; gap:0.5rem; padding:1rem 2rem; font-family:var(--font-mono); font-size:0.75rem; letter-spacing:1px; text-transform:uppercase; text-decoration:none; border:1px solid var(--grey-mid); background:var(--grey); color:var(--white); transition:all 0.3s; cursor:pointer; }
+.btn:hover { background:var(--grey-mid); border-color:var(--grey-text); }
+.btn.primary { background:var(--red); border-color:var(--red); }
+.btn.primary:hover { background:var(--red-bright); }
+
+footer { padding: 2rem; text-align: center; border-top: 1px solid var(--grey-mid); }
+footer p { font-family: var(--font-mono); font-size: 0.6rem; color: var(--grey-text); letter-spacing: 1px; line-height: 1.8; }
+
+@media (max-width: 600px) {
+  .step-block { grid-template-columns: 44px 1fr; gap:1rem; }
+  .step-num-big { font-size: 2rem; }
+  .amounts-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">$WRONG</a>
+  <div class="links">
+    <a href="index.html">Home</a>
+    <a href="ledger.html">Burn Ledger</a>
+    <a href="burn.html" class="active">How To Burn</a>
+    <a href="about.html">About</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="section-label">// Burn Guide</div>
+  <h1>How To Burn</h1>
+  <p>Buy $WRONG. Send to the burn address. Post your tx hash in Discord. That's it. Every burn is permanent, public, and counted.</p>
+</div>
+
+<!-- BURN ADDRESS -->
+<div class="burn-address-section">
+  <div class="burn-address-box">
+    <div class="ba-label">✦ Official Burn Address</div>
+    <div class="ba-title">Send Your $WRONG Here</div>
+    <div class="ba-desc">This is the Solana burn address. Tokens sent here are permanently removed from circulation. This address is public and verifiable on Solscan at any time.</div>
+    <div class="address-display">
+      <span class="addr" id="burnAddr">1nc1nerator11111111111111111111111111111111</span>
+      <button class="copy-btn" id="copyBtn" onclick="copyAddr()">Copy</button>
+    </div>
+    <div class="verify-note">↗ Verify on <a href="https://solscan.io/account/1nc1nerator11111111111111111111111111111111" target="_blank">Solscan</a> — all burns to this address are publicly visible</div>
+  </div>
+</div>
+
+<!-- STEP BY STEP -->
+<div class="steps-section">
+  <div class="section-label">// Step By Step</div>
+
+  <div class="step-block">
+    <div class="step-num-big">01</div>
+    <div class="step-content">
+      <div class="step-title">Get A Solana Wallet</div>
+      <div class="step-desc">You need a Solana wallet to hold and burn $WRONG. Phantom is the most popular and easiest to use. Available as a browser extension and mobile app.</div>
+      <div class="step-note"><strong>Recommended:</strong> Phantom Wallet — phantom.app — free, takes 2 minutes to set up. Write down your seed phrase and keep it safe.</div>
+      <a href="https://phantom.app" target="_blank" class="step-link">Get Phantom →</a>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num-big">02</div>
+    <div class="step-content">
+      <div class="step-title">Buy Some SOL</div>
+      <div class="step-desc">You need a small amount of SOL to cover transaction fees (less than $0.01 per burn) and to buy $WRONG on the market. Get SOL from any exchange — Coinbase, Binance, Kraken — and send it to your Phantom wallet.</div>
+      <div class="step-note"><strong>Minimum needed:</strong> 0.01 SOL covers dozens of burn transactions. Buy however much you want to spend on $WRONG on top of that.</div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num-big">03</div>
+    <div class="step-content">
+      <div class="step-title">Buy $WRONG</div>
+      <div class="step-desc">$WRONG launched on Pump.fun. You can buy directly there or on any DEX that lists it. Connect your Phantom wallet, swap SOL for $WRONG.</div>
+      <div class="step-note"><strong>Contract address:</strong> [CA posted in Discord at launch] — always verify the contract before buying. Never buy from links in DMs.</div>
+      <a href="https://pump.fun" target="_blank" class="step-link">Buy on Pump.fun →</a>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num-big">04</div>
+    <div class="step-content">
+      <div class="step-title">Check The Active Burns</div>
+      <div class="step-desc">Go to the Burn Ledger and find an event marked <strong style="color:var(--red-bright)">ACTIVE</strong> or <strong style="color:var(--grey-text)">OPEN</strong>. Pick an event that matters to you. See how much has been burned toward its target.</div>
+      <a href="ledger.html" class="step-link">View Burn Ledger →</a>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num-big">05</div>
+    <div class="step-content">
+      <div class="step-title">Send $WRONG To The Burn Address</div>
+      <div class="step-desc">In Phantom, click Send. Paste the burn address. Enter how much $WRONG you want to burn. Confirm the transaction.</div>
+      <div class="step-note">
+        <strong>Burn address:</strong> 1nc1nerator11111111111111111111111111111111<br>
+        This is Solana's standard token burn address. Tokens sent here cannot be recovered — ever.
+      </div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num-big">06</div>
+    <div class="step-content">
+      <div class="step-title">Post Your TX Hash In Discord</div>
+      <div class="step-desc">Once the transaction confirms, copy the transaction hash from Phantom or Solscan. Post it in the <strong>#burn-submissions</strong> channel in Discord with the event you're burning for.</div>
+      <div class="step-note">
+        <strong>Format:</strong> "Burning for [event name] — TX: [your tx hash]"<br>
+        The bot will verify your burn and add it to the running total for that event.
+      </div>
+      <a href="#" class="step-link">Join Discord →</a>
+    </div>
+  </div>
+</div>
+
+<!-- HOW MUCH TO BURN -->
+<section class="amounts-section">
+  <div class="amounts-inner">
+    <div class="section-label">// No Minimum</div>
+    <h2>Burn What You Can</h2>
+    <p style="color:var(--grey-text);font-weight:300;line-height:1.8;">There is no minimum. A burn of 10,000 tokens matters as much as a burn of 10,000,000 — both are permanent, both are counted, both are part of the record. The ledger tracks every contribution.</p>
+    <div class="amounts-grid">
+      <div class="amount-card">
+        <div class="ac-amount">10,000</div>
+        <div class="ac-equiv">= 1 airstrike</div>
+        <div class="ac-desc">The base burn. One bomb dropped. Anyone can contribute this.</div>
+      </div>
+      <div class="amount-card">
+        <div class="ac-amount">100,000</div>
+        <div class="ac-equiv">= 1 soldier killed</div>
+        <div class="ac-desc">A meaningful individual contribution. 10 people hit this and a soldier event is covered.</div>
+      </div>
+      <div class="amount-card">
+        <div class="ac-amount">500,000</div>
+        <div class="ac-equiv">= 1 hospital hit</div>
+        <div class="ac-desc">A strong statement. 2 people burning this covers a protected site event.</div>
+      </div>
+      <div class="amount-card">
+        <div class="ac-amount">1,000,000+</div>
+        <div class="ac-equiv">= 1 civilian killed</div>
+        <div class="ac-desc">Whale territory. A million-token burn gets announced. Permanent on-chain.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DISCORD FLOW -->
+<section class="discord-section">
+  <div class="section-label">// Discord Flow</div>
+  <h2>After You Burn</h2>
+  <div class="discord-steps">
+    <div class="ds-row"><div class="ds-n">1</div><div class="ds-text">Go to the <strong>#burn-ledger</strong> channel to see the current active burn targets and how much remains on each.</div></div>
+    <div class="ds-row"><div class="ds-n">2</div><div class="ds-text">After burning, post in <strong>#burn-submissions</strong>: <code>TX: [your hash] — Event: [event name]</code></div></div>
+    <div class="ds-row"><div class="ds-n">3</div><div class="ds-text">The bot verifies your transaction on Solscan automatically. Your burn gets added to the event total within minutes.</div></div>
+    <div class="ds-row"><div class="ds-n">4</div><div class="ds-text">When an event target is fully filled, <strong>#burn-announcements</strong> posts a completion notice. The ledger is updated.</div></div>
+    <div class="ds-row"><div class="ds-n">5</div><div class="ds-text">Large burns (1M+) get a special announcement. Your wallet address is publicly credited in the ledger.</div></div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section">
+  <div class="faq-inner">
+    <div class="section-label">// Questions</div>
+    <h2>Burn FAQ</h2>
+
+    <div class="faq-item">
+      <div class="faq-q"><h3>Can I recover tokens I've burned?</h3><span class="toggle">+</span></div>
+      <div class="faq-a"><p>No. Burns are permanent and irreversible. Tokens sent to the burn address are gone forever. This is the point — the destruction is real, on-chain, and permanent.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q"><h3>What if a burn target isn't fully filled?</h3><span class="toggle">+</span></div>
+      <div class="faq-a"><p>Partial burns count. The ledger records whatever was burned toward each event. Events stay open until filled or until a new event supersedes them. There's no deadline — the ledger is permanent.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q"><h3>How do I know my burn was counted?</h3><span class="toggle">+</span></div>
+      <div class="faq-a"><p>Post your tx hash in Discord. The bot verifies it on Solscan. You can also verify independently — every transaction to the burn address is publicly visible on Solscan. The ledger is updated manually by admins based on verified Discord submissions.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q"><h3>Can I burn for multiple events at once?</h3><span class="toggle">+</span></div>
+      <div class="faq-a"><p>Yes — you can split a burn across multiple events by posting multiple tx hashes and specifying which event each is for. Or burn in one transaction and assign the full amount to one event.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q"><h3>Is there a minimum burn amount?</h3><span class="toggle">+</span></div>
+      <div class="faq-a"><p>No minimum. 1 token to 1 billion — all burns are counted. The ledger records every contribution regardless of size.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q"><h3>What's the burn address again?</h3><span class="toggle">+</span></div>
+      <div class="faq-a"><p>The Solana standard burn address: <code>1nc1nerator11111111111111111111111111111111</code> — always verify this matches what's shown on Solscan before sending.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <h2>Ready To Burn?</h2>
+  <p>Check the ledger. Pick an event. Make it permanent.</p>
+  <div class="cta-buttons">
+    <a href="ledger.html" class="btn primary">View Active Burns</a>
+    <a href="#" class="btn">Join Discord</a>
+  </div>
+</section>
+
+<footer>
+  <p>$WRONG is a meme coin and a protest. Not financial advice.<br>Burns are irreversible. Only burn what you are willing to permanently remove from circulation.</p>
+</footer>
+
+<script>
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.15 });
+document.querySelectorAll('.step-block').forEach(el => obs.observe(el));
+
+document.querySelectorAll('.faq-item').forEach(item => {
+  item.querySelector('.faq-q').addEventListener('click', () => item.classList.toggle('open'));
+});
+
+function copyAddr() {
+  const addr = document.getElementById('burnAddr').textContent;
+  navigator.clipboard.writeText(addr).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+</body>
+</html>

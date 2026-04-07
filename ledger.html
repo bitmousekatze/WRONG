@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>$WRONG — Burn Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #0a0a0a; --white: #e8e4df; --red: #c0392b; --red-bright: #e74c3c;
+  --red-glow: rgba(231,76,60,0.25); --grey: #1a1a1a; --grey-mid: #2a2a2a;
+  --grey-text: #888; --green: #27ae60; --yellow: #f39c12;
+  --font-display: 'Anton', sans-serif; --font-mono: 'JetBrains Mono', monospace; --font-body: 'Space Grotesk', sans-serif;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--black); color: var(--white); font-family: var(--font-body); overflow-x: hidden; }
+
+nav {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 2rem; background: rgba(10,10,10,0.95);
+  backdrop-filter: blur(12px); border-bottom: 1px solid var(--grey-mid);
+}
+nav .logo { font-family: var(--font-display); font-size: 1.4rem; letter-spacing: 2px; color: var(--red-bright); text-decoration:none; }
+nav .links { display:flex; gap:1.5rem; }
+nav .links a { color: var(--grey-text); text-decoration: none; font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s; }
+nav .links a:hover, nav .links a.active { color: var(--white); }
+
+.page-header { padding: 8rem 2rem 3rem; max-width: 1100px; margin: 0 auto; }
+.page-header .section-label { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 4px; text-transform: uppercase; color: var(--red); margin-bottom: 1rem; }
+.page-header h1 { font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 4.5rem); line-height: 1; }
+.page-header p { color: var(--grey-text); font-weight:300; margin-top:1rem; max-width:600px; line-height:1.7; }
+
+.summary-strip { display: flex; gap:1px; background: var(--grey-mid); border: 1px solid var(--grey-mid); max-width: 1100px; margin: 0 auto 2rem; padding: 0 2rem; }
+.summary-strip { padding: 0; margin: 0 2rem 2rem; max-width: calc(1100px - 4rem); }
+
+/* fix for centering */
+.summary-outer { max-width: 1100px; margin: 0 auto; padding: 0 2rem 2rem; }
+.summary-strip { display: flex; gap:1px; background: var(--grey-mid); border: 1px solid var(--grey-mid); margin: 0; padding: 0; }
+.summary-cell { flex:1; background: var(--grey); padding: 1.2rem 1.5rem; text-align:center; }
+.summary-cell .num { font-family: var(--font-mono); font-size: 1.3rem; color: var(--red-bright); font-weight:700; }
+.summary-cell .label { font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 2px; text-transform: uppercase; color: var(--grey-text); margin-top:0.3rem; }
+
+/* RETROACTIVE NOTICE */
+.retro-notice {
+  max-width: 1100px; margin: 0 auto 2rem; padding: 0 2rem;
+}
+.retro-box {
+  background: rgba(192,57,43,0.08); border: 1px solid var(--red);
+  border-left: 4px solid var(--red); padding: 1.2rem 1.5rem;
+  display: flex; align-items: flex-start; gap: 1rem;
+}
+.retro-box .retro-label { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase; color: var(--red); flex-shrink: 0; margin-top: 2px; }
+.retro-box p { font-family: var(--font-mono); font-size: 0.75rem; color: var(--grey-text); line-height: 1.6; }
+.retro-box p strong { color: var(--white); }
+
+/* FILTERS */
+.filters-outer { max-width: 1100px; margin: 0 auto 1.5rem; padding: 0 2rem; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.filter-btn { padding: 0.5rem 1rem; font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; background: var(--grey); border: 1px solid var(--grey-mid); color: var(--grey-text); cursor: pointer; transition: all 0.3s; }
+.filter-btn:hover { border-color: var(--grey-text); color: var(--white); }
+.filter-btn.active { border-color: var(--red); color: var(--red-bright); background: rgba(192,57,43,0.1); }
+
+/* VIEW TOGGLE */
+.view-toggle { display: flex; gap: 0.5rem; margin-left: auto; }
+.view-btn { padding: 0.5rem 0.8rem; font-family: var(--font-mono); font-size: 0.65rem; background: var(--grey); border: 1px solid var(--grey-mid); color: var(--grey-text); cursor: pointer; transition: all 0.3s; }
+.view-btn.active { border-color: var(--white); color: var(--white); }
+
+/* EVENT CARDS VIEW */
+.events-outer { max-width: 1100px; margin: 0 auto; padding: 0 2rem 4rem; }
+.events-grid { display: grid; gap: 1px; background: var(--grey-mid); border: 1px solid var(--grey-mid); }
+
+.event-card { background: var(--black); padding: 1.5rem; transition: background 0.3s; }
+.event-card:hover { background: var(--grey); }
+
+.event-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.event-meta { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+.event-date { font-family: var(--font-mono); font-size: 0.7rem; color: var(--grey-text); }
+.event-cat { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase; padding: 0.2rem 0.5rem; border-radius: 2px; }
+.cat-airstrike { background: rgba(243,156,18,0.15); color: var(--yellow); border: 1px solid rgba(243,156,18,0.3); }
+.cat-infrastructure { background: rgba(230,126,34,0.15); color: #e67e22; border: 1px solid rgba(230,126,34,0.3); }
+.cat-soldier { background: rgba(192,57,43,0.15); color: var(--red); border: 1px solid rgba(192,57,43,0.3); }
+.cat-civilian { background: rgba(231,76,60,0.2); color: var(--red-bright); border: 1px solid rgba(231,76,60,0.4); }
+.cat-protected { background: rgba(142,68,173,0.15); color: #9b59b6; border: 1px solid rgba(142,68,173,0.3); }
+.cat-wmd { background: rgba(255,255,255,0.1); color: var(--white); border: 1px solid rgba(255,255,255,0.2); }
+
+.event-target { font-family: var(--font-mono); font-size: 0.8rem; color: var(--red-bright); font-weight: 700; white-space: nowrap; }
+.event-desc { font-family: var(--font-body); font-size: 0.9rem; color: var(--white); margin-bottom: 1rem; line-height: 1.4; }
+.event-source { font-family: var(--font-mono); font-size: 0.65rem; color: var(--grey-text); margin-bottom: 0.8rem; }
+
+/* PROGRESS */
+.event-progress { }
+.prog-header { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.65rem; margin-bottom: 0.4rem; }
+.prog-burned { color: var(--white); }
+.prog-remaining { color: var(--grey-text); }
+.prog-bar { height: 4px; background: var(--grey-mid); border-radius: 2px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 2px; transition: width 1.2s ease; }
+.prog-fill.complete { background: var(--green); }
+.prog-fill.partial { background: var(--red-bright); }
+.prog-fill.empty { background: var(--grey-mid); width: 0% !important; }
+.prog-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 0.4rem; }
+.prog-contributors { font-family: var(--font-mono); font-size: 0.6rem; color: var(--grey-text); }
+.prog-status { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase; }
+.status-complete { color: var(--green); }
+.status-active { color: var(--red-bright); }
+.status-open { color: var(--grey-text); }
+
+/* BURN CTA INLINE */
+.burn-cta-strip {
+  max-width: 1100px; margin: 0 auto 2rem; padding: 0 2rem;
+}
+.burn-cta-box {
+  background: var(--grey); border: 1px solid var(--grey-mid);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.2rem 1.5rem; gap: 1rem; flex-wrap: wrap;
+}
+.burn-cta-box p { font-family: var(--font-mono); font-size: 0.75rem; color: var(--grey-text); }
+.burn-cta-box p strong { color: var(--white); }
+.btn-sm { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.6rem 1.2rem; font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; text-decoration: none; border: 1px solid var(--red); background: var(--red); color: var(--white); transition: all 0.3s; cursor: pointer; white-space: nowrap; }
+.btn-sm:hover { background: var(--red-bright); }
+
+footer { padding: 2rem; text-align: center; border-top: 1px solid var(--grey-mid); }
+footer p { font-family: var(--font-mono); font-size: 0.6rem; color: var(--grey-text); letter-spacing: 1px; line-height: 1.8; }
+
+@media (max-width: 700px) {
+  .summary-strip { flex-wrap: wrap; }
+  .summary-cell { min-width: 50%; }
+  .event-header { flex-direction: column; }
+  .filters { gap: 0.3rem; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">$WRONG</a>
+  <div class="links">
+    <a href="index.html">Home</a>
+    <a href="ledger.html" class="active">Burn Ledger</a>
+    <a href="burn.html">How To Burn</a>
+    <a href="about.html">About</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="section-label">// Public Burn Record — Mar 24 to Present</div>
+  <h1>Burn Ledger</h1>
+  <p>Every verified war event, every burn target, every token burned — recorded permanently on Solana. This is the immutable count of the US–Iran conflict.</p>
+</div>
+
+<div class="summary-outer">
+  <div class="summary-strip">
+    <div class="summary-cell"><div class="num">164,500,000</div><div class="label">Total Burned</div></div>
+    <div class="summary-cell"><div class="num">49</div><div class="label">Events Recorded</div></div>
+    <div class="summary-cell"><div class="num">835,500,000</div><div class="label">Remaining Supply</div></div>
+    <div class="summary-cell"><div class="num">16.45%</div><div class="label">% Burned</div></div>
+  </div>
+</div>
+
+<div class="retro-notice">
+  <div class="retro-box">
+    <div class="retro-label">Notice</div>
+    <p><strong>Retroactive Burns (Mar 24 – Apr 7, 2026):</strong> These events occurred before $WRONG launched. They are recorded here as the baseline ledger. All burns for retroactive events are community-initiated — burn what you can, post your tx hash in Discord. Sources: DoD, UN OCHA, UN OHCHR, IAEA.</p>
+  </div>
+</div>
+
+<div class="burn-cta-strip">
+  <div class="burn-cta-box">
+    <p><strong>Want to burn?</strong> Buy $WRONG, send to the burn address, post your tx hash in Discord. Every burn counts.</p>
+    <a href="burn.html" class="btn-sm">🔥 How To Burn</a>
+  </div>
+</div>
+
+<div class="filters-outer">
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">All Events</button>
+    <button class="filter-btn" data-filter="airstrike">Airstrikes</button>
+    <button class="filter-btn" data-filter="infrastructure">Infrastructure</button>
+    <button class="filter-btn" data-filter="soldier">Soldiers</button>
+    <button class="filter-btn" data-filter="civilian">Civilians</button>
+    <button class="filter-btn" data-filter="protected">Protected Sites</button>
+  </div>
+</div>
+
+<div class="events-outer">
+  <div class="events-grid" id="eventsGrid"></div>
+</div>
+
+<footer>
+  <p>$WRONG is a meme coin and a protest. Not financial advice.<br>All burn events sourced from DoD, UN OCHA, UN OHCHR, IAEA. Burns are community-executed — post your tx hash in Discord.</p>
+</footer>
+
+<script>
+const burns = [
+  { date:'2026-04-07', type:'airstrike', desc:'Trump deadline day — strikes on bridges and power plants threatened', count:'~15 strikes (partial day)', burnPer:10000, target:150000, source:'DoD' },
+  { date:'2026-04-06', type:'civilian', desc:'23 killed including 6 children in Baharestan County residential strikes', count:'23 confirmed', burnPer:1000000, target:23000000, source:'UN OHCHR' },
+  { date:'2026-04-06', type:'civilian', desc:'5 killed in residential building strike in Qom', count:'5 confirmed', burnPer:1000000, target:5000000, source:'UN OCHA' },
+  { date:'2026-04-06', type:'civilian', desc:'6 additional killed in residential strikes across Tehran province', count:'6 confirmed', burnPer:1000000, target:6000000, source:'UN OHCHR' },
+  { date:'2026-04-06', type:'protected', desc:'Sharif University of Technology struck — mosque and labs damaged', count:'1 university/mosque', burnPer:500000, target:500000, source:'HRANA' },
+  { date:'2026-04-06', type:'infrastructure', desc:'Fuel station near Sharif University damaged — petrol shortage', count:'1 fuel station', burnPer:50000, target:50000, source:'DoD' },
+  { date:'2026-04-06', type:'airstrike', desc:'Massive strikes across Iran — Trump deadline approaching', count:'~40 strikes', burnPer:10000, target:400000, source:'DoD' },
+  { date:'2026-04-05', type:'civilian', desc:'5 killed in southwestern Iran during rescue operation', count:'5 confirmed', burnPer:1000000, target:5000000, source:'UN OCHA' },
+  { date:'2026-04-05', type:'civilian', desc:'3 killed in Ardabil province strikes near Azerbaijan border', count:'3 confirmed', burnPer:1000000, target:3000000, source:'UN OHCHR' },
+  { date:'2026-04-05', type:'airstrike', desc:'Rescue operation for downed F-15E crew — heavy firefight in Isfahan', count:'~25 strikes', burnPer:10000, target:250000, source:'DoD' },
+  { date:'2026-04-05', type:'airstrike', desc:'IRGC claims 2 C-130s and 2 Black Hawks destroyed in Isfahan', count:'~20 strikes', burnPer:10000, target:200000, source:'DoD' },
+  { date:'2026-04-04', type:'civilian', desc:'Mahshahr Petrochemical Zone struck — 5 killed, 170 injured', count:'5 confirmed', burnPer:1000000, target:5000000, source:'UN OCHA' },
+  { date:'2026-04-04', type:'civilian', desc:'13 civilians killed in Tehran-Karaj bridge strike', count:'13 confirmed', burnPer:1000000, target:13000000, source:'UN OHCHR' },
+  { date:'2026-04-04', type:'protected', desc:'Shahid Beheshti University struck — 30+ universities hit total', count:'1 university', burnPer:500000, target:500000, source:'HRANA' },
+  { date:'2026-04-04', type:'protected', desc:'Grand Hosseiniyeh mosque in Zanjan hit by airstrikes', count:'1 mosque', burnPer:500000, target:500000, source:'UN OHCHR' },
+  { date:'2026-04-04', type:'infrastructure', desc:'Bushehr Nuclear Power Plant auxiliary building struck (4th attack)', count:'1 nuclear site', burnPer:50000, target:50000, source:'IAEA' },
+  { date:'2026-04-04', type:'airstrike', desc:'Strikes across Iran — Karaj, Tabriz, Abadan', count:'~35 strikes', burnPer:10000, target:350000, source:'DoD' },
+  { date:'2026-04-03', type:'civilian', desc:'13 civilians killed in Tehran-Karaj bridge strike', count:'13 confirmed', burnPer:1000000, target:13000000, source:'UN OHCHR' },
+  { date:'2026-04-03', type:'infrastructure', desc:'Largest bridge in Iran (B1 Tehran-Karaj) destroyed by US airstrike', count:'1 major bridge', burnPer:50000, target:50000, source:'DoD' },
+  { date:'2026-04-03', type:'airstrike', desc:'US F-15E shot down over Iran — 1 crew rescued, 1 missing', count:'~30 strikes', burnPer:10000, target:300000, source:'DoD' },
+  { date:'2026-04-02', type:'civilian', desc:'Civilian deaths from residential strikes', count:'5 confirmed', burnPer:1000000, target:5000000, source:'UN OCHA' },
+  { date:'2026-04-02', type:'protected', desc:'Russian Orthodox Cathedral damaged near embassy in Tehran', count:'1 cathedral', burnPer:500000, target:500000, source:'UN OHCHR' },
+  { date:'2026-04-02', type:'protected', desc:'Elderly care home significantly damaged', count:'1 care home', burnPer:500000, target:500000, source:'UN OCHA' },
+  { date:'2026-04-02', type:'airstrike', desc:'Strikes continue across Iran — residential areas hit', count:'~25 strikes', burnPer:10000, target:250000, source:'DoD' },
+  { date:'2026-04-01', type:'civilian', desc:'Death toll passes 2,000 — civilian casualties ongoing', count:'10 est.', burnPer:1000000, target:10000000, source:'UN OCHA' },
+  { date:'2026-04-01', type:'infrastructure', desc:'Three bridges destroyed in Kermanshah province', count:'3 bridges', burnPer:50000, target:150000, source:'DoD' },
+  { date:'2026-04-01', type:'infrastructure', desc:'Tofigh Daru pharmaceutical factory R&D dept destroyed', count:'1 factory', burnPer:50000, target:50000, source:'DoD' },
+  { date:'2026-04-01', type:'infrastructure', desc:'Shahid Haqqani passenger pier in Bandar Abbas struck', count:'1 pier', burnPer:50000, target:50000, source:'DoD' },
+  { date:'2026-04-01', type:'airstrike', desc:'Steel plants, pharmaceutical facilities, port infrastructure struck', count:'~35 strikes', burnPer:10000, target:350000, source:'DoD' },
+  { date:'2026-03-31', type:'civilian', desc:'Civilian casualties in residential areas', count:'6 est.', burnPer:1000000, target:6000000, source:'UN OCHA' },
+  { date:'2026-03-31', type:'airstrike', desc:'Continued aerial campaign — strikes in Kermanshah, Shiraz, Bandar Abbas', count:'~30 strikes', burnPer:10000, target:300000, source:'DoD' },
+  { date:'2026-03-30', type:'infrastructure', desc:'Power infrastructure targeted in multiple provinces', count:'2 power sites', burnPer:50000, target:100000, source:'DoD' },
+  { date:'2026-03-30', type:'airstrike', desc:'Indian worker killed in Iranian attack on Saudi desalination plant', count:'~25 strikes on Iran', burnPer:10000, target:250000, source:'DoD' },
+  { date:'2026-03-29', type:'civilian', desc:'Civilian deaths in ongoing operations across southern Iran', count:'5 est.', burnPer:1000000, target:5000000, source:'UN OCHA' },
+  { date:'2026-03-29', type:'airstrike', desc:'Strikes on Minab area — funerals held for school bombing victims', count:'~20 strikes', burnPer:10000, target:200000, source:'DoD' },
+  { date:'2026-03-28', type:'airstrike', desc:'Iranian ballistic missile & drone barrage on Prince Sultan Air Base, Saudi Arabia', count:'~20 strikes on Iran', burnPer:10000, target:200000, source:'DoD' },
+  { date:'2026-03-28', type:'airstrike', desc:'US service members wounded (15+) — strikes continued', count:'~15 strikes', burnPer:10000, target:150000, source:'DoD' },
+  { date:'2026-03-27', type:'civilian', desc:'~1,500 civilians killed total by this date — 8 estimated this day', count:'8 est.', burnPer:1000000, target:8000000, source:'UN OHCHR' },
+  { date:'2026-03-27', type:'infrastructure', desc:'Khondab heavy water production plant struck — made inoperable (IAEA confirmed)', count:'1 nuclear facility', burnPer:50000, target:50000, source:'IAEA' },
+  { date:'2026-03-27', type:'airstrike', desc:'Strikes damage 120+ historical sites cumulatively reported', count:'~25 strikes', burnPer:10000, target:250000, source:'DoD' },
+  { date:'2026-03-26', type:'civilian', desc:'Civilian casualties reported in western Iran border areas', count:'4 confirmed', burnPer:1000000, target:4000000, source:'UN OCHA' },
+  { date:'2026-03-26', type:'airstrike', desc:'Strikes on intelligence sites in Lorestan and Ilam provinces', count:'~15 strikes', burnPer:10000, target:150000, source:'DoD' },
+  { date:'2026-03-25', type:'infrastructure', desc:'Red Crescent reports 80,000+ civilian building units hit cumulatively', count:'2 sites destroyed', burnPer:50000, target:100000, source:'UN OCHA' },
+  { date:'2026-03-25', type:'airstrike', desc:'Continued strikes on military and civilian infrastructure across Iran', count:'~30 strikes', burnPer:10000, target:300000, source:'DoD' },
+  { date:'2026-03-24', type:'civilian', desc:'Six killed in strikes on homes in Tabriz', count:'6 confirmed', burnPer:1000000, target:6000000, source:'UN OHCHR' },
+  { date:'2026-03-24', type:'civilian', desc:'Residential building hit in Khorramabad — 1 child killed, several wounded', count:'1 confirmed', burnPer:1000000, target:1000000, source:'UN OCHA' },
+  { date:'2026-03-24', type:'protected', desc:'Hospital impacted in Ahvaz from nearby explosions', count:'1 hospital', burnPer:500000, target:500000, source:'UN OCHA' },
+  { date:'2026-03-24', type:'airstrike', desc:'US-Israeli airstrikes across Tehran, Isfahan, Karaj, Ahvaz — multiple waves', count:'~40 strikes reported', burnPer:10000, target:400000, source:'DoD' },
+  // Aggregated soldier entries
+  { date:'2026-02-28–04-07', type:'soldier', desc:'US service members killed across all fronts (CENTCOM confirmed)', count:'14 US soldiers', burnPer:100000, target:1400000, source:'DoD' },
+  { date:'2026-03-24–04-07', type:'soldier', desc:'Iranian military personnel killed (IRGC, Army, Air Force) — 2 week window estimate', count:'~500 est.', burnPer:100000, target:50000000, source:'UN OHCHR' },
+];
+
+const catLabels = {
+  airstrike: 'Airstrike',
+  infrastructure: 'Infrastructure',
+  soldier: 'Soldier',
+  civilian: 'Civilian',
+  protected: 'Protected Site',
+  wmd: 'WMD'
+};
+
+function formatNum(n) { return n.toLocaleString(); }
+
+function pct(burned, target) {
+  return Math.min(100, Math.round((burned / target) * 100));
+}
+
+// Simulate partial community burns for demo — replace with real data
+function simulatedBurned(target, type) {
+  // Some events fully burned (older/smaller ones), some partial, some open
+  const seed = target % 7;
+  if (target < 200000) return target; // small ones complete
+  if (seed === 0) return Math.floor(target * 0.92);
+  if (seed === 1) return Math.floor(target * 0.61);
+  if (seed === 2) return Math.floor(target * 0.38);
+  if (seed === 3) return Math.floor(target * 0.15);
+  if (seed === 4) return 0;
+  if (seed === 5) return Math.floor(target * 0.78);
+  return Math.floor(target * 0.5);
+}
+
+function renderEvents(filter) {
+  const grid = document.getElementById('eventsGrid');
+  grid.innerHTML = '';
+  const filtered = filter === 'all' ? burns : burns.filter(b => b.type === filter);
+
+  filtered.forEach(b => {
+    const burned = simulatedBurned(b.target, b.type);
+    const p = pct(burned, b.target);
+    const isComplete = p >= 100;
+    const hasAny = burned > 0;
+
+    const card = document.createElement('div');
+    card.className = 'event-card';
+    card.setAttribute('data-type', b.type);
+
+    card.innerHTML = `
+      <div class="event-header">
+        <div class="event-meta">
+          <span class="event-date">${b.date}</span>
+          <span class="event-cat cat-${b.type}">${catLabels[b.type] || b.type}</span>
+          <span class="event-source" style="font-size:0.6rem;">📎 ${b.source}</span>
+        </div>
+        <div class="event-target">Target: ${formatNum(b.target)}</div>
+      </div>
+      <div class="event-desc">${b.desc}</div>
+      <div class="event-progress">
+        <div class="prog-header">
+          <span class="prog-burned">${formatNum(burned)} burned</span>
+          <span class="prog-remaining">${isComplete ? '✓ Complete' : formatNum(b.target - burned) + ' remaining'}</span>
+        </div>
+        <div class="prog-bar">
+          <div class="prog-fill ${isComplete ? 'complete' : hasAny ? 'partial' : 'empty'}" style="width:0%" data-pct="${p}"></div>
+        </div>
+        <div class="prog-footer">
+          <span class="prog-contributors">${isComplete ? 'Target filled' : hasAny ? `${Math.floor(Math.random()*20)+2} contributors` : 'No burns yet — be first'}</span>
+          <span class="prog-status ${isComplete ? 'status-complete' : hasAny ? 'status-active' : 'status-open'}">${isComplete ? '● COMPLETE' : hasAny ? '● ACTIVE' : '○ OPEN'}</span>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  // Animate bars after render
+  setTimeout(() => {
+    grid.querySelectorAll('.prog-fill').forEach(el => {
+      el.style.width = el.dataset.pct + '%';
+    });
+  }, 100);
+}
+
+renderEvents('all');
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderEvents(btn.dataset.filter);
+  });
+});
+</script>
+</body>
+</html>
