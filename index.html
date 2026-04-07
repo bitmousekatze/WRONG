@@ -263,17 +263,17 @@ footer p { font-family: var(--font-mono); font-size: 0.6rem; color: var(--grey-t
     <div class="step-box">
       <div class="s-num">01</div>
       <div class="s-title">Event Verified</div>
-      <div class="s-desc">Community spots a confirmed war event from official sources (DoD, UN OCHA, IAEA). Posted to Discord, voted in, admin confirmed.</div>
+      <div class="s-desc">A war event is confirmed from an official source — DoD, UN OCHA, UN OHCHR, or IAEA. It gets added to the ledger with a unique reference code and a burn target.</div>
     </div>
     <div class="step-box">
       <div class="s-num">02</div>
-      <div class="s-title">Target Set</div>
-      <div class="s-desc">A burn target is posted publicly. 1 civilian killed = 1,000,000 $WRONG target. The community burns toward it — every contribution counts.</div>
+      <div class="s-title">Community Burns</div>
+      <div class="s-desc">Anyone holding $WRONG sends tokens to the burn address with the event ref code as memo. No approval. No minimum. Burn what you can.</div>
     </div>
     <div class="step-box">
       <div class="s-num">03</div>
-      <div class="s-title">Burn & Record</div>
-      <div class="s-desc">You burn what you can. Post your tx hash in Discord. The ledger tracks every contribution until the target is filled — or beyond.</div>
+      <div class="s-title">Ledger Updates</div>
+      <div class="s-desc">Within ~60 seconds your wallet, amount, and date appear on the ledger under that event. Permanent. Verifiable on Solscan. No trust required.</div>
     </div>
   </div>
 </section>
@@ -400,7 +400,7 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 // Pull live stats from the same Solana RPC as the ledger
 // Reads total burned by summing all token transfers to the burn wallet
 const BURN_WALLET = '1nc1nerator11111111111111111111111111111111';
-const RPC_URL     = 'https://api.mainnet-beta.solana.com';
+const RPC_URL     = 'https://mainnet.helius-rpc.com/?api-key=842be62f-1509-4ee6-b4ce-cfb8f99083fa';
 const TOTAL_EVENTS = 48; // W-E002 through W-E049 (W-E001 Apr 7 removed)
 const SUPPLY = 1_000_000_000;
 
