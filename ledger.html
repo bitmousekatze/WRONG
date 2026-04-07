@@ -243,6 +243,57 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
   .filters{gap:0.3rem}
   .filter-btn{padding:0.4rem 0.6rem;font-size:0.55rem}
 }
+
+/* BURN MODAL */
+.burn-modal-overlay {
+  display:none; position:fixed; inset:0; z-index:500;
+  background:rgba(0,0,0,0.85); backdrop-filter:blur(6px);
+  align-items:center; justify-content:center; padding:1rem;
+}
+.burn-modal-overlay.open { display:flex; }
+.burn-modal {
+  background:var(--grey); border:1px solid var(--grey-mid);
+  border-top:3px solid var(--red-bright);
+  max-width:480px; width:100%; padding:2rem; position:relative;
+}
+.bm-close {
+  position:absolute; top:1rem; right:1rem;
+  background:none; border:none; color:var(--grey-text);
+  font-size:1.2rem; cursor:pointer; line-height:1;
+  font-family:var(--font-mono);
+}
+.bm-close:hover { color:var(--white); }
+.bm-label { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:3px; text-transform:uppercase; color:var(--red); margin-bottom:0.5rem; }
+.bm-title { font-family:var(--font-display); font-size:1.4rem; margin-bottom:0.3rem; }
+.bm-desc  { font-family:var(--font-mono); font-size:0.68rem; color:var(--grey-text); margin-bottom:1.5rem; line-height:1.5; }
+
+.bm-qr-wrap {
+  background:var(--white); padding:1rem; display:flex;
+  align-items:center; justify-content:center; margin-bottom:1.5rem;
+}
+.bm-qr-wrap canvas { display:block; }
+
+.bm-qr-label {
+  font-family:var(--font-mono); font-size:0.6rem; letter-spacing:2px;
+  text-transform:uppercase; color:var(--grey-text); text-align:center;
+  margin-bottom:1.5rem;
+}
+
+.bm-options { display:grid; gap:0.6rem; }
+.bm-opt-btn {
+  display:block; width:100%; padding:0.75rem 1rem;
+  font-family:var(--font-mono); font-size:0.7rem; letter-spacing:1px;
+  text-transform:uppercase; text-align:center;
+  border:1px solid var(--grey-mid); background:var(--black);
+  color:var(--white); cursor:pointer; transition:all 0.2s; text-decoration:none;
+}
+.bm-opt-btn.primary { background:var(--red); border-color:var(--red); }
+.bm-opt-btn.primary:hover { background:var(--red-bright); border-color:var(--red-bright); }
+.bm-opt-btn:hover { border-color:var(--white); }
+.bm-opt-btn small { display:block; font-size:0.55rem; color:var(--grey-text); margin-top:0.2rem; letter-spacing:0; text-transform:none; }
+.bm-opt-btn.primary small { color:rgba(255,255,255,0.6); }
+
+.bm-divider { text-align:center; font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text); margin:0.3rem 0; }
 </style>
 </head>
 <body>
@@ -348,6 +399,35 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
   Burns read live from Solana — every wallet, every amount, permanent on-chain.</p>
 </footer>
 
+<!-- BURN MODAL -->
+<div class="burn-modal-overlay" id="burnModal" onclick="closeBurnModal(event)">
+  <div class="burn-modal">
+    <button class="bm-close" onclick="closeBurnModal()">✕</button>
+    <div class="bm-label" id="bm-ref">W-E000</div>
+    <div class="bm-title">🔥 Burn $WRONG</div>
+    <div class="bm-desc" id="bm-desc">Loading event...</div>
+
+    <div class="bm-qr-wrap">
+      <canvas id="bm-qr-canvas"></canvas>
+    </div>
+    <div class="bm-qr-label">Scan with Phantom mobile to burn instantly</div>
+
+    <div class="bm-options">
+      <a class="bm-opt-btn primary" id="bm-direct-link" href="#" target="_blank" rel="noopener">
+        Open in Phantom (desktop extension)
+        <small>Click this link — if Phantom is installed it will open automatically</small>
+      </a>
+      <div class="bm-divider">— or —</div>
+      <button class="bm-opt-btn" id="bm-copy-url" onclick="copyBurnUrl()">
+        Copy Solana Pay URL
+        <small>Paste into any Solana Pay-compatible wallet</small>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 <script>
 // ================================================================
 // CONFIG
@@ -445,12 +525,70 @@ function buildSolanaPayUrl(ev, amount) {
   return 'solana:' + CONFIG.BURN_WALLET + '?' + params.toString();
 }
 
-// Use window.location.href instead of an <a href="solana:..."> anchor.
-// Browsers block unknown-protocol anchor navigations but allow
-// window.location assignments, which the OS / Phantom browser extension
-// can then intercept and open correctly.
+// ================================================================
+// BURN MODAL — QR code + direct link instead of protocol redirect
+// Browsers block window.location.href for unknown protocols.
+// The Solana Pay spec for web uses QR codes. We also provide a
+// direct <a href> link (not JS navigation) which works for Phantom
+// browser extension users on desktop.
+// ================================================================
+let _qrInstance = null;
+let _currentBurnUrl = '';
+
 function burnFor(ev) {
-  window.location.href = buildSolanaPayUrl(ev, Math.min(ev.target, 10000));
+  const url    = buildSolanaPayUrl(ev, Math.min(ev.target, 10000));
+  _currentBurnUrl = url;
+
+  document.getElementById('bm-ref').textContent  = ev.ref;
+  document.getElementById('bm-desc').textContent = ev.desc;
+
+  // Update direct link — a real <a> href the browser won't block
+  const link = document.getElementById('bm-direct-link');
+  link.href  = url;
+
+  // Generate QR code
+  const canvas = document.getElementById('bm-qr-canvas');
+  canvas.width  = 220;
+  canvas.height = 220;
+  if (_qrInstance) {
+    // QRCode.js doesn't have a clean update — clear and re-render
+    const wrap = document.querySelector('.bm-qr-wrap');
+    wrap.innerHTML = '<canvas id="bm-qr-canvas" width="220" height="220"></canvas>';
+  }
+  // Use QRCode library loaded from CDN
+  try {
+    new QRCode(document.getElementById('bm-qr-canvas'), {
+      text:           url,
+      width:          220,
+      height:         220,
+      colorDark:      '#000000',
+      colorLight:     '#ffffff',
+      correctLevel:   QRCode.CorrectLevel.M,
+    });
+    _qrInstance = true;
+  } catch(e) {
+    document.querySelector('.bm-qr-wrap').innerHTML =
+      '<p style="font-family:var(--font-mono);font-size:0.65rem;color:var(--grey-text);text-align:center;padding:1rem;">QR unavailable — use the link below</p>';
+  }
+
+  document.getElementById('burnModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeBurnModal(e) {
+  if (e && e.target !== document.getElementById('burnModal')) return;
+  document.getElementById('burnModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function copyBurnUrl() {
+  navigator.clipboard.writeText(_currentBurnUrl).then(() => {
+    const btn = document.getElementById('bm-copy-url');
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => {
+      btn.innerHTML = 'Copy Solana Pay URL<small>Paste into any Solana Pay-compatible wallet</small>';
+    }, 2000);
+  });
 }
 
 // ================================================================
