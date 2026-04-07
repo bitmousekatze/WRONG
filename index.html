@@ -3,326 +3,198 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>$WRONG — Burn Ledger</title>
+<title>$WRONG — The War Is Wrong</title>
+<meta name="description" content="A deflationary Solana meme coin where every act of war burns the supply. Community-powered burns.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --black: #0a0a0a; --white: #e8e4df; --red: #c0392b; --red-bright: #e74c3c;
-  --red-glow: rgba(231,76,60,0.25); --grey: #1a1a1a; --grey-mid: #2a2a2a;
-  --grey-text: #888; --green: #27ae60; --yellow: #f39c12;
+  --black: #0a0a0a;
+  --white: #e8e4df;
+  --red: #c0392b;
+  --red-bright: #e74c3c;
+  --red-glow: rgba(231,76,60,0.25);
+  --grey: #1a1a1a;
+  --grey-mid: #2a2a2a;
+  --grey-text: #888;
+  --green: #27ae60;
   --font-display: 'Anton', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   --font-body: 'Space Grotesk', sans-serif;
 }
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html { scroll-behavior: smooth; }
-body { background: var(--black); color: var(--white); font-family: var(--font-body); overflow-x: hidden; }
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  cursor: crosshair;
+}
 
+/* NAV */
 nav {
   position: fixed; top:0; left:0; right:0; z-index:100;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 1rem 2rem; background: rgba(10,10,10,0.95);
-  backdrop-filter: blur(12px); border-bottom: 1px solid var(--grey-mid);
+  padding: 1rem 2rem;
+  background: rgba(10,10,10,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--grey-mid);
 }
 nav .logo { font-family: var(--font-display); font-size: 1.4rem; letter-spacing: 2px; color: var(--red-bright); text-decoration:none; }
 nav .links { display:flex; gap:1.5rem; }
-nav .links a { color: var(--grey-text); text-decoration:none; font-family:var(--font-mono); font-size:0.75rem; letter-spacing:1px; text-transform:uppercase; transition:color 0.3s; }
+nav .links a {
+  color: var(--grey-text); text-decoration: none; font-family: var(--font-mono);
+  font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s;
+}
 nav .links a:hover, nav .links a.active { color: var(--white); }
 
-.page-header { padding: 8rem 2rem 3rem; max-width: 1100px; margin: 0 auto; }
-.section-label { font-family:var(--font-mono); font-size:0.65rem; letter-spacing:4px; text-transform:uppercase; color:var(--red); margin-bottom:1rem; }
-.page-header h1 { font-family: var(--font-display); font-size: clamp(2.5rem,6vw,4.5rem); line-height:1; }
-.page-header p { color:var(--grey-text); font-weight:300; margin-top:1rem; max-width:600px; line-height:1.7; }
-
-/* CHAIN STATUS */
-.chain-outer { max-width:1100px; margin:0 auto 1.5rem; padding:0 2rem; }
-.chain-bar {
-  display:flex; align-items:center; justify-content:space-between;
-  background:var(--grey); border:1px solid var(--grey-mid);
-  padding:0.7rem 1.2rem; flex-wrap:wrap; gap:0.8rem;
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 6rem 2rem 4rem;
+  position: relative;
 }
-.chain-left { display:flex; align-items:center; gap:0.8rem; }
-.chain-dot { width:8px; height:8px; border-radius:50%; background:var(--grey-text); flex-shrink:0; transition:background 0.3s; }
-.chain-dot.live    { background:var(--green);     box-shadow:0 0 8px rgba(39,174,96,0.6); animation:blink 2s infinite; }
-.chain-dot.error   { background:var(--red-bright); }
-.chain-dot.loading { background:var(--yellow);    animation:blink 0.7s infinite; }
-.chain-text { font-family:var(--font-mono); font-size:0.65rem; color:var(--grey-text); }
-.chain-text strong { color:var(--white); }
-.chain-right { display:flex; align-items:center; gap:1.2rem; flex-wrap:wrap; }
-.chain-stat { font-family:var(--font-mono); font-size:0.65rem; color:var(--grey-text); }
-.chain-stat b { color:var(--red-bright); }
-.refresh-btn {
-  font-family:var(--font-mono); font-size:0.6rem; letter-spacing:1px; text-transform:uppercase;
-  background:transparent; border:1px solid var(--grey-mid); color:var(--grey-text);
-  padding:0.3rem 0.8rem; cursor:pointer; transition:all 0.3s;
+.hero::before {
+  content:''; position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 50%, var(--red-glow), transparent),
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.012) 2px, rgba(255,255,255,0.012) 4px);
+  pointer-events:none;
 }
-.refresh-btn:hover:not(:disabled) { border-color:var(--white); color:var(--white); }
-.refresh-btn:disabled { opacity:0.4; cursor:default; }
-
-/* SUMMARY */
-.summary-outer { max-width:1100px; margin:0 auto; padding:0 2rem 2rem; }
-.summary-strip { display:flex; gap:1px; background:var(--grey-mid); border:1px solid var(--grey-mid); }
-.summary-cell { flex:1; background:var(--grey); padding:1.2rem 1.5rem; text-align:center; }
-.summary-cell .num { font-family:var(--font-mono); font-size:1.3rem; color:var(--red-bright); font-weight:700; }
-.summary-cell .label { font-family:var(--font-mono); font-size:0.55rem; letter-spacing:2px; text-transform:uppercase; color:var(--grey-text); margin-top:0.3rem; }
-
-/* NOTICE */
-.notice-outer { max-width:1100px; margin:0 auto 1.5rem; padding:0 2rem; }
-.notice-box {
-  border:1px solid var(--red); border-left:4px solid var(--red);
-  background:rgba(192,57,43,0.05); padding:1rem 1.5rem;
-  display:flex; gap:1rem; align-items:flex-start;
+.hero-label {
+  font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 4px;
+  text-transform: uppercase; color: var(--red); margin-bottom: 2rem;
+  opacity:0; animation: fadeUp 0.8s 0.2s forwards;
 }
-.n-label { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:3px; text-transform:uppercase; color:var(--red); flex-shrink:0; padding-top:2px; }
-.notice-box p { font-family:var(--font-mono); font-size:0.72rem; color:var(--grey-text); line-height:1.7; }
-.notice-box p strong { color:var(--white); }
-
-/* BURN CTA */
-.cta-outer { max-width:1100px; margin:0 auto 1.5rem; padding:0 2rem; }
-.cta-bar {
-  background:var(--grey); border:1px solid var(--grey-mid);
-  display:flex; align-items:center; justify-content:space-between;
-  padding:1rem 1.5rem; gap:1rem; flex-wrap:wrap;
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(5rem, 15vw, 14rem);
+  line-height: 0.85; letter-spacing: -2px; color: var(--white); position: relative;
+  opacity:0; animation: fadeUp 0.8s 0.4s forwards;
 }
-.cta-bar p { font-family:var(--font-mono); font-size:0.72rem; color:var(--grey-text); }
-.cta-bar p strong { color:var(--white); }
-.btn-cta { padding:0.6rem 1.2rem; font-family:var(--font-mono); font-size:0.65rem; letter-spacing:1px; text-transform:uppercase; text-decoration:none; border:1px solid var(--red); background:var(--red); color:var(--white); transition:all 0.3s; white-space:nowrap; display:inline-block; }
-.btn-cta:hover { background:var(--red-bright); }
-
-/* FILTERS */
-.filters-outer { max-width:1100px; margin:0 auto 1.5rem; padding:0 2rem; }
-.filters { display:flex; gap:0.5rem; flex-wrap:wrap; }
-.filter-btn { padding:0.5rem 1rem; font-family:var(--font-mono); font-size:0.65rem; letter-spacing:1px; text-transform:uppercase; background:var(--grey); border:1px solid var(--grey-mid); color:var(--grey-text); cursor:pointer; transition:all 0.3s; }
-.filter-btn:hover { border-color:var(--grey-text); color:var(--white); }
-.filter-btn.active { border-color:var(--red); color:var(--red-bright); background:rgba(192,57,43,0.1); }
-
-/* EVENTS */
-.events-outer { max-width:1100px; margin:0 auto; padding:0 2rem 4rem; }
-.events-grid { display:grid; gap:1px; background:var(--grey-mid); border:1px solid var(--grey-mid); }
-
-/* LOADING */
-.loading-placeholder { background:var(--black); padding:4rem; text-align:center; }
-.spinner { width:28px; height:28px; border:2px solid var(--grey-mid); border-top-color:var(--red); border-radius:50%; animation:spin 0.7s linear infinite; margin:0 auto 1rem; }
-.loading-placeholder p { font-family:var(--font-mono); font-size:0.7rem; color:var(--grey-text); }
-
-/* EVENT CARD */
-.event-card { background:var(--black); }
-.event-card-main { padding:1.5rem; cursor:pointer; transition:background 0.2s; }
-.event-card-main:hover { background:rgba(255,255,255,0.015); }
-
-.event-header { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; }
-.event-meta { display:flex; align-items:center; gap:0.7rem; flex-wrap:wrap; }
-.event-date { font-family:var(--font-mono); font-size:0.7rem; color:var(--grey-text); }
-.event-ref { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text); letter-spacing:1px; padding:0.15rem 0.5rem; border:1px solid var(--grey-mid); background:rgba(255,255,255,0.03); }
-
-.event-cat { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:1px; text-transform:uppercase; padding:0.2rem 0.5rem; }
-.cat-airstrike    { background:rgba(243,156,18,0.1);   color:var(--yellow);    border:1px solid rgba(243,156,18,0.25); }
-.cat-infrastructure { background:rgba(230,126,34,0.1); color:#e67e22;          border:1px solid rgba(230,126,34,0.25); }
-.cat-soldier      { background:rgba(192,57,43,0.1);    color:var(--red);       border:1px solid rgba(192,57,43,0.25); }
-.cat-civilian     { background:rgba(231,76,60,0.15);   color:var(--red-bright);border:1px solid rgba(231,76,60,0.3);  }
-.cat-protected    { background:rgba(142,68,173,0.1);   color:#9b59b6;          border:1px solid rgba(142,68,173,0.25);}
-.cat-wmd          { background:rgba(255,255,255,0.06); color:var(--white);     border:1px solid rgba(255,255,255,0.1);}
-
-.event-right { text-align:right; flex-shrink:0; }
-.event-target { font-family:var(--font-mono); font-size:0.85rem; color:var(--red-bright); font-weight:700; }
-.event-target-label { font-family:var(--font-mono); font-size:0.55rem; letter-spacing:1px; text-transform:uppercase; color:var(--grey-text); margin-top:2px; }
-
-.event-desc { font-size:0.9rem; color:var(--white); margin-bottom:0.4rem; line-height:1.5; }
-.event-source { font-family:var(--font-mono); font-size:0.62rem; color:var(--grey-text); margin-bottom:1rem; }
-
-/* PROGRESS */
-.prog-numbers { display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:0.65rem; margin-bottom:0.4rem; }
-.prog-burned-num { color:var(--white); font-weight:700; }
-.prog-remain-num { color:var(--grey-text); }
-.prog-track { height:4px; background:var(--grey-mid); border-radius:2px; overflow:hidden; }
-.prog-fill { height:100%; border-radius:2px; transition:width 1.1s ease; }
-.prog-fill.c-complete { background:var(--green); }
-.prog-fill.c-active   { background:var(--red-bright); }
-.prog-fill.c-open     { background:var(--grey-mid); width:0% !important; }
-.prog-footer { display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem; }
-.prog-contrib-label { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text); }
-.prog-status { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:1px; text-transform:uppercase; }
-.s-complete { color:var(--green); }
-.s-active   { color:var(--red-bright); }
-.s-open     { color:var(--grey-text); }
-
-/* TOGGLE */
-.toggle-row {
-  display:flex; align-items:center; gap:0.5rem; margin-top:0;
-  font-family:var(--font-mono); font-size:0.62rem; color:var(--grey-text);
-  cursor:pointer; width:fit-content; transition:color 0.2s;
+.hero h1 .dollar { color: var(--red-bright); }
+.hero-sub {
+  font-family: var(--font-display); font-size: clamp(1.2rem, 3vw, 2.4rem);
+  margin-top: 1.5rem; color: var(--red); letter-spacing: 6px; text-transform: uppercase;
+  opacity:0; animation: fadeUp 0.8s 0.6s forwards;
 }
-.toggle-row:hover { color:var(--white); }
-.toggle-arrow { display:inline-block; transition:transform 0.25s; font-size:0.55rem; }
-.toggle-arrow.open { transform:rotate(90deg); }
-
-/* BURN EVENT BUTTON */
-.burn-event-btn {
-  display:inline-flex; align-items:center; gap:0.4rem;
-  font-family:var(--font-mono); font-size:0.62rem; letter-spacing:1px; text-transform:uppercase;
-  text-decoration:none; padding:0.4rem 0.9rem;
-  background:rgba(192,57,43,0.1); border:1px solid var(--red);
-  color:var(--red-bright); transition:all 0.2s;
-}
-.burn-event-btn:hover { background:var(--red); color:var(--white); }
-
-/* MEMO WARNING */
-.ledger-memo-warning { max-width:1100px; margin:0 auto 1.5rem; padding:0 2rem; }
-.lmw-box {
-  background:rgba(231,76,60,0.07); border:1px solid var(--red-bright);
-  border-left:4px solid var(--red-bright);
-  padding:1rem 1.5rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
-}
-.lmw-icon { font-size:1.2rem; flex-shrink:0; }
-.lmw-text { font-family:var(--font-mono); font-size:0.72rem; color:var(--white); line-height:1.6; flex:1; }
-.lmw-text strong { color:var(--red-bright); }
-.lmw-link {
-  font-family:var(--font-mono); font-size:0.65rem; letter-spacing:1px; text-transform:uppercase;
-  text-decoration:none; padding:0.45rem 0.9rem;
-  background:var(--red); border:1px solid var(--red); color:var(--white);
-  transition:all 0.2s; white-space:nowrap; flex-shrink:0;
-}
-.lmw-link:hover { background:var(--red-bright); }
-
-/* CONTRIBUTORS PANEL */
-.contributors-panel { display:none; border-top:1px solid var(--grey-mid); }
-.contributors-panel.open { display:block; }
-
-.contrib-table-head {
-  display:grid; grid-template-columns: 1fr 160px 110px 90px;
-  padding:0.5rem 1.5rem; background:rgba(255,255,255,0.03);
-}
-.contrib-table-head span { font-family:var(--font-mono); font-size:0.55rem; letter-spacing:2px; text-transform:uppercase; color:var(--grey-text); }
-
-.contrib-row {
-  display:grid; grid-template-columns: 1fr 160px 110px 90px;
-  padding:0.75rem 1.5rem; border-top:1px solid rgba(42,42,42,0.7);
-  align-items:center; transition:background 0.15s;
-}
-.contrib-row:hover { background:rgba(255,255,255,0.02); }
-
-.contrib-wallet { font-family:var(--font-mono); font-size:0.72rem; }
-.contrib-wallet a { color:var(--white); text-decoration:none; transition:color 0.2s; }
-.contrib-wallet a:hover { color:var(--red-bright); }
-.contrib-wallet .full-addr { display:none; font-size:0.6rem; color:var(--grey-text); margin-top:2px; }
-.contrib-row:hover .full-addr { display:block; }
-
-.contrib-amount { font-family:var(--font-mono); font-size:0.75rem; color:var(--red-bright); font-weight:700; }
-.contrib-date   { font-family:var(--font-mono); font-size:0.65rem; color:var(--grey-text); }
-.contrib-tx a   { font-family:var(--font-mono); font-size:0.65rem; color:var(--green); text-decoration:none; transition:opacity 0.2s; }
-.contrib-tx a:hover { opacity:0.7; }
-
-.no-burns-msg {
-  padding:2rem 1.5rem; text-align:center;
-  border-top:1px solid var(--grey-mid);
-}
-.no-burns-msg p { font-family:var(--font-mono); font-size:0.72rem; color:var(--grey-text); line-height:1.9; }
-.no-burns-msg strong { color:var(--white); }
-.no-burns-msg .ref-pill {
-  display:inline-block; margin-top:0.5rem; padding:0.3rem 0.8rem;
-  background:rgba(192,57,43,0.1); border:1px solid var(--red);
-  font-family:var(--font-mono); font-size:0.75rem; color:var(--red-bright); letter-spacing:2px;
+.hero-desc {
+  max-width: 560px; margin-top: 2rem; font-size: 1rem;
+  line-height: 1.7; color: var(--grey-text); font-weight: 300;
+  opacity:0; animation: fadeUp 0.8s 0.8s forwards;
 }
 
-footer { padding:2rem; text-align:center; border-top:1px solid var(--grey-mid); }
-footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text); letter-spacing:1px; line-height:1.8; }
+/* STATS BAR */
+.stats-bar {
+  display: flex; gap: 1px; margin-top: 3rem;
+  background: var(--grey-mid); border: 1px solid var(--grey-mid);
+  opacity:0; animation: fadeUp 0.8s 1s forwards;
+}
+.stat-cell { background: var(--grey); padding: 1.5rem 2.5rem; text-align: center; }
+.stat-cell .num { font-family: var(--font-mono); font-size: 1.6rem; color: var(--red-bright); font-weight: 700; }
+.stat-cell .label { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--grey-text); margin-top: 0.4rem; }
 
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-@keyframes spin   { to{transform:rotate(360deg)} }
-@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.scroll-hint { margin-top: 3rem; opacity:0; animation: fadeUp 0.8s 1.2s forwards; }
+.scroll-hint span { display: block; width: 1px; height: 48px; background: linear-gradient(to bottom, var(--red), transparent); margin: 0 auto; animation: pulse 2s infinite; }
 
-@media(max-width:800px){
-  .contrib-table-head,
-  .contrib-row { grid-template-columns: 1fr 130px 80px; }
-  .contrib-date, .contrib-table-head span:nth-child(3) { display:none; }
+/* TICKER */
+.ticker-strip {
+  overflow: hidden; border-top: 1px solid var(--grey-mid); border-bottom: 1px solid var(--grey-mid);
+  padding: 0.8rem 0; background: var(--grey);
 }
-@media(max-width:600px){
-  .summary-strip{flex-wrap:wrap}
-  .summary-cell{min-width:50%}
-  .filters{gap:0.3rem}
-  .filter-btn{padding:0.4rem 0.6rem;font-size:0.55rem}
-}
+.ticker-inner { display: flex; gap: 4rem; animation: ticker 25s linear infinite; width: max-content; }
+.ticker-inner span { font-family: var(--font-display); font-size: 1rem; letter-spacing: 4px; color: var(--red); white-space: nowrap; text-transform: uppercase; }
 
-/* BURN MODAL */
-.burn-modal-overlay {
-  display:none; position:fixed; inset:0; z-index:500;
-  background:rgba(0,0,0,0.85); backdrop-filter:blur(6px);
-  align-items:center; justify-content:center; padding:1rem;
-}
-.burn-modal-overlay.open { display:flex; }
-.burn-modal {
-  background:var(--grey); border:1px solid var(--grey-mid);
-  border-top:3px solid var(--red-bright);
-  max-width:480px; width:100%; padding:2rem; position:relative;
-}
-.bm-close {
-  position:absolute; top:1rem; right:1rem;
-  background:none; border:none; color:var(--grey-text);
-  font-size:1.2rem; cursor:pointer; line-height:1;
-  font-family:var(--font-mono);
-}
-.bm-close:hover { color:var(--white); }
-.bm-label { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:3px; text-transform:uppercase; color:var(--red); margin-bottom:0.5rem; }
-.bm-title { font-family:var(--font-display); font-size:1.4rem; margin-bottom:0.3rem; }
-.bm-desc  { font-family:var(--font-mono); font-size:0.68rem; color:var(--grey-text); margin-bottom:1.5rem; line-height:1.5; }
+/* SECTIONS */
+.section { padding: 6rem 2rem; max-width: 900px; margin: 0 auto; }
+.section-label { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 4px; text-transform: uppercase; color: var(--red); margin-bottom: 1rem; }
+.section h2 { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1; margin-bottom: 2rem; }
+.section p { color: var(--grey-text); line-height: 1.8; font-weight: 300; margin-bottom: 1.5rem; }
+.section p strong { color: var(--white); font-weight:700; }
 
-.bm-qr-wrap {
-  background:var(--white); padding:1rem; display:flex;
-  align-items:center; justify-content:center; margin-bottom:1.5rem;
+/* HOW IT WORKS — 3 STEPS */
+.steps-row {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 1px;
+  background: var(--grey-mid); border: 1px solid var(--grey-mid);
+  margin-top: 2rem;
 }
-.bm-qr-wrap canvas { display:block; }
+.step-box { background: var(--black); padding: 2rem 1.5rem; }
+.step-box .s-num { font-family: var(--font-display); font-size: 3rem; color: var(--red); line-height:1; margin-bottom:0.8rem; }
+.step-box .s-title { font-family: var(--font-display); font-size: 1.1rem; margin-bottom:0.5rem; }
+.step-box .s-desc { font-size:0.85rem; color: var(--grey-text); font-weight:300; line-height:1.6; }
 
-.bm-qr-label {
-  font-family:var(--font-mono); font-size:0.6rem; letter-spacing:2px;
-  text-transform:uppercase; color:var(--grey-text); text-align:center;
-  margin-bottom:1.5rem;
-}
+/* BURN TIERS */
+.burn-tiers { padding: 6rem 2rem; background: var(--grey); border-top: 1px solid var(--grey-mid); border-bottom: 1px solid var(--grey-mid); }
+.burn-tiers-inner { max-width: 900px; margin: 0 auto; }
+.tier-grid { display: grid; gap: 1px; background: var(--grey-mid); margin-top: 2rem; border: 1px solid var(--grey-mid); }
+.tier-row { display: grid; grid-template-columns: 1fr auto auto; background: var(--black); align-items: center; }
+.tier-row.header { background: var(--grey-mid); }
+.tier-row .cell { padding: 1rem 1.5rem; font-family: var(--font-mono); font-size: 0.8rem; }
+.tier-row .cell.event { color: var(--white); }
+.tier-row .cell.amount { color: var(--red-bright); text-align:right; font-weight:700; }
+.tier-row .cell.severity { text-align:center; }
+.tier-row.header .cell { font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--grey-text); }
+.sev-dots { display:flex; gap:3px; justify-content:center; }
+.sev-dot { width:8px; height:8px; border-radius:50%; background: var(--grey-mid); }
+.sev-dot.on { background: var(--red-bright); }
 
-.bm-options { display:grid; gap:0.6rem; }
-.bm-opt-btn {
-  display:block; width:100%; padding:0.75rem 1rem;
-  font-family:var(--font-mono); font-size:0.7rem; letter-spacing:1px;
-  text-transform:uppercase; text-align:center;
-  border:1px solid var(--grey-mid); background:var(--black);
-  color:var(--white); cursor:pointer; transition:all 0.2s; text-decoration:none;
-}
-.bm-opt-btn.primary { background:var(--red); border-color:var(--red); }
-.bm-opt-btn.primary:hover { background:var(--red-bright); border-color:var(--red-bright); }
-.bm-opt-btn:hover { border-color:var(--white); }
-.bm-opt-btn small { display:block; font-size:0.55rem; color:var(--grey-text); margin-top:0.2rem; letter-spacing:0; text-transform:none; }
-.bm-opt-btn.primary small { color:rgba(255,255,255,0.6); }
+/* COMMUNITY BURN SECTION */
+.community-section { padding: 6rem 2rem; max-width: 900px; margin: 0 auto; }
+.burn-model-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 1px; background: var(--grey-mid); border: 1px solid var(--grey-mid); margin-top: 2rem; }
+.burn-model-card { background: var(--black); padding: 2rem 1.5rem; }
+.burn-model-card .bm-icon { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 0.8rem; }
+.burn-model-card .bm-title { font-family: var(--font-display); font-size: 1.2rem; margin-bottom: 0.6rem; }
+.burn-model-card .bm-desc { font-size: 0.85rem; color: var(--grey-text); font-weight: 300; line-height: 1.6; }
 
-.bm-desktop-hint {
-  margin-top: 1rem;
-  font-family: var(--font-mono); font-size: 0.65rem; color: var(--grey-text);
-  line-height: 1.6; border-top: 1px solid var(--grey-mid); padding-top: 0.8rem;
+/* EXAMPLE BOX */
+.example-box {
+  background: var(--grey); border: 1px solid var(--grey-mid);
+  border-left: 3px solid var(--red); padding: 2rem; margin-top: 2rem;
 }
-.bm-desktop-hint strong { color: var(--white); }
+.example-box .ex-label { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase; color: var(--red); margin-bottom: 1rem; }
+.example-box .ex-event { font-family: var(--font-display); font-size: 1.3rem; margin-bottom: 1rem; }
+.progress-wrap { margin-top: 1rem; }
+.progress-label { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.65rem; color: var(--grey-text); margin-bottom: 0.4rem; }
+.progress-bar { height: 6px; background: var(--grey-mid); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--red-bright); border-radius: 3px; transition: width 1s ease; }
+.progress-contributors { font-family: var(--font-mono); font-size: 0.65rem; color: var(--grey-text); margin-top: 0.5rem; }
 
-/* AMOUNT SELECTOR */
-.bm-amount-row { margin-bottom: 1.2rem; }
-.bm-amount-label {
-  font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 2px;
-  text-transform: uppercase; color: var(--grey-text); margin-bottom: 0.5rem;
+/* TOKENOMICS */
+.tokenomics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1px; background: var(--grey-mid); border: 1px solid var(--grey-mid); margin-top: 2rem; }
+.tok-cell { background: var(--black); padding: 2rem; }
+.tok-cell .val { font-family: var(--font-mono); font-size: 1.1rem; color: var(--white); font-weight: 700; }
+.tok-cell .key { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--grey-text); margin-top: 0.3rem; }
+
+/* CTA */
+.cta { padding: 8rem 2rem; text-align: center; position: relative; }
+.cta::before { content:''; position:absolute; inset:0; background: radial-gradient(ellipse 50% 60% at 50% 50%, var(--red-glow), transparent); pointer-events: none; }
+.cta h2 { font-family: var(--font-display); font-size: clamp(2.5rem, 8vw, 6rem); line-height: 0.9; position: relative; }
+.cta p { margin-top: 1.5rem; color: var(--grey-text); font-weight: 300; position: relative; }
+.cta-buttons { display: flex; gap: 1rem; justify-content: center; margin-top: 2.5rem; position: relative; flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 1rem 2rem; font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; text-decoration: none; border: 1px solid var(--grey-mid); background: var(--grey); color: var(--white); transition: all 0.3s; cursor: pointer; }
+.btn:hover { background: var(--grey-mid); border-color: var(--grey-text); }
+.btn.primary { background: var(--red); border-color: var(--red); }
+.btn.primary:hover { background: var(--red-bright); }
+
+footer { padding: 2rem; text-align: center; border-top: 1px solid var(--grey-mid); }
+footer p { font-family: var(--font-mono); font-size: 0.6rem; color: var(--grey-text); letter-spacing: 1px; line-height: 1.8; }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+@keyframes pulse { 0%,100% { opacity:0.3; } 50% { opacity:1; } }
+@keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+.reveal { opacity:0; transform: translateY(30px); transition: opacity 0.8s, transform 0.8s; }
+.reveal.visible { opacity:1; transform: translateY(0); }
+
+@media (max-width: 700px) {
+  nav { padding: 0.8rem 1rem; } nav .links { gap: 1rem; }
+  .stats-bar { flex-direction: column; } .stat-cell { padding: 1rem 1.5rem; }
+  .steps-row { grid-template-columns: 1fr; }
+  .tier-row { grid-template-columns: 1fr auto; } .tier-row .cell.severity { display:none; }
 }
-.bm-amount-pills { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
-.bm-pill {
-  font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 1px;
-  padding: 0.35rem 0.75rem; border: 1px solid var(--grey-mid);
-  background: var(--black); color: var(--grey-text); cursor: pointer; transition: all 0.15s;
-}
-.bm-pill:hover { border-color: var(--red); color: var(--red-bright); }
-.bm-pill.active { border-color: var(--red-bright); background: rgba(231,76,60,0.15); color: var(--red-bright); }
-.bm-custom-row { display: flex; align-items: center; gap: 0.5rem; }
-.bm-custom-input {
-  flex: 1; font-family: var(--font-mono); font-size: 0.75rem;
-  background: var(--black); border: 1px solid var(--grey-mid); color: var(--white);
-  padding: 0.4rem 0.7rem; outline: none; transition: border-color 0.2s;
-}
-.bm-custom-input:focus { border-color: var(--red-bright); }
-.bm-custom-input::placeholder { color: var(--grey-text); }
-.bm-custom-unit { font-family: var(--font-mono); font-size: 0.65rem; color: var(--grey-text); white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -330,636 +202,339 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
 <nav>
   <a href="index.html" class="logo">$WRONG</a>
   <div class="links">
-    <a href="index.html">Home</a>
-    <a href="ledger.html" class="active">Burn Ledger</a>
+    <a href="index.html" class="active">Home</a>
+    <a href="ledger.html">Burn Ledger</a>
     <a href="burn.html">How To Burn</a>
     <a href="about.html">About</a>
   </div>
 </nav>
 
-<div class="page-header">
-  <div class="section-label">// Public Burn Record — Live On-Chain</div>
-  <h1>Burn Ledger</h1>
-  <p>Every verified war event, every burn target, every wallet that burned — read directly from Solana in real time. No middleman. No trust required.</p>
-</div>
+<section class="hero">
+  <div class="hero-label">Community-powered deflationary protest token — Solana</div>
+  <h1><span class="dollar">$</span>WRONG</h1>
+  <div class="hero-sub">The War Is Wrong</div>
+  <p class="hero-desc">Every act of war creates a burn target. The community fills it. Every token burned is a permanent on-chain record of what happened.</p>
 
-<!-- CHAIN STATUS -->
-<div class="chain-outer">
-  <div class="chain-bar">
-    <div class="chain-left">
-      <div class="chain-dot loading" id="chainDot"></div>
-      <span class="chain-text" id="chainText"><strong>CONNECTING</strong> — Reading from Solana...</span>
+  <div class="stats-bar">
+    <div class="stat-cell">
+      <div class="num" id="supply">835,500,000</div>
+      <div class="label">Circulating Supply</div>
     </div>
-    <div class="chain-right">
-      <span class="chain-stat">Txns scanned: <b id="txScanned">—</b></span>
-      <span class="chain-stat">Updated: <b id="lastUpdated">—</b></span>
-      <button class="refresh-btn" id="refreshBtn" onclick="loadChainData()" disabled>↺ Refresh</button>
+    <div class="stat-cell">
+      <div class="num" id="burned">164,500,000</div>
+      <div class="label">Total Burned</div>
     </div>
-  </div>
-</div>
-
-<!-- SUMMARY -->
-<div class="summary-outer">
-  <div class="summary-strip">
-    <div class="summary-cell"><div class="num" id="statBurned">—</div><div class="label">Total Burned</div></div>
-    <div class="summary-cell"><div class="num" id="statEvents">48</div><div class="label">Events</div></div>
-    <div class="summary-cell"><div class="num" id="statSupply">—</div><div class="label">Remaining Supply</div></div>
-    <div class="summary-cell"><div class="num" id="statPct">—</div><div class="label">% Burned</div></div>
-  </div>
-</div>
-
-<!-- NOTICE -->
-<div class="notice-outer">
-  <div class="notice-box">
-    <div class="n-label">Notice</div>
-    <p>
-      <strong>Retroactive Burns (Mar 24 – Apr 6, 2026):</strong> These events pre-date the $WRONG launch and form the baseline ledger.
-      Burn toward any of them now — click <strong>"🔥 Burn for W-E___"</strong> on any event, scan the QR with Phantom mobile or copy the address, and send $WRONG to it.
-      Your wallet appears here automatically within ~60 seconds. Sources: DoD, UN OCHA, UN OHCHR, IAEA.
-    </p>
-  </div>
-</div>
-
-<!-- CTA -->
-<div class="cta-outer">
-  <div class="cta-bar">
-    <p><strong>How to burn:</strong> Click "🔥 Burn for W-E___" on any event → scan QR with Phantom mobile, or copy the address and send $WRONG to it from any wallet. No memo needed.</p>
-    <a href="burn.html" class="btn-cta">🔥 Step-by-step guide</a>
-  </div>
-</div>
-
-<!-- MEMO WARNING -->
-<div class="ledger-memo-warning">
-  <div class="lmw-box">
-    <span class="lmw-icon">🔥</span>
-    <span class="lmw-text">
-      Each event has its own <strong>unique burn address</strong>. Click "🔥 Burn for W-E___" on any event — scan the QR with Phantom mobile or copy the address. Send any amount of $WRONG. No memo needed.
-    </span>
-    <a href="burn.html" class="lmw-link">How To Burn</a>
-  </div>
-</div>
-
-<!-- FILTERS -->
-<div class="filters-outer">
-  <div class="filters">
-    <button class="filter-btn active" data-filter="all">All Events</button>
-    <button class="filter-btn" data-filter="airstrike">Airstrikes</button>
-    <button class="filter-btn" data-filter="infrastructure">Infrastructure</button>
-    <button class="filter-btn" data-filter="soldier">Soldiers</button>
-    <button class="filter-btn" data-filter="civilian">Civilians</button>
-    <button class="filter-btn" data-filter="protected">Protected Sites</button>
-  </div>
-</div>
-
-<!-- EVENTS -->
-<div class="events-outer">
-  <div class="events-grid" id="eventsGrid">
-    <div class="loading-placeholder">
-      <div class="spinner"></div>
-      <p>Reading from Solana...</p>
+    <div class="stat-cell">
+      <div class="num" id="events">49</div>
+      <div class="label">Events Recorded</div>
+    </div>
+    <div class="stat-cell">
+      <div class="num" id="pct-burned">—</div>
+      <div class="label">% Burned</div>
     </div>
   </div>
+
+  <div class="scroll-hint"><span></span></div>
+</section>
+
+<div class="ticker-strip">
+  <div class="ticker-inner">
+    <span>Every bomb is wrong</span>
+    <span>Every bridge is wrong</span>
+    <span>Every civilian is wrong</span>
+    <span>We can't stop the war but we can count it</span>
+    <span>Burn together. Record forever.</span>
+    <span>Every bomb is wrong</span>
+    <span>Every bridge is wrong</span>
+    <span>Every civilian is wrong</span>
+    <span>We can't stop the war but we can count it</span>
+    <span>Burn together. Record forever.</span>
+  </div>
 </div>
+
+<!-- HOW IT WORKS -->
+<section class="section reveal">
+  <div class="section-label">// 001 — The Concept</div>
+  <h2>A Protest In Code</h2>
+  <p>$WRONG tracks the US–Iran military conflict in real time. Verified war events create <strong>community burn targets</strong> — anyone holding $WRONG can burn toward that target, removing tokens from circulation <strong>permanently, on-chain, forever.</strong></p>
+  <p>This isn't one person's project. It's thousands of people choosing to make their protest permanent. Every burn is a statement. Every tx hash is evidence.</p>
+
+  <div class="steps-row">
+    <div class="step-box">
+      <div class="s-num">01</div>
+      <div class="s-title">Event Verified</div>
+      <div class="s-desc">Community spots a confirmed war event from official sources (DoD, UN OCHA, IAEA). Posted to Discord, voted in, admin confirmed.</div>
+    </div>
+    <div class="step-box">
+      <div class="s-num">02</div>
+      <div class="s-title">Target Set</div>
+      <div class="s-desc">A burn target is posted publicly. 1 civilian killed = 1,000,000 $WRONG target. The community burns toward it — every contribution counts.</div>
+    </div>
+    <div class="step-box">
+      <div class="s-num">03</div>
+      <div class="s-title">Burn & Record</div>
+      <div class="s-desc">You burn what you can. Send $WRONG to the event's unique burn address. The ledger tracks every contribution automatically — on-chain, in real time.</div>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE EXAMPLE -->
+<section class="community-section reveal">
+  <div class="section-label">// 002 — Community Burns</div>
+  <h2>Burn Together</h2>
+  <p style="color:var(--grey-text);font-weight:300;line-height:1.8;margin-bottom:0;">No whale required. No single person responsible. You burn what you can — 10,000 or 10,000,000. Every contribution is recorded on-chain. When enough people burn, the target is filled and the event is permanently marked.</p>
+
+  <div class="example-box">
+    <div class="ex-label">// Live Example</div>
+    <div class="ex-event">Apr 6 — 23 civilians killed in Baharestan County</div>
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>Community Burned</span>
+        <span id="prog-num">Loading… / 23,000,000</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+      <div class="progress-contributors">↑ Loading live data from Solana…</div>
+    </div>
+  </div>
+
+  <div class="burn-model-grid" style="margin-top:2rem;">
+    <div class="burn-model-card">
+      <div class="bm-icon">✦ For Everyone</div>
+      <div class="bm-title">Burn What You Can</div>
+      <div class="bm-desc">100 tokens or 10 million — every burn is recorded, every tx hash is permanent. No minimum. No pressure.</div>
+    </div>
+    <div class="burn-model-card">
+      <div class="bm-icon">✦ For Whales</div>
+      <div class="bm-title">Make Headlines</div>
+      <div class="bm-desc">A single massive burn gets announced in Discord, immortalized in the ledger, and drives buying pressure from people who want to join.</div>
+    </div>
+    <div class="burn-model-card">
+      <div class="bm-icon">✦ For The Record</div>
+      <div class="bm-title">Permanent Protest</div>
+      <div class="bm-desc">When the war ends, the burn ledger remains. An immutable on-chain count of what happened — funded by thousands of people who said: this is wrong.</div>
+    </div>
+  </div>
+</section>
+
+<!-- BURN TIERS -->
+<section class="burn-tiers reveal">
+  <div class="burn-tiers-inner">
+    <div class="section-label">// 003 — Burn Targets</div>
+    <h2>Severity Scale</h2>
+    <p style="color:var(--grey-text);font-weight:300;margin-bottom:0;">Each verified event type sets a fixed burn target. The community fills it together. The worse the war, the larger the target — and the harder the community burns.</p>
+
+    <div class="tier-grid">
+      <div class="tier-row header">
+        <div class="cell">Event</div>
+        <div class="cell">Burn Target</div>
+        <div class="cell">Severity</div>
+      </div>
+      <div class="tier-row">
+        <div class="cell event">Airstrike / bomb dropped</div>
+        <div class="cell amount">10,000</div>
+        <div class="cell severity"><div class="sev-dots"><span class="sev-dot on"></span><span class="sev-dot"></span><span class="sev-dot"></span><span class="sev-dot"></span><span class="sev-dot"></span></div></div>
+      </div>
+      <div class="tier-row">
+        <div class="cell event">Bridge / infrastructure destroyed</div>
+        <div class="cell amount">50,000</div>
+        <div class="cell severity"><div class="sev-dots"><span class="sev-dot on"></span><span class="sev-dot on"></span><span class="sev-dot"></span><span class="sev-dot"></span><span class="sev-dot"></span></div></div>
+      </div>
+      <div class="tier-row">
+        <div class="cell event">US or Iranian soldier killed</div>
+        <div class="cell amount">100,000</div>
+        <div class="cell severity"><div class="sev-dots"><span class="sev-dot on"></span><span class="sev-dot on"></span><span class="sev-dot on"></span><span class="sev-dot"></span><span class="sev-dot"></span></div></div>
+      </div>
+      <div class="tier-row">
+        <div class="cell event">Mosque / hospital / school hit</div>
+        <div class="cell amount">500,000</div>
+        <div class="cell severity"><div class="sev-dots"><span class="sev-dot on"></span><span class="sev-dot on"></span><span class="sev-dot on"></span><span class="sev-dot on"></span><span class="sev-dot"></span></div></div>
+      </div>
+      <div class="tier-row">
+        <div class="cell event">Civilian killed</div>
+        <div class="cell amount">1,000,000</div>
+        <div class="cell severity"><div class="sev-dots"><span class="sev-dot on"></span><span class="sev-dot on"></span><span class="sev-dot on"></span><span class="sev-dot on"></span><span class="sev-dot on"></span></div></div>
+      </div>
+      <div class="tier-row">
+        <div class="cell event">Nuclear / chemical weapon used</div>
+        <div class="cell amount">100,000,000</div>
+        <div class="cell severity"><div class="sev-dots"><span class="sev-dot on"></span><span class="sev-dot on"></span><span class="sev-dot on"></span><span class="sev-dot on"></span><span class="sev-dot on"></span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOKENOMICS -->
+<section class="section reveal">
+  <div class="section-label">// 004 — Tokenomics</div>
+  <h2>Fair Launch. Community Burns.</h2>
+  <div class="tokenomics-grid">
+    <div class="tok-cell"><div class="val">1,000,000,000</div><div class="key">Total Supply</div></div>
+    <div class="tok-cell"><div class="val">Solana</div><div class="key">Chain</div></div>
+    <div class="tok-cell"><div class="val">Pump.fun</div><div class="key">Platform</div></div>
+    <div class="tok-cell"><div class="val">0%</div><div class="key">Team Allocation</div></div>
+    <div class="tok-cell"><div class="val">Community</div><div class="key">Burns From</div></div>
+    <div class="tok-cell"><div class="val">Public</div><div class="key">Burn Wallet</div></div>
+  </div>
+</section>
+
+<section class="cta">
+  <h2>This Is<br><span style="color:var(--red-bright)">Wrong.</span></h2>
+  <p>We can't stop the war. But we can count it. And every count burns — together.</p>
+  <div class="cta-buttons">
+    <a href="#" class="btn primary">Join Discord</a>
+    <a href="burn.html" class="btn">How To Burn</a>
+    <a href="ledger.html" class="btn">Burn Ledger</a>
+  </div>
+</section>
 
 <footer>
-  <p>$WRONG is a meme coin and a protest. Not financial advice.<br>
-  All burn events sourced from DoD, UN OCHA, UN OHCHR, IAEA.<br>
-  Burns read live from Solana — every wallet, every amount, permanent on-chain.</p>
+  <p>$WRONG is a meme coin and a protest. Not financial advice. Not political affiliation.<br>All burn events sourced from official government and UN sources only. Burns are community-initiated and community-executed.</p>
 </footer>
 
-<!-- BURN MODAL -->
-<div class="burn-modal-overlay" id="burnModal" onclick="closeBurnModal(event)">
-  <div class="burn-modal">
-    <button class="bm-close" onclick="closeBurnModal()">✕</button>
-    <div class="bm-label" id="bm-ref">W-E000</div>
-    <div class="bm-title">🔥 Burn $WRONG</div>
-    <div class="bm-desc" id="bm-desc">Loading event...</div>
-
-    <!-- AMOUNT SELECTOR -->
-    <div class="bm-amount-row">
-      <div class="bm-amount-label">Amount to burn</div>
-      <div class="bm-amount-pills" id="bm-amount-pills">
-        <button class="bm-pill active" data-amt="100"     onclick="setAmount(100)">100</button>
-        <button class="bm-pill"        data-amt="1000"    onclick="setAmount(1000)">1K</button>
-        <button class="bm-pill"        data-amt="10000"   onclick="setAmount(10000)">10K</button>
-        <button class="bm-pill"        data-amt="100000"  onclick="setAmount(100000)">100K</button>
-        <button class="bm-pill"        data-amt="1000000" onclick="setAmount(1000000)">1M</button>
-      </div>
-      <div class="bm-custom-row">
-        <input class="bm-custom-input" id="bm-custom-amt" type="number" min="1" placeholder="Custom amount…" oninput="setCustomAmount(this.value)">
-        <span class="bm-custom-unit">$WRONG</span>
-      </div>
-    </div>
-
-    <div class="bm-qr-wrap">
-      <div id="bm-qr-div"></div>
-    </div>
-    <div class="bm-qr-label">📱 Scan with any Solana wallet — opens send screen for this event's address</div>
-
-    <div class="bm-options">
-      <button class="bm-opt-btn primary" id="bm-copy-url" onclick="copyBurnUrl()">
-        📋 Copy Burn Address
-        <small>Then send $WRONG to it in any wallet</small>
-      </button>
-    </div>
-
-    <div class="bm-desktop-hint">
-      💻 <strong>Desktop:</strong> Copy address above → open Phantom → Send → paste address → enter amount → confirm<br>
-      📱 <strong>Mobile:</strong> Scan QR with Phantom → amount auto-fills → confirm
-    </div>
-  </div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
 <script>
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+function animateCounter(el, target, duration, suffix) {
+  let start = 0;
+  const step = (ts) => {
+    if(!start) start = ts;
+    const p = Math.min((ts - start) / duration, 1);
+    el.textContent = Math.floor(p * target).toLocaleString() + (suffix || '');
+    if(p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
 // ================================================================
-// CONFIG
+// LIVE ON-CHAIN DATA — sum balances across all per-event burn addresses
 // ================================================================
 const CONFIG = {
-  BURN_WALLET:    'Gvtbu5MoXa8HyBrDofmA3GA2FE2SJaX8PDV3fXcgkkkr',
-  TOKEN_MINT:     '812pAsnde96fKVXKhdRQQPzmPwe3J9Dg7Uusnv9Gpump',
-  TOKEN_DECIMALS: 6,
-  RPC_URL:        'https://rpc.helius.xyz/?api-key=2b56defc-7d71-41ee-8e4e-cb35a216951e',
-  TX_LIMIT:       100,
+  TOKEN_MINT: '812pAsnde96fKVXKhdRQQPzmPwe3J9Dg7Uusnv9Gpump',
+  RPC_URL:    'https://rpc.helius.xyz/?api-key=2b56defc-7d71-41ee-8e4e-cb35a216951e',
 };
 
-// ================================================================
-// EVENT LIST
-// Each event has a unique REFERENCE public key used by Solana Pay.
-// When a user clicks "Burn", Phantom attaches that reference to the
-// transaction automatically — no typing, no memo needed.
-// Reference keys are stable random Solana public keys, one per event.
-// ================================================================
-const EVENTS = [
-  { ref:'W-E002', burnAddr:'8BiudQYzdLrQm4fNiGW1GhLPPo9KkPqdB2g1Yr7SETey', date:'2026-04-06', type:'civilian',       desc:'23 killed including 6 children in Baharestan County residential strikes',               count:'23 confirmed',          target:23000000, source:'UN OHCHR' },
-  { ref:'W-E003', burnAddr:'5oAwe37LXs1szu22AN6CttSMn5T9LH3H5Z5zaCE6H8ed', date:'2026-04-06', type:'civilian',       desc:'5 killed in residential building strike in Qom',                                        count:'5 confirmed',           target:5000000,  source:'UN OCHA'  },
-  { ref:'W-E004', burnAddr:'DuqFo6r2Xa4qcJSeFxmC8b17eb7fydCcqm9125AftEP3', date:'2026-04-06', type:'civilian',       desc:'6 additional killed in residential strikes across Tehran province',                      count:'6 confirmed',           target:6000000,  source:'UN OHCHR' },
-  { ref:'W-E005', burnAddr:'96JP7rQbrNwgKPD6C6TeWTuoLGHZqpx2LCK9Ybz3fm7B', date:'2026-04-06', type:'protected',      desc:'Sharif University of Technology struck — mosque and labs damaged',                       count:'1 university/mosque',   target:500000,   source:'HRANA'    },
-  { ref:'W-E006', burnAddr:'6yAdxqMxzhVDiwKaVMVi9aiBDEb142DuvmBqG7hiUg7b', date:'2026-04-06', type:'infrastructure', desc:'Fuel station near Sharif University damaged — petrol shortage worsens',                 count:'1 fuel station',        target:50000,    source:'DoD'      },
-  { ref:'W-E007', burnAddr:'AdFU7LFdnF8YixG55YrM2Y4DFeXhCMJzQjPVZunwYL9N', date:'2026-04-06', type:'airstrike',      desc:'Massive strikes across Iran — Trump deadline approaching',                              count:'~40 strikes',           target:400000,   source:'DoD'      },
-  { ref:'W-E008', burnAddr:'Annv2bwfahAt1HE3UgMvyUx1k6NKakWocZ1TWK9FRtdy', date:'2026-04-05', type:'civilian',       desc:'5 killed in southwestern Iran during F-15E rescue operation',                           count:'5 confirmed',           target:5000000,  source:'UN OCHA'  },
-  { ref:'W-E009', burnAddr:'5VQgimhfHMk1TXrc32wtKJ92mMbJ8Bbjfswb8Xqo3Shk', date:'2026-04-05', type:'civilian',       desc:'3 killed in Ardabil province strikes near Azerbaijan border',                           count:'3 confirmed',           target:3000000,  source:'UN OHCHR' },
-  { ref:'W-E010', burnAddr:'5DUbKBBfWWcP2UTK58LAs8dtsrHxK6TvYJpPGw5c46eu', date:'2026-04-05', type:'airstrike',      desc:'Rescue operation for downed F-15E crew — heavy firefight in Isfahan',                   count:'~25 strikes',           target:250000,   source:'DoD'      },
-  { ref:'W-E011', burnAddr:'9qWYk15hhuHzvegDduedFsoHd9v7jBjPAqCSBcmLkVkP', date:'2026-04-05', type:'airstrike',      desc:'IRGC claims 2 C-130s and 2 Black Hawks destroyed in Isfahan',                          count:'~20 strikes',           target:200000,   source:'DoD'      },
-  { ref:'W-E012', burnAddr:'HF7BuRofCWC3pY5Ln1L1H963ZFBLDZGRF5FK6vh89PxB', date:'2026-04-04', type:'civilian',       desc:'Mahshahr Petrochemical Zone struck — 5 killed, 170 injured',                           count:'5 confirmed',           target:5000000,  source:'UN OCHA'  },
-  { ref:'W-E013', burnAddr:'7H36dVSaNTRC9EVNDb9ct8gevKbDZUdZf4fMRYedKHje', date:'2026-04-04', type:'protected',      desc:'Shahid Beheshti University struck — 30+ universities hit cumulatively',                 count:'1 university',          target:500000,   source:'HRANA'    },
-  { ref:'W-E014', burnAddr:'CtttXUdRyCAgmmwWBekPCDEkfquUdtifsjopoH4iSVFH', date:'2026-04-04', type:'protected',      desc:'Grand Hosseiniyeh mosque in Zanjan hit by airstrikes',                                  count:'1 mosque',              target:500000,   source:'UN OHCHR' },
-  { ref:'W-E015', burnAddr:'3Ghg9SvKd9toLZYy3pAFjCYRQfY3ZTqbXCnbqcpRmZxH', date:'2026-04-04', type:'infrastructure', desc:'Bushehr Nuclear Power Plant auxiliary building struck (4th attack on area)',            count:'1 nuclear site',        target:50000,    source:'IAEA'     },
-  { ref:'W-E016', burnAddr:'AsdWLpMaNwxiQjN31oiQkwhkZ81RdcqgERTXDKHkBCxB', date:'2026-04-04', type:'airstrike',      desc:'Strikes across Iran — Karaj, Tabriz, Abadan',                                          count:'~35 strikes',           target:350000,   source:'DoD'      },
-  { ref:'W-E017', burnAddr:'EiSoqRWELHNGUXJD7gaR9FeeYBjrbEGDjLNLtPFr8uXa', date:'2026-04-03', type:'civilian',       desc:'13 civilians killed in Tehran-Karaj bridge collapse from US airstrike',                 count:'13 confirmed',          target:13000000, source:'UN OHCHR' },
-  { ref:'W-E018', burnAddr:'HFUwr4aRamVpGv3dDKYsibEW65KGsfeL87f1yzYyySHc', date:'2026-04-03', type:'infrastructure', desc:'Largest bridge in Iran (B1 Tehran-Karaj) destroyed by US airstrike',                   count:'1 major bridge',        target:50000,    source:'DoD'      },
-  { ref:'W-E019', burnAddr:'5bErmvzj3GKgrruStRWhG5cSoaVB6CNooeqo78JZEE7W', date:'2026-04-03', type:'airstrike',      desc:'US F-15E shot down over Iran — 1 crew rescued, 1 missing',                            count:'~30 strikes',           target:300000,   source:'DoD'      },
-  { ref:'W-E020', burnAddr:'Dd36n79xP8KvQj986z7Tp1WyQ5Z4YyLbb9WD8fqCRFQb', date:'2026-04-02', type:'civilian',       desc:'Civilian deaths from residential strikes',                                              count:'5 confirmed',           target:5000000,  source:'UN OCHA'  },
-  { ref:'W-E021', burnAddr:'AWgXoujuAXDp2N2sBjGwypk1jySA6R4yPqM7VtDBuYUP', date:'2026-04-02', type:'protected',      desc:'Russian Orthodox Cathedral damaged near embassy in Tehran',                             count:'1 cathedral',           target:500000,   source:'UN OHCHR' },
-  { ref:'W-E022', burnAddr:'5n2jLpNkmtTErH6CND9bVDTbWVHzH8KdYZUunVR5MWHC', date:'2026-04-02', type:'protected',      desc:'Elderly care home significantly damaged in strike',                                     count:'1 care home',           target:500000,   source:'UN OCHA'  },
-  { ref:'W-E023', burnAddr:'GkgNGVfd2K4hT9DGk8LnbSVSnjHo9F7Yc7x7mJ3fgYy5', date:'2026-04-02', type:'airstrike',      desc:'Strikes continue across Iran — residential areas hit',                                 count:'~25 strikes',           target:250000,   source:'DoD'      },
-  { ref:'W-E024', burnAddr:'9uJ6YPW9RWJKEPJiBxETnR5ohZwH7ytfKf5Yy5nNzQLz', date:'2026-04-01', type:'civilian',       desc:'Death toll passes 2,000 — civilian casualties ongoing',                                count:'10 est. this day',      target:10000000, source:'UN OCHA'  },
-  { ref:'W-E025', burnAddr:'7rFH3ui3tfVGSfRr4ViRnbcnpjsPvu4Hm5hmtCQ1fr45', date:'2026-04-01', type:'infrastructure', desc:'Three bridges destroyed in Kermanshah province',                                        count:'3 bridges',             target:150000,   source:'DoD'      },
-  { ref:'W-E026', burnAddr:'4eqqTSYQgj3kZdzTVLEsqZLmWYpQ4UA3XFg1SvUDdD4m', date:'2026-04-01', type:'infrastructure', desc:'Tofigh Daru pharmaceutical factory R&D department destroyed',                          count:'1 factory',             target:50000,    source:'DoD'      },
-  { ref:'W-E027', burnAddr:'7g5mR1dn6XwWdpz8RePdpRXrkGhncNvyM359GSrVXU9C', date:'2026-04-01', type:'infrastructure', desc:'Shahid Haqqani passenger pier in Bandar Abbas struck',                                 count:'1 pier',                target:50000,    source:'DoD'      },
-  { ref:'W-E028', burnAddr:'C1akt7LPD5Z24ps1QjsrPojC9rohAs7CAD8fcS6bmA6A', date:'2026-04-01', type:'airstrike',      desc:'Steel plants, pharmaceutical facilities, port infrastructure struck',                   count:'~35 strikes',           target:350000,   source:'DoD'      },
-  { ref:'W-E029', burnAddr:'VfLR7ay8hntybyFe3KiXw4neTb6jUS4e37VNXkTtPhr', date:'2026-03-31', type:'civilian',       desc:'Civilian casualties in residential areas across Iran',                                  count:'6 est.',                target:6000000,  source:'UN OCHA'  },
-  { ref:'W-E030', burnAddr:'3RpeqpZTarr65kpnsrq9yh86mVY1MJUEXFe4zznQ5iN9', date:'2026-03-31', type:'airstrike',      desc:'Continued aerial campaign — strikes in Kermanshah, Shiraz, Bandar Abbas',              count:'~30 strikes',           target:300000,   source:'DoD'      },
-  { ref:'W-E031', burnAddr:'FZ9ExEoWLhXkCEL7o8DMfjqkbwnDBxWCTrHCSz3GGtRu', date:'2026-03-30', type:'infrastructure', desc:'Power infrastructure targeted in multiple provinces',                                   count:'2 power sites',         target:100000,   source:'DoD'      },
-  { ref:'W-E032', burnAddr:'EdKhynUqYKSf3yz6WZ4vnrx6FB51QWwnTBph82hKd915', date:'2026-03-30', type:'airstrike',      desc:'Strikes continue — Indian worker killed in Iranian attack on Saudi desalination plant', count:'~25 strikes on Iran',   target:250000,   source:'DoD'      },
-  { ref:'W-E033', burnAddr:'DgFuuPwxrQZqgy4SbUgaaV2v9ECEP4pVA7F8U18qAMcR', date:'2026-03-29', type:'civilian',       desc:'Civilian deaths in ongoing operations across southern Iran',                            count:'5 est.',                target:5000000,  source:'UN OCHA'  },
-  { ref:'W-E034', burnAddr:'CLMBEtrhqgwjfB2RR3kX1GbdTVeEwaCP4cnxoppngMKe', date:'2026-03-29', type:'airstrike',      desc:'Strikes on Minab area — funerals held for school bombing victims',                      count:'~20 strikes',           target:200000,   source:'DoD'      },
-  { ref:'W-E035', burnAddr:'FAQh2GgesqPKiWnYGvwguREvg6cFiBVQPF6M6RWMDNKQ', date:'2026-03-28', type:'airstrike',      desc:'Iranian ballistic missile & drone barrage on Prince Sultan Air Base, Saudi Arabia',     count:'~20 strikes on Iran',   target:200000,   source:'DoD'      },
-  { ref:'W-E036', burnAddr:'944VBs8soe64Zn1Z2pjiFJqoQuisehwdDPqhbYKsxo4K', date:'2026-03-28', type:'airstrike',      desc:'US service members wounded (15+) — strikes continued across Iran',                      count:'~15 strikes',           target:150000,   source:'DoD'      },
-  { ref:'W-E037', burnAddr:'7nKbQ266maVCXy3PpcWwAy8zn7gd5YHRFKYVtKigbj9X', date:'2026-03-27', type:'civilian',       desc:'~1,500 civilians killed total by this date — 8 estimated this day',                     count:'8 est.',                target:8000000,  source:'UN OHCHR' },
-  { ref:'W-E038', burnAddr:'2bnZHVomMYtjiLkWVYvY2GTRNi5UsfbL1k6L4rDhqXqP', date:'2026-03-27', type:'infrastructure', desc:'Khondab heavy water production plant struck — made inoperable (IAEA confirmed)',        count:'1 nuclear facility',    target:50000,    source:'IAEA'     },
-  { ref:'W-E039', burnAddr:'CX4cs6Ye8p6fiXLnx5HCrAfaKseTzn9TtWbFVdSLxLx3', date:'2026-03-27', type:'airstrike',      desc:'Strikes damage 120+ historical sites cumulatively reported',                            count:'~25 strikes',           target:250000,   source:'DoD'      },
-  { ref:'W-E040', burnAddr:'7jm3cn5bbZb8QyvZiQZmvatWXKFALStMJbHJwQD4cVUJ', date:'2026-03-26', type:'civilian',       desc:'Civilian casualties reported in western Iran border areas',                              count:'4 confirmed',           target:4000000,  source:'UN OCHA'  },
-  { ref:'W-E041', burnAddr:'7Ctm4Z48DpvTUJzRTzkAevuZbEgSPMWfBapPMLk2RQzJ', date:'2026-03-26', type:'airstrike',      desc:'Strikes on intelligence sites in Lorestan and Ilam provinces',                          count:'~15 strikes',           target:150000,   source:'DoD'      },
-  { ref:'W-E042', burnAddr:'EtXiSLszhe6iV5JUiajBuHrfCSvjEjxUD7gWqsNkgGT1', date:'2026-03-25', type:'infrastructure', desc:'Red Crescent reports 80,000+ civilian building units hit cumulatively',                 count:'2 sites destroyed',     target:100000,   source:'UN OCHA'  },
-  { ref:'W-E043', burnAddr:'GvyNxk3boGmvSmEh8Gc95sJxL2m223Cwtu8YHHQAvpqT', date:'2026-03-25', type:'airstrike',      desc:'Continued strikes on military and civilian infrastructure across Iran',                  count:'~30 strikes',           target:300000,   source:'DoD'      },
-  { ref:'W-E044', burnAddr:'BRaBUUgRud6A5KWwk6Gkp53Yef6HvDckW4fkUmt5wnv3', date:'2026-03-24', type:'civilian',       desc:'Six killed in strikes on homes in Tabriz',                                              count:'6 confirmed',           target:6000000,  source:'UN OHCHR' },
-  { ref:'W-E045', burnAddr:'Cf2ZoWdddzVsGQ5QQ2ooxLqFBki851CBjcX66eVFd98c', date:'2026-03-24', type:'civilian',       desc:'Residential building hit in Khorramabad — 1 child killed, several wounded',             count:'1 confirmed',           target:1000000,  source:'UN OCHA'  },
-  { ref:'W-E046', burnAddr:'3R5b89am1mB8JojzcNP6QReGmGQAgFzaeqkEH1cmec5G', date:'2026-03-24', type:'protected',      desc:'Hospital impacted in Ahvaz from nearby explosions',                                     count:'1 hospital',            target:500000,   source:'UN OCHA'  },
-  { ref:'W-E047', burnAddr:'f8pcU1Qgd2hPVMnkTykZtCmiJUtgmdrpHRcdNzPpJst', date:'2026-03-24', type:'airstrike',      desc:'US-Israeli airstrikes across Tehran, Isfahan, Karaj, Ahvaz — multiple waves',           count:'~40 strikes reported',  target:400000,   source:'DoD'      },
-  { ref:'W-E048', burnAddr:'ETsaT4WaD15wh9cwns7CrVgfDuqPQdvvAy27JTLFKTkS', date:'2026-02-28', type:'soldier',        desc:'US service members killed across all fronts — CENTCOM confirmed',                       count:'14 US soldiers',        target:1400000,  source:'DoD'      },
-  { ref:'W-E049', burnAddr:'ADp2FonCApqdJGhAD5BZBrZ3VVv46Ja9ZAoQDEjC5wDv', date:'2026-03-24', type:'soldier',        desc:'Iranian military personnel killed (IRGC, Army, Air Force) — 2 week window estimate',    count:'~500 est.',             target:50000000, source:'UN OHCHR' },
+const BURN_ADDRS = [
+  { ref:'W-E002', addr:'8BiudQYzdLrQm4fNiGW1GhLPPo9KkPqdB2g1Yr7SETey', target:23000000 },
+  { ref:'W-E003', addr:'5oAwe37LXs1szu22AN6CttSMn5T9LH3H5Z5zaCE6H8ed', target:5000000  },
+  { ref:'W-E004', addr:'DuqFo6r2Xa4qcJSeFxmC8b17eb7fydCcqm9125AftEP3', target:6000000  },
+  { ref:'W-E005', addr:'96JP7rQbrNwgKPD6C6TeWTuoLGHZqpx2LCK9Ybz3fm7B', target:500000   },
+  { ref:'W-E006', addr:'6yAdxqMxzhVDiwKaVMVi9aiBDEb142DuvmBqG7hiUg7b', target:50000    },
+  { ref:'W-E007', addr:'AdFU7LFdnF8YixG55YrM2Y4DFeXhCMJzQjPVZunwYL9N', target:400000   },
+  { ref:'W-E008', addr:'Annv2bwfahAt1HE3UgMvyUx1k6NKakWocZ1TWK9FRtdy', target:5000000  },
+  { ref:'W-E009', addr:'5VQgimhfHMk1TXrc32wtKJ92mMbJ8Bbjfswb8Xqo3Shk', target:3000000  },
+  { ref:'W-E010', addr:'5DUbKBBfWWcP2UTK58LAs8dtsrHxK6TvYJpPGw5c46eu', target:250000   },
+  { ref:'W-E011', addr:'9qWYk15hhuHzvegDduedFsoHd9v7jBjPAqCSBcmLkVkP', target:200000   },
+  { ref:'W-E012', addr:'HF7BuRofCWC3pY5Ln1L1H963ZFBLDZGRF5FK6vh89PxB', target:5000000  },
+  { ref:'W-E013', addr:'7H36dVSaNTRC9EVNDb9ct8gevKbDZUdZf4fMRYedKHje', target:500000   },
+  { ref:'W-E014', addr:'CtttXUdRyCAgmmwWBekPCDEkfquUdtifsjopoH4iSVFH', target:500000   },
+  { ref:'W-E015', addr:'3Ghg9SvKd9toLZYy3pAFjCYRQfY3ZTqbXCnbqcpRmZxH', target:50000    },
+  { ref:'W-E016', addr:'AsdWLpMaNwxiQjN31oiQkwhkZ81RdcqgERTXDKHkBCxB', target:350000   },
+  { ref:'W-E017', addr:'EiSoqRWELHNGUXJD7gaR9FeeYBjrbEGDjLNLtPFr8uXa', target:13000000 },
+  { ref:'W-E018', addr:'HFUwr4aRamVpGv3dDKYsibEW65KGsfeL87f1yzYyySHc', target:50000    },
+  { ref:'W-E019', addr:'5bErmvzj3GKgrruStRWhG5cSoaVB6CNooeqo78JZEE7W', target:300000   },
+  { ref:'W-E020', addr:'Dd36n79xP8KvQj986z7Tp1WyQ5Z4YyLbb9WD8fqCRFQb', target:5000000  },
+  { ref:'W-E021', addr:'AWgXoujuAXDp2N2sBjGwypk1jySA6R4yPqM7VtDBuYUP', target:500000   },
+  { ref:'W-E022', addr:'5n2jLpNkmtTErH6CND9bVDTbWVHzH8KdYZUunVR5MWHC', target:500000   },
+  { ref:'W-E023', addr:'GkgNGVfd2K4hT9DGk8LnbSVSnjHo9F7Yc7x7mJ3fgYy5', target:250000   },
+  { ref:'W-E024', addr:'9uJ6YPW9RWJKEPJiBxETnR5ohZwH7ytfKf5Yy5nNzQLz', target:10000000 },
+  { ref:'W-E025', addr:'7rFH3ui3tfVGSfRr4ViRnbcnpjsPvu4Hm5hmtCQ1fr45', target:150000   },
+  { ref:'W-E026', addr:'4eqqTSYQgj3kZdzTVLEsqZLmWYpQ4UA3XFg1SvUDdD4m', target:50000    },
+  { ref:'W-E027', addr:'7g5mR1dn6XwWdpz8RePdpRXrkGhncNvyM359GSrVXU9C', target:50000    },
+  { ref:'W-E028', addr:'C1akt7LPD5Z24ps1QjsrPojC9rohAs7CAD8fcS6bmA6A', target:350000   },
+  { ref:'W-E029', addr:'VfLR7ay8hntybyFe3KiXw4neTb6jUS4e37VNXkTtPhr',  target:6000000  },
+  { ref:'W-E030', addr:'3RpeqpZTarr65kpnsrq9yh86mVY1MJUEXFe4zznQ5iN9', target:300000   },
+  { ref:'W-E031', addr:'FZ9ExEoWLhXkCEL7o8DMfjqkbwnDBxWCTrHCSz3GGtRu', target:100000   },
+  { ref:'W-E032', addr:'EdKhynUqYKSf3yz6WZ4vnrx6FB51QWwnTBph82hKd915', target:250000   },
+  { ref:'W-E033', addr:'DgFuuPwxrQZqgy4SbUgaaV2v9ECEP4pVA7F8U18qAMcR', target:5000000  },
+  { ref:'W-E034', addr:'CLMBEtrhqgwjfB2RR3kX1GbdTVeEwaCP4cnxoppngMKe', target:200000   },
+  { ref:'W-E035', addr:'FAQh2GgesqPKiWnYGvwguREvg6cFiBVQPF6M6RWMDNKQ', target:200000   },
+  { ref:'W-E036', addr:'944VBs8soe64Zn1Z2pjiFJqoQuisehwdDPqhbYKsxo4K', target:150000   },
+  { ref:'W-E037', addr:'7nKbQ266maVCXy3PpcWwAy8zn7gd5YHRFKYVtKigbj9X', target:8000000  },
+  { ref:'W-E038', addr:'2bnZHVomMYtjiLkWVYvY2GTRNi5UsfbL1k6L4rDhqXqP', target:50000    },
+  { ref:'W-E039', addr:'CX4cs6Ye8p6fiXLnx5HCrAfaKseTzn9TtWbFVdSLxLx3', target:250000   },
+  { ref:'W-E040', addr:'7jm3cn5bbZb8QyvZiQZmvatWXKFALStMJbHJwQD4cVUJ', target:4000000  },
+  { ref:'W-E041', addr:'7Ctm4Z48DpvTUJzRTzkAevuZbEgSPMWfBapPMLk2RQzJ', target:150000   },
+  { ref:'W-E042', addr:'EtXiSLszhe6iV5JUiajBuHrfCSvjEjxUD7gWqsNkgGT1', target:100000   },
+  { ref:'W-E043', addr:'GvyNxk3boGmvSmEh8Gc95sJxL2m223Cwtu8YHHQAvpqT', target:300000   },
+  { ref:'W-E044', addr:'BRaBUUgRud6A5KWwk6Gkp53Yef6HvDckW4fkUmt5wnv3', target:6000000  },
+  { ref:'W-E045', addr:'Cf2ZoWdddzVsGQ5QQ2ooxLqFBki851CBjcX66eVFd98c', target:1000000  },
+  { ref:'W-E046', addr:'3R5b89am1mB8JojzcNP6QReGmGQAgFzaeqkEH1cmec5G', target:500000   },
+  { ref:'W-E047', addr:'f8pcU1Qgd2hPVMnkTykZtCmiJUtgmdrpHRcdNzPpJst',  target:400000   },
+  { ref:'W-E048', addr:'ETsaT4WaD15wh9cwns7CrVgfDuqPQdvvAy27JTLFKTkS', target:1400000  },
+  { ref:'W-E049', addr:'ADp2FonCApqdJGhAD5BZBrZ3VVv46Ja9ZAoQDEjC5wDv', target:50000000 },
 ];
 
-// ================================================================
-// STATE
-// ================================================================
-let chainBurns    = {};
-let currentFilter = 'all';
-let isLoading     = false;
+const TOTAL_SUPPLY = 1_000_000_000;
 
-// ================================================================
-// BURN MODAL — QR encodes just the plain Solana address.
-// User sends $WRONG to that address from ANY wallet. No protocol needed.
-// ================================================================
-function buildBurnQrData(ev) {
-  // Plain Solana address — works with every wallet's QR scanner
-  return ev.burnAddr;
-}
-
-function buildSolanaPayUrl(ev, amount) {
-  // Also build a Solana Pay URL for the copy button (some wallets support it)
-  const params = new URLSearchParams({
-    'spl-token': CONFIG.TOKEN_MINT,
-    label:       '$WRONG Burn \u2014 ' + ev.ref,
-    message:     ev.desc.substring(0, 80),
-    amount:      amount,
+async function rpc(method, params) {
+  const res = await fetch(CONFIG.RPC_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
   });
-  return 'solana:' + ev.burnAddr + '?' + params.toString();
+  if (!res.ok) throw new Error(`RPC ${res.status}`);
+  const json = await res.json();
+  if (json.error) throw new Error(json.error.message);
+  return json.result;
 }
-// One individual RPC call per event — no batching (Helius free tier blocks batch requests)
-// ================================================================
-async function fetchBurnTransactions() {
+
+async function loadLiveStats() {
   try {
-    const burns  = {};
-    let txCount  = 0;
-
-    // Helper: single RPC call
-    async function rpcCall(method, params) {
-      const res = await fetch(CONFIG.RPC_URL, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
-      });
-      const json = await res.json();
-      if (json.error) throw new Error(json.error.message);
-      return json.result;
+    // Query all burn addresses in parallel (5 at a time)
+    const balances = {};
+    for (let i = 0; i < BURN_ADDRS.length; i += 5) {
+      const chunk = BURN_ADDRS.slice(i, i + 5);
+      const results = await Promise.all(chunk.map(async (b) => {
+        try {
+          const result = await rpc('getTokenAccountsByOwner', [
+            b.addr, { mint: CONFIG.TOKEN_MINT }, { encoding: 'jsonParsed' }
+          ]);
+          let total = 0;
+          (result?.value || []).forEach(acc => {
+            total += Number(acc.account?.data?.parsed?.info?.tokenAmount?.uiAmount || 0);
+          });
+          return { ref: b.ref, total };
+        } catch (e) { return { ref: b.ref, total: 0 }; }
+      }));
+      results.forEach(r => { balances[r.ref] = r.total; });
     }
 
-    // ── Step 1: check balance at each burn address individually ──
-    const totals = {};
-    for (const ev of EVENTS) {
-      try {
-        const result = await rpcCall('getTokenAccountsByOwner', [
-          ev.burnAddr,
-          { mint: CONFIG.TOKEN_MINT },
-          { encoding: 'jsonParsed' }
-        ]);
-        let total = 0;
-        (result?.value || []).forEach(acc => {
-          total += Number(acc.account?.data?.parsed?.info?.tokenAmount?.uiAmount || 0);
-        });
-        totals[ev.ref] = total;
-      } catch(e) {
-        totals[ev.ref] = 0;
-      }
-    }
+    const totalBurned = Object.values(balances).reduce((s, v) => s + v, 0);
+    const remaining   = TOTAL_SUPPLY - totalBurned;
+    const pct         = ((totalBurned / TOTAL_SUPPLY) * 100).toFixed(2);
 
-    // ── Step 2: for addresses with tokens, get tx history ──
-    for (const ev of EVENTS) {
-      const total = totals[ev.ref] || 0;
-      if (total <= 0) continue;
+    // Animate counters with live data
+    animateCounter(document.getElementById('burned'), totalBurned, 2000);
+    animateCounter(document.getElementById('supply'), remaining, 2000);
+    animateCounter(document.getElementById('events'), BURN_ADDRS.length, 1200);
+    document.getElementById('pct-burned').textContent = pct + '%';
 
-      try {
-        // Get signatures
-        const sigs = await rpcCall('getSignaturesForAddress', [ev.burnAddr, { limit: 50 }]);
-        if (!sigs || !sigs.length) continue;
+    // Update W-E002 live example if it has data
+    const e002 = balances['W-E002'] || 0;
+    const e002target = 23000000;
+    const e002pct = Math.min(100, (e002 / e002target) * 100);
+    document.getElementById('prog-num').textContent =
+      e002.toLocaleString() + ' / ' + e002target.toLocaleString();
+    document.getElementById('prog-fill').style.width = e002pct.toFixed(1) + '%';
+    document.querySelector('.progress-contributors').innerHTML =
+      e002 > 0
+        ? '↑ Burns tracked live on-chain — <span style="color:var(--red-bright)">' + (e002target - e002).toLocaleString() + ' remaining</span>'
+        : '↑ No burns yet — <span style="color:var(--red-bright)">be the first</span>';
 
-        // Fetch each transaction individually
-        for (const sigEntry of sigs) {
-          try {
-            const tx = await rpcCall('getTransaction', [
-              sigEntry.signature,
-              { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }
-            ]);
-            if (!tx || tx.meta?.err) continue;
-            txCount++;
-
-            const postBals = tx.meta?.postTokenBalances || [];
-            const preBals  = tx.meta?.preTokenBalances  || [];
-            let burnAmount = 0;
-
-            for (const post of postBals) {
-              if (post.mint !== CONFIG.TOKEN_MINT) continue;
-              if (post.owner !== ev.burnAddr) continue;
-              const pre   = preBals.find(p => p.accountIndex === post.accountIndex);
-              const delta = Number(post.uiTokenAmount.amount) - (pre ? Number(pre.uiTokenAmount.amount) : 0);
-              if (delta > 0) { burnAmount = delta; break; }
-            }
-            if (burnAmount === 0) continue;
-
-            const accounts = tx.transaction?.message?.accountKeys || [];
-            const sender   = accounts.find(a => a.signer && a.writable && a.pubkey !== ev.burnAddr)
-                             ?.pubkey || accounts[0]?.pubkey || 'Unknown';
-            const date     = tx.blockTime ? new Date(tx.blockTime * 1000).toISOString().split('T')[0] : '—';
-            const sig      = tx.transaction?.signatures?.[0] || sigEntry.signature;
-
-            if (!burns[ev.ref]) burns[ev.ref] = [];
-            burns[ev.ref].push({ wallet: sender, amount: burnAmount / Math.pow(10, CONFIG.TOKEN_DECIMALS), tx: sig, date });
-          } catch(e) { /* skip failed tx */ }
-        }
-      } catch(e) { /* skip failed address */ }
-
-      // Step 3: safety net — if balance exists but tx parse missed it, add placeholder
-      const parsedTotal = (burns[ev.ref] || []).reduce((s, b) => s + b.amount, 0);
-      const diff = total - parsedTotal;
-      if (diff > 0.001) {
-        if (!burns[ev.ref]) burns[ev.ref] = [];
-        burns[ev.ref].push({ wallet: 'Unknown', amount: diff, tx: '', date: '—' });
-      }
-    }
-
-    return { ok: true, txCount, burns };
   } catch (err) {
-    console.error('[WRONG] RPC error:', err);
-    return { ok: false, reason: err.message };
+    console.error('[WRONG] Failed to load live stats:', err);
+    // Fall back to static counters on error
+    animateCounter(document.getElementById('supply'), TOTAL_SUPPLY, 2000);
+    animateCounter(document.getElementById('burned'), 0, 2000);
+    animateCounter(document.getElementById('events'), BURN_ADDRS.length, 1200);
   }
 }
 
-    return { ok: true, txCount, burns };
-  } catch (err) {
-    console.error('[WRONG] RPC error:', err);
-    return { ok: false, reason: err.message };
-  }
-}
-// ================================================================
-// BURN MODAL
-// ================================================================
-let _currentEv      = null;
-let _currentAmount  = 100;
-let _currentBurnUrl = '';
-
-function burnFor(ev) {
-  _currentEv     = ev;
-  _currentAmount = 100;
-  document.getElementById('bm-ref').textContent  = ev.ref;
-  document.getElementById('bm-desc').textContent = ev.desc;
-  document.querySelectorAll('.bm-pill').forEach(p => {
-    p.classList.toggle('active', Number(p.dataset.amt) === 100);
-  });
-  document.getElementById('bm-custom-amt').value = '';
-  renderQR();
-  document.getElementById('burnModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function setAmount(amt) {
-  _currentAmount = amt;
-  document.querySelectorAll('.bm-pill').forEach(p => {
-    p.classList.toggle('active', Number(p.dataset.amt) === amt);
-  });
-  document.getElementById('bm-custom-amt').value = '';
-  renderQR();
-}
-
-function setCustomAmount(val) {
-  const n = parseInt(val, 10);
-  if (!n || n < 1) return;
-  _currentAmount = n;
-  document.querySelectorAll('.bm-pill').forEach(p => p.classList.remove('active'));
-  renderQR();
-}
-
-function renderQR() {
-  // QR encodes the plain burn address — works with every wallet scanner
-  const qrData = _currentEv.burnAddr;
-  _currentBurnUrl = _currentEv.burnAddr;
-
-  const wrap = document.querySelector('.bm-qr-wrap');
-  wrap.innerHTML = '<div id="bm-qr-div"></div>';
-  try {
-    new QRCode(document.getElementById('bm-qr-div'), {
-      text:         qrData,
-      width:        220,
-      height:       220,
-      colorDark:    '#000000',
-      colorLight:   '#ffffff',
-      correctLevel: QRCode.CorrectLevel.M,
-    });
-  } catch(e) {
-    wrap.innerHTML = '<p style="font-family:var(--font-mono);font-size:0.65rem;color:var(--grey-text);text-align:center;padding:1rem;">QR unavailable — copy address below</p>';
-  }
-
-  // Update amount display in copy button
-  const btn = document.getElementById('bm-copy-url');
-  if (btn) btn.innerHTML = `📋 Copy Burn Address<small>Then send ${_currentAmount.toLocaleString()} $WRONG to it in any wallet</small>`;
-}
-
-function closeBurnModal(e) {
-  if (e && e.target !== document.getElementById('burnModal')) return;
-  document.getElementById('burnModal').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-function copyBurnUrl() {
-  navigator.clipboard.writeText(_currentEv.burnAddr).then(() => {
-    const btn = document.getElementById('bm-copy-url');
-    btn.innerHTML = `✓ Address Copied! Send ${_currentAmount.toLocaleString()} $WRONG to it<small>${_currentEv.burnAddr.slice(0,20)}…</small>`;
-    setTimeout(() => {
-      btn.innerHTML = `📋 Copy Burn Address<small>Then send ${_currentAmount.toLocaleString()} $WRONG to it in any wallet</small>`;
-    }, 3000);
-  });
-}
-
-// ================================================================
-// LOAD
-// ================================================================
-async function loadChainData() {
-  if (isLoading) return;
-  isLoading = true;
-  setStatus('loading', 'Connecting to Solana...');
-  document.getElementById('refreshBtn').disabled = true;
-  showGridLoading();
-
-  const result = await fetchBurnTransactions();
-
-  if (!result.ok) {
-    setStatus('error', `RPC error — ${result.reason}`);
-  } else {
-    chainBurns = result.burns;
-    document.getElementById('txScanned').textContent  = result.txCount;
-    document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
-    setStatus('live', 'Live — reading directly from Solana');
-  }
-
-  updateStats();
-  renderEvents(currentFilter);
-  isLoading = false;
-  document.getElementById('refreshBtn').disabled = false;
-}
-
-function setStatus(state, msg) {
-  document.getElementById('chainDot').className  = 'chain-dot ' + state;
-  document.getElementById('chainText').innerHTML =
-    `<strong>${{ live:'LIVE', error:'OFFLINE', loading:'SYNCING' }[state]}</strong> — ${msg}`;
-}
-
-function showGridLoading() {
-  document.getElementById('eventsGrid').innerHTML =
-    '<div class="loading-placeholder"><div class="spinner"></div><p>Reading burn transactions from Solana...</p></div>';
-}
-
-function updateStats() {
-  const totalBurned = EVENTS.reduce((s, ev) =>
-    s + (chainBurns[ev.ref] || []).reduce((a, b) => a + b.amount, 0), 0);
-  const supply    = 1_000_000_000;
-  const remaining = supply - totalBurned;
-  const pct       = ((totalBurned / supply) * 100).toFixed(2);
-
-  document.getElementById('statBurned').textContent  = totalBurned > 0 ? totalBurned.toLocaleString() : '0';
-  document.getElementById('statSupply').textContent  = remaining.toLocaleString();
-  document.getElementById('statPct').textContent     = pct + '%';
-}
-
-// ================================================================
-// RENDER
-// ================================================================
-const CAT = {
-  airstrike:'Airstrike', infrastructure:'Infrastructure',
-  soldier:'Soldier', civilian:'Civilian',
-  protected:'Protected Site', wmd:'WMD'
-};
-
-function renderEvents(filter) {
-  const grid     = document.getElementById('eventsGrid');
-  grid.innerHTML = '';
-  const list     = filter === 'all' ? EVENTS : EVENTS.filter(e => e.type === filter);
-
-  list.forEach((ev, i) => {
-    const contribs = (chainBurns[ev.ref] || []).slice().sort((a,b) => b.amount - a.amount);
-    const burned   = contribs.reduce((s, c) => s + c.amount, 0);
-    const pct      = ev.target > 0 ? Math.min(100, (burned / ev.target) * 100) : 0;
-    const done     = pct >= 100;
-    const hasAny   = burned > 0;
-
-    const fillCls   = done ? 'c-complete' : hasAny ? 'c-active' : 'c-open';
-    const statusCls = done ? 's-complete'  : hasAny ? 's-active'  : 's-open';
-    const statusTxt = done ? '● COMPLETE'  : hasAny ? '● ACTIVE'  : '○ OPEN';
-    const contribLbl = contribs.length === 0
-      ? 'No burns yet — be first'
-      : `${contribs.length} burner${contribs.length !== 1 ? 's' : ''}`;
-    const remainTxt  = done
-      ? 'Target reached'
-      : (ev.target - burned).toLocaleString() + ' remaining';
-
-    const card = document.createElement('div');
-    card.className = 'event-card';
-
-    card.innerHTML = `
-      <div class="event-card-main" onclick="togglePanel('${ev.ref}')">
-        <div class="event-header">
-          <div class="event-meta">
-            <span class="event-date">${ev.date}</span>
-            <span class="event-cat cat-${ev.type}">${CAT[ev.type]}</span>
-            <span class="event-ref">${ev.ref}</span>
-          </div>
-          <div class="event-right">
-            <div class="event-target">${ev.target.toLocaleString()}</div>
-            <div class="event-target-label">burn target</div>
-          </div>
-        </div>
-
-        <div class="event-desc">${ev.desc}</div>
-        <div class="event-source">📎 ${ev.source} &nbsp;·&nbsp; ${ev.count}</div>
-
-        <div class="prog-numbers">
-          <span class="prog-burned-num">${burned > 0 ? burned.toLocaleString() : '0'} burned</span>
-          <span class="prog-remain-num">${remainTxt}</span>
-        </div>
-        <div class="prog-track">
-          <div class="prog-fill ${fillCls}" style="width:0%" data-pct="${pct.toFixed(2)}"></div>
-        </div>
-        <div class="prog-footer">
-          <span class="prog-contrib-label">${contribLbl}</span>
-          <span class="prog-status ${statusCls}">${statusTxt}</span>
-        </div>
-
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1rem;flex-wrap:wrap;gap:0.8rem;">
-          <div class="toggle-row" id="toggle-${ev.ref}" style="margin-top:0;">
-            <span class="toggle-arrow" id="arrow-${ev.ref}">▶</span>
-            <span id="toggle-label-${ev.ref}">${contribs.length > 0 ? 'Show burners (' + contribs.length + ')' : 'No burns yet'}</span>
-          </div>
-          <button class="burn-event-btn" onclick="event.stopPropagation(); burnFor(EVENTS.find(e=>e.ref==='${ev.ref}'))">
-            🔥 Burn for ${ev.ref}
-          </button>
-        </div>
-      </div>
-
-      <div class="contributors-panel" id="panel-${ev.ref}">
-        ${buildContribTable(contribs, ev.ref)}
-      </div>
-    `;
-
-    document.getElementById('eventsGrid').appendChild(card);
-  });
-
-  // Animate bars after paint
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    document.querySelectorAll('.prog-fill[data-pct]').forEach(el => {
-      el.style.width = el.dataset.pct + '%';
-    });
-  }));
-}
-
-function buildContribTable(contribs, ref) {
-  if (!contribs.length) {
-    return `
-      <div class="no-burns-msg">
-        <p>No burns recorded yet for this event.<br>
-        Include <strong>${ref}</strong> as your transaction memo when burning.<br>
-        Your wallet will appear here automatically.</p>
-        <div class="ref-pill">${ref}</div>
-      </div>`;
-  }
-
-  const rows = contribs.map(c => {
-    const short  = c.wallet !== 'Unknown'
-      ? c.wallet.slice(0,5) + '...' + c.wallet.slice(-5)
-      : 'Unknown';
-    const wUrl   = `https://solscan.io/account/${c.wallet}`;
-    const txUrl  = `https://solscan.io/tx/${c.tx}`;
-    return `
-      <div class="contrib-row">
-        <div class="contrib-wallet">
-          <a href="${wUrl}" target="_blank">${short}</a>
-          <div class="full-addr">${c.wallet}</div>
-        </div>
-        <div class="contrib-amount">${c.amount.toLocaleString()}</div>
-        <div class="contrib-date">${c.date}</div>
-        <div class="contrib-tx"><a href="${txUrl}" target="_blank">↗ Solscan</a></div>
-      </div>`;
-  }).join('');
-
-  return `
-    <div class="contrib-table-head">
-      <span>Wallet</span>
-      <span>Amount Burned</span>
-      <span>Date</span>
-      <span>TX</span>
-    </div>
-    ${rows}`;
-}
-
-function togglePanel(ref) {
-  const panel  = document.getElementById('panel-' + ref);
-  const arrow  = document.getElementById('arrow-' + ref);
-  const label  = document.getElementById('toggle-label-' + ref);
-  const count  = (chainBurns[ref] || []).length;
-  const isOpen = panel.classList.toggle('open');
-  arrow.classList.toggle('open', isOpen);
-  label.textContent = isOpen
-    ? 'Hide burners'
-    : count > 0 ? `Show burners (${count})` : 'No burns yet';
-}
-
-// ================================================================
-// FILTERS
-// ================================================================
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentFilter = btn.dataset.filter;
-    renderEvents(currentFilter);
-  });
-});
-
-// ================================================================
-// INIT + AUTO-REFRESH every 60s
-// ================================================================
-loadChainData();
-setInterval(() => { if (!isLoading) loadChainData(); }, 60_000);
+// Start loading live data
+loadLiveStats();
 </script>
 </body>
 </html>
