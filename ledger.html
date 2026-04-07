@@ -149,13 +149,41 @@ nav .links a:hover, nav .links a.active { color: var(--white); }
 
 /* TOGGLE */
 .toggle-row {
-  display:flex; align-items:center; gap:0.5rem; margin-top:1rem;
+  display:flex; align-items:center; gap:0.5rem; margin-top:0;
   font-family:var(--font-mono); font-size:0.62rem; color:var(--grey-text);
   cursor:pointer; width:fit-content; transition:color 0.2s;
 }
 .toggle-row:hover { color:var(--white); }
 .toggle-arrow { display:inline-block; transition:transform 0.25s; font-size:0.55rem; }
 .toggle-arrow.open { transform:rotate(90deg); }
+
+/* BURN EVENT BUTTON */
+.burn-event-btn {
+  display:inline-flex; align-items:center; gap:0.4rem;
+  font-family:var(--font-mono); font-size:0.62rem; letter-spacing:1px; text-transform:uppercase;
+  text-decoration:none; padding:0.4rem 0.9rem;
+  background:rgba(192,57,43,0.1); border:1px solid var(--red);
+  color:var(--red-bright); transition:all 0.2s;
+}
+.burn-event-btn:hover { background:var(--red); color:var(--white); }
+
+/* MEMO WARNING */
+.ledger-memo-warning { max-width:1100px; margin:0 auto 1.5rem; padding:0 2rem; }
+.lmw-box {
+  background:rgba(231,76,60,0.07); border:1px solid var(--red-bright);
+  border-left:4px solid var(--red-bright);
+  padding:1rem 1.5rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+}
+.lmw-icon { font-size:1.2rem; flex-shrink:0; }
+.lmw-text { font-family:var(--font-mono); font-size:0.72rem; color:var(--white); line-height:1.6; flex:1; }
+.lmw-text strong { color:var(--red-bright); }
+.lmw-link {
+  font-family:var(--font-mono); font-size:0.65rem; letter-spacing:1px; text-transform:uppercase;
+  text-decoration:none; padding:0.45rem 0.9rem;
+  background:var(--red); border:1px solid var(--red); color:var(--white);
+  transition:all 0.2s; white-space:nowrap; flex-shrink:0;
+}
+.lmw-link:hover { background:var(--red-bright); }
 
 /* CONTRIBUTORS PANEL */
 .contributors-panel { display:none; border-top:1px solid var(--grey-mid); }
@@ -254,7 +282,7 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
 <div class="summary-outer">
   <div class="summary-strip">
     <div class="summary-cell"><div class="num" id="statBurned">—</div><div class="label">Total Burned</div></div>
-    <div class="summary-cell"><div class="num" id="statEvents">49</div><div class="label">Events</div></div>
+    <div class="summary-cell"><div class="num" id="statEvents">48</div><div class="label">Events</div></div>
     <div class="summary-cell"><div class="num" id="statSupply">—</div><div class="label">Remaining Supply</div></div>
     <div class="summary-cell"><div class="num" id="statPct">—</div><div class="label">% Burned</div></div>
   </div>
@@ -265,7 +293,7 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
   <div class="notice-box">
     <div class="n-label">Notice</div>
     <p>
-      <strong>Retroactive Burns (Mar 24 – Apr 7, 2026):</strong> These events pre-date the $WRONG launch and form the baseline ledger.
+      <strong>Retroactive Burns (Mar 24 – Apr 6, 2026):</strong> These events pre-date the $WRONG launch and form the baseline ledger.
       Burn toward any of them now — include the event's <strong>reference code</strong> (e.g. W-E001) as a memo when sending to the burn address.
       Your wallet appears here automatically within ~60 seconds. Sources: DoD, UN OCHA, UN OHCHR, IAEA.
     </p>
@@ -277,6 +305,18 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
   <div class="cta-bar">
     <p><strong>How to burn:</strong> Pick an event, copy its ref code, include it as memo when sending $WRONG to the burn address. Your wallet shows up here live.</p>
     <a href="burn.html" class="btn-cta">🔥 Step-by-step guide</a>
+  </div>
+</div>
+
+<!-- MEMO WARNING -->
+<div class="ledger-memo-warning">
+  <div class="lmw-box">
+    <span class="lmw-icon">⚠</span>
+    <span class="lmw-text">
+      <strong>You must include the event ref code as a memo when burning.</strong>
+      No memo = burn not recorded. Cannot be reversed or fixed. Click "Burn for W-E___" on any event to go straight to the burn guide with the code pre-filled.
+    </span>
+    <a href="burn.html" class="lmw-link">Burn Guide</a>
   </div>
 </div>
 
@@ -335,7 +375,6 @@ const CONFIG = {
 // The ref code (e.g. W-E001) is what burners include as memo
 // ================================================================
 const EVENTS = [
-  { ref:'W-E001', date:'2026-04-07', type:'airstrike',      desc:'Trump deadline day — strikes on bridges and power plants',                              count:'~15 strikes (partial day)', target:150000   , source:'DoD'      },
   { ref:'W-E002', date:'2026-04-06', type:'civilian',        desc:'23 killed including 6 children in Baharestan County residential strikes',               count:'23 confirmed',              target:23000000 , source:'UN OHCHR'  },
   { ref:'W-E003', date:'2026-04-06', type:'civilian',        desc:'5 killed in residential building strike in Qom',                                        count:'5 confirmed',               target:5000000  , source:'UN OCHA'   },
   { ref:'W-E004', date:'2026-04-06', type:'civilian',        desc:'6 additional killed in residential strikes across Tehran province',                      count:'6 confirmed',               target:6000000  , source:'UN OHCHR'  },
@@ -626,9 +665,14 @@ function renderEvents(filter) {
           <span class="prog-status ${statusCls}">${statusTxt}</span>
         </div>
 
-        <div class="toggle-row" id="toggle-${ev.ref}">
-          <span class="toggle-arrow" id="arrow-${ev.ref}">▶</span>
-          <span id="toggle-label-${ev.ref}">${contribs.length > 0 ? 'Show burners (' + contribs.length + ')' : 'No burns yet'}</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1rem;flex-wrap:wrap;gap:0.8rem;">
+          <div class="toggle-row" id="toggle-${ev.ref}" style="margin-top:0;">
+            <span class="toggle-arrow" id="arrow-${ev.ref}">▶</span>
+            <span id="toggle-label-${ev.ref}">${contribs.length > 0 ? 'Show burners (' + contribs.length + ')' : 'No burns yet'}</span>
+          </div>
+          <a href="burn.html?ref=${ev.ref}" class="burn-event-btn" onclick="event.stopPropagation()">
+            🔥 Burn for ${ev.ref}
+          </a>
         </div>
       </div>
 
