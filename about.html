@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>$WRONG — How It Works</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #0a0a0a;
+  --white: #e8e4df;
+  --red: #c0392b;
+  --red-bright: #e74c3c;
+  --red-glow: rgba(231,76,60,0.25);
+  --grey: #1a1a1a;
+  --grey-mid: #2a2a2a;
+  --grey-text: #888;
+  --green: #27ae60;
+  --font-display: 'Anton', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-body: 'Space Grotesk', sans-serif;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+}
+
+/* NAV */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 2rem;
+  background: rgba(10,10,10,0.9);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--grey-mid);
+}
+nav .logo { font-family: var(--font-display); font-size: 1.4rem; letter-spacing: 2px; color: var(--red-bright); text-decoration:none; }
+nav .links { display:flex; gap:1.5rem; }
+nav .links a {
+  color: var(--grey-text); text-decoration: none; font-family: var(--font-mono);
+  font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s;
+}
+nav .links a:hover, nav .links a.active { color: var(--white); }
+
+/* PAGE HEADER */
+.page-header {
+  padding: 8rem 2rem 4rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.page-header .section-label {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  letter-spacing: 4px; text-transform: uppercase; color: var(--red); margin-bottom: 1rem;
+}
+.page-header h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 1;
+}
+.page-header p {
+  color: var(--grey-text); font-weight:300; margin-top:1rem; max-width:600px; line-height:1.7;
+}
+
+/* PROCESS STEPS */
+.process {
+  max-width: 800px; margin: 0 auto;
+  padding: 0 2rem 4rem;
+}
+.process .section-label {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  letter-spacing: 4px; text-transform: uppercase; color: var(--red); margin-bottom: 2rem;
+}
+.step {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--grey-mid);
+  opacity: 0; transform: translateY(20px);
+  transition: all 0.6s;
+}
+.step.visible { opacity:1; transform: translateY(0); }
+.step-num {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  color: var(--red);
+  line-height: 1;
+}
+.step-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+.step-desc {
+  color: var(--grey-text);
+  font-weight: 300;
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+
+/* SOURCES */
+.sources-section {
+  background: var(--grey);
+  border-top: 1px solid var(--grey-mid);
+  border-bottom: 1px solid var(--grey-mid);
+  padding: 4rem 2rem;
+}
+.sources-inner { max-width: 800px; margin: 0 auto; }
+.sources-inner .section-label {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  letter-spacing: 4px; text-transform: uppercase; color: var(--red); margin-bottom: 1rem;
+}
+.sources-inner h2 {
+  font-family: var(--font-display); font-size: clamp(1.8rem,4vw,2.8rem);
+  margin-bottom: 1.5rem;
+}
+.sources-inner > p {
+  color: var(--grey-text); font-weight:300; line-height:1.7; margin-bottom:2rem;
+}
+.source-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1px;
+  background: var(--grey-mid);
+  border: 1px solid var(--grey-mid);
+}
+.source-card {
+  background: var(--black);
+  padding: 1.5rem;
+}
+.source-card .src-name {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--white);
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+.source-card .src-url {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--red);
+  margin-bottom: 0.6rem;
+}
+.source-card .src-desc {
+  font-size: 0.85rem;
+  color: var(--grey-text);
+  font-weight: 300;
+  line-height: 1.5;
+}
+
+/* ANTI-MANIPULATION */
+.anti-section {
+  max-width: 800px; margin: 0 auto;
+  padding: 4rem 2rem;
+}
+.anti-section .section-label {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  letter-spacing: 4px; text-transform: uppercase; color: var(--red); margin-bottom: 1rem;
+}
+.anti-section h2 {
+  font-family: var(--font-display); font-size: clamp(1.8rem,4vw,2.8rem);
+  margin-bottom: 1.5rem;
+}
+.safeguard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+.safeguard {
+  border: 1px solid var(--grey-mid);
+  padding: 1.5rem;
+  background: var(--grey);
+}
+.safeguard .sg-icon {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 0.6rem;
+}
+.safeguard .sg-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+.safeguard .sg-desc {
+  color: var(--grey-text);
+  font-weight: 300;
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+
+/* FAQ */
+.faq {
+  background: var(--grey);
+  border-top: 1px solid var(--grey-mid);
+  border-bottom: 1px solid var(--grey-mid);
+  padding: 4rem 2rem;
+}
+.faq-inner { max-width: 800px; margin: 0 auto; }
+.faq-inner .section-label {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  letter-spacing: 4px; text-transform: uppercase; color: var(--red); margin-bottom: 1rem;
+}
+.faq-inner h2 {
+  font-family: var(--font-display); font-size: clamp(1.8rem,4vw,2.8rem);
+  margin-bottom: 2rem;
+}
+.faq-item {
+  border-bottom: 1px solid var(--grey-mid);
+  padding: 1.5rem 0;
+  cursor: pointer;
+}
+.faq-item:first-of-type { border-top: 1px solid var(--grey-mid); }
+.faq-q {
+  display: flex; justify-content: space-between; align-items: center;
+}
+.faq-q h3 {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 400;
+}
+.faq-q .toggle {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  color: var(--red);
+  transition: transform 0.3s;
+  flex-shrink: 0; margin-left: 1rem;
+}
+.faq-item.open .faq-q .toggle { transform: rotate(45deg); }
+.faq-a {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.4s;
+}
+.faq-item.open .faq-a { max-height: 300px; padding-top: 1rem; }
+.faq-a p {
+  color: var(--grey-text);
+  font-weight: 300;
+  line-height: 1.7;
+  font-size: 0.9rem;
+}
+
+/* CTA */
+.cta {
+  padding: 6rem 2rem;
+  text-align: center;
+  position: relative;
+}
+.cta::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(ellipse 50% 60% at 50% 50%, var(--red-glow), transparent);
+  pointer-events: none;
+}
+.cta h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 4rem);
+  position: relative;
+}
+.cta p {
+  margin-top: 1rem; color: var(--grey-text); font-weight:300; position:relative;
+}
+.cta-buttons {
+  display: flex; gap: 1rem; justify-content: center;
+  margin-top: 2rem; position: relative; flex-wrap: wrap;
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 1rem 2rem;
+  font-family: var(--font-mono); font-size: 0.75rem;
+  letter-spacing: 1px; text-transform: uppercase;
+  text-decoration: none;
+  border: 1px solid var(--grey-mid); background: var(--grey); color: var(--white);
+  transition: all 0.3s; cursor: pointer;
+}
+.btn:hover { background: var(--grey-mid); border-color: var(--grey-text); }
+.btn.primary { background: var(--red); border-color: var(--red); }
+.btn.primary:hover { background: var(--red-bright); }
+
+/* FOOTER */
+footer {
+  padding: 2rem; text-align: center; border-top: 1px solid var(--grey-mid);
+}
+footer p {
+  font-family: var(--font-mono); font-size: 0.6rem; color: var(--grey-text);
+  letter-spacing: 1px; line-height: 1.8;
+}
+
+@media (max-width: 600px) {
+  .step { grid-template-columns: 40px 1fr; gap:1rem; }
+  .step-num { font-size: 1.8rem; }
+  .safeguard-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">$WRONG</a>
+  <div class="links">
+    <a href="index.html">Home</a>
+    <a href="ledger.html">Burn Ledger</a>
+    <a href="burn.html">How To Burn</a>
+    <a href="about.html" class="active">About</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="section-label">// Documentation</div>
+  <h1>How It Works</h1>
+  <p>Four steps from verified war event to permanent on-chain record. No admin approval. No middleman. Every burn is sourced, community-executed, and publicly verifiable on Solana.</p>
+</div>
+
+<!-- PROCESS -->
+<div class="process">
+  <div class="section-label">// The Burn Process</div>
+
+  <div class="step">
+    <div class="step-num">01</div>
+    <div>
+      <div class="step-title">Event Verified</div>
+      <div class="step-desc">A war event is confirmed from an official source — US Department of Defense, UN OCHA, UN Human Rights (OHCHR), or IAEA. No social media. No unverified news. Only institutions with direct legal accountability for what they publish. The event is added to the public ledger with its source link and a unique reference code.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">02</div>
+    <div>
+      <div class="step-title">Burn Target Set</div>
+      <div class="step-desc">Each event type has a fixed burn target — 10,000 tokens per airstrike, 1,000,000 per civilian killed. The target is posted publicly on the ledger. The community burns toward it collectively. No minimum. No deadline. Anyone holding $WRONG can contribute.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">03</div>
+    <div>
+      <div class="step-title">Community Burns</div>
+      <div class="step-desc">Anyone holding $WRONG sends tokens to the Solana burn address — <span style="color:var(--white);font-family:var(--font-mono);font-size:0.82rem;">Gvtbu5MoXa8HyBrDofmA3GA2FE2SJaX8PDV3fXcgkkkr</span> — with the event's reference code as the transaction memo. The tokens are permanently destroyed. No admin required. No approval needed. The blockchain is the record.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">04</div>
+    <div>
+      <div class="step-title">Ledger Updates Automatically</div>
+      <div class="step-desc">The burn ledger reads directly from Solana in real time. Within ~60 seconds of a burn transaction confirming, the wallet address, amount, and date appear publicly under that event. Every contributor is listed. Every transaction is verifiable on Solscan. No trust required.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SOURCES -->
+<section class="sources-section">
+  <div class="sources-inner">
+    <div class="section-label">// Verified Sources Only</div>
+    <h2>Where Burns Come From</h2>
+    <p>$WRONG only accepts events from these four official sources. No exceptions. No social media. No cable news. Only the institutions with direct knowledge and legal accountability for the data they publish.</p>
+
+    <div class="source-cards">
+      <div class="source-card">
+        <div class="src-name">US Department of Defense</div>
+        <div class="src-url">defense.gov</div>
+        <div class="src-desc">Airstrikes, military operations, US soldier casualties, operational briefings</div>
+      </div>
+      <div class="source-card">
+        <div class="src-name">UN OCHA</div>
+        <div class="src-url">unocha.org</div>
+        <div class="src-desc">Humanitarian impact reports, civilian casualties, displacement data</div>
+      </div>
+      <div class="source-card">
+        <div class="src-name">UN Human Rights</div>
+        <div class="src-url">ohchr.org</div>
+        <div class="src-desc">Civilian deaths, verified casualty counts, human rights violation reports</div>
+      </div>
+      <div class="source-card">
+        <div class="src-name">IAEA</div>
+        <div class="src-url">iaea.org</div>
+        <div class="src-desc">Nuclear incidents, chemical weapons use, WMD-related events</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ANTI-MANIPULATION -->
+<section class="anti-section">
+  <div class="section-label">// Integrity</div>
+  <h2>Manipulation Protection</h2>
+  <div class="safeguard-grid">
+    <div class="safeguard">
+      <div class="sg-icon">&#10003; Safeguard</div>
+      <div class="sg-title">Official Sources Only</div>
+      <div class="sg-desc">No social media, no unverified news, no anonymous reports. Only DoD, UN OCHA, UN OHCHR, and IAEA publications are accepted as source material for events.</div>
+    </div>
+    <div class="safeguard">
+      <div class="sg-icon">&#10003; Safeguard</div>
+      <div class="sg-title">Memo-Matched Burns</div>
+      <div class="sg-desc">Every burn must include the event reference code as a transaction memo. This links each burn to a verified event on the ledger. Burns without a valid memo are not counted toward any event.</div>
+    </div>
+    <div class="safeguard">
+      <div class="sg-icon">&#10003; Safeguard</div>
+      <div class="sg-title">Uncontrolled Burn Address</div>
+      <div class="sg-desc">Tokens are burned to Solana's standard burn address — no private key exists for it. Nobody controls it. No admin, no team, no one can move or recover burned tokens. Ever.</div>
+    </div>
+    <div class="safeguard">
+      <div class="sg-icon">&#10003; Safeguard</div>
+      <div class="sg-title">Public Verification</div>
+      <div class="sg-desc">Every burn is read live from Solana. Every wallet, every amount, every transaction hash is publicly visible on Solscan. The ledger requires zero trust — verify everything yourself.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq">
+  <div class="faq-inner">
+    <div class="section-label">// Questions</div>
+    <h2>FAQ</h2>
+
+    <div class="faq-item">
+      <div class="faq-q">
+        <h3>Is $WRONG an investment?</h3>
+        <span class="toggle">+</span>
+      </div>
+      <div class="faq-a"><p>No. $WRONG is a meme coin and a protest mechanism. It is not financial advice. Do not buy $WRONG expecting financial returns. The value proposition is the statement, not the speculation.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">
+        <h3>What happens when the war ends?</h3>
+        <span class="toggle">+</span>
+      </div>
+      <div class="faq-a"><p>Burns stop. The ledger remains. The final burn count becomes a permanent, immutable, on-chain record of the conflict's human and material cost. The remaining supply is whatever survived the war.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">
+        <h3>Can burns be faked or manipulated?</h3>
+        <span class="toggle">+</span>
+      </div>
+      <div class="faq-a"><p>Every event requires an official source — DoD, UN OCHA, UN OHCHR, or IAEA. Burns are matched to events via transaction memo codes. The burn address has no private key — nobody can move or fake burned tokens. Every transaction is publicly verifiable on Solscan. The system is trustless by design.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">
+        <h3>Why Solana and Pump.fun?</h3>
+        <span class="toggle">+</span>
+      </div>
+      <div class="faq-a"><p>Solana offers fast, low-cost transactions ideal for frequent burns. Pump.fun enables a fair launch with no team allocation, no presale, and no insider advantages. The bonding curve ensures transparent price discovery.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">
+        <h3>Is there a team allocation?</h3>
+        <span class="toggle">+</span>
+      </div>
+      <div class="faq-a"><p>Zero. $WRONG launched with 0% team allocation on Pump.fun's fair launch platform. No insiders, no vesting, no special wallets. The entire supply was available to the public from the start.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">
+        <h3>Will $WRONG track other conflicts?</h3>
+        <span class="toggle">+</span>
+      </div>
+      <div class="faq-a"><p>Phase 1 is focused exclusively on the US–Iran conflict. Future phases may expand scope, but the immediate priority is maintaining the highest possible sourcing and verification standard for one conflict before considering expansion.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <h2>Join The Count.</h2>
+  <p>Track the war. Vote the burns. Hold the record.</p>
+  <div class="cta-buttons">
+    <a href="#" class="btn primary">Join Discord</a>
+    <a href="ledger.html" class="btn">View Burn Ledger</a>
+  </div>
+</section>
+
+<footer>
+  <p>$WRONG is a meme coin and a protest. Not financial advice. Not political affiliation.<br>All burn events sourced from official government and UN sources only.</p>
+</footer>
+
+<script>
+// Scroll reveal for steps
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.2 });
+document.querySelectorAll('.step').forEach(el => obs.observe(el));
+
+// FAQ toggle
+document.querySelectorAll('.faq-item').forEach(item => {
+  item.querySelector('.faq-q').addEventListener('click', () => {
+    item.classList.toggle('open');
+  });
+});
+</script>
+
+</body>
+</html>
