@@ -374,7 +374,8 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
     <div class="n-label">Notice</div>
     <p>
       <strong>Retroactive Burns (Mar 24 – Apr 6, 2026):</strong> These events pre-date the $WRONG launch and form the baseline ledger.
-      Burn toward any of them now — include the event's <strong>reference code</strong> (e.g. W-E002) as a memo when sending to the burn address.
+      Burn toward any of them now — each event has its own unique burn address.
+      Click <strong>"🔥 Burn for W-E___"</strong> on any event to get the address. Send $WRONG directly to it — no memo needed.
       Your wallet appears here automatically within ~60 seconds. Sources: DoD, UN OCHA, UN OHCHR, IAEA.
     </p>
   </div>
@@ -383,7 +384,7 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
 <!-- CTA -->
 <div class="cta-outer">
   <div class="cta-bar">
-    <p><strong>How to burn:</strong> Pick an event, copy its ref code, include it as memo when sending $WRONG to the burn address. Your wallet shows up here live.</p>
+    <p><strong>How to burn:</strong> Pick an event, click its burn button, and send $WRONG to the event's unique address. No memo needed. Your wallet shows up here live.</p>
     <a href="burn.html" class="btn-cta">🔥 Step-by-step guide</a>
   </div>
 </div>
@@ -391,10 +392,10 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
 <!-- MEMO WARNING -->
 <div class="ledger-memo-warning">
   <div class="lmw-box">
-    <span class="lmw-icon">⚠</span>
+    <span class="lmw-icon">🔥</span>
     <span class="lmw-text">
-      <strong>You must include the event ref code as a memo when burning.</strong>
-      No memo = burn not recorded. Cannot be reversed or fixed. Click "Burn for W-E___" on any event to go straight to the burn guide with the code pre-filled.
+      <strong>Each event has its own unique burn address.</strong>
+      Just send $WRONG to the event's address — no memo needed, no ref code required. Click "Burn for W-E___" on any event to get the QR code and address.
     </span>
     <a href="burn.html" class="lmw-link">Burn Guide</a>
   </div>
@@ -487,10 +488,8 @@ const CONFIG = {
 
 // ================================================================
 // EVENT LIST
-// Each event has a unique REFERENCE public key used by Solana Pay.
-// When a user clicks "Burn", Phantom attaches that reference to the
-// transaction automatically — no typing, no memo needed.
-// Reference keys are stable random Solana public keys, one per event.
+// Each event has a unique throwaway burn address (no private key — permanent burn).
+// Users send $WRONG directly to the event's address — no memo needed.
 // ================================================================
 const EVENTS = [
   { ref:'W-E002', burnAddr:'8BiudQYzdLrQm4fNiGW1GhLPPo9KkPqdB2g1Yr7SETey', date:'2026-04-06', type:'civilian',       desc:'23 killed including 6 children in Baharestan County residential strikes',               count:'23 confirmed',          target:23000000, source:'UN OHCHR' },
@@ -569,105 +568,122 @@ function buildSolanaPayUrl(ev, amount) {
   });
   return 'solana:' + ev.burnAddr + '?' + params.toString();
 }
-// Two steps per event:
-// 1. getTokenAccountsByOwner → reliable total (handles ATA correctly)
+// ================================================================
+// CHAIN INDEXER — individual RPC calls (Helius free tier rejects batch)
+// 1. getTokenAccountsByOwner per burnAddr → reliable total
 // 2. getSignaturesForAddress + getTransaction → per-wallet breakdown
 // ================================================================
+// Helper: single non-batched JSON-RPC call (Helius free tier rejects batch arrays)
+async function rpc(method, params) {
+  const res = await fetch(CONFIG.RPC_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+  });
+  if (!res.ok) throw new Error(`RPC ${res.status}: ${res.statusText}`);
+  const json = await res.json();
+  if (json.error) throw new Error(json.error.message || JSON.stringify(json.error));
+  return json.result;
+}
+
+// Throttled parallel helper — run promises in chunks to stay under rate limits
+async function parallel(items, fn, concurrency = 5) {
+  const results = [];
+  for (let i = 0; i < items.length; i += concurrency) {
+    const chunk = items.slice(i, i + concurrency);
+    const batch = await Promise.all(chunk.map(fn));
+    results.push(...batch);
+  }
+  return results;
+}
+
 async function fetchBurnTransactions() {
   try {
-    const burns  = {};
-    let txCount  = 0;
+    const burns   = {};
+    let   txCount = 0;
 
-    // ── Step 1: get $WRONG balance at every burn address in one batch ──
-    const balRequests = EVENTS.map((ev, idx) => ({
-      jsonrpc: '2.0', id: idx,
-      method:  'getTokenAccountsByOwner',
-      params:  [ ev.burnAddr, { mint: CONFIG.TOKEN_MINT }, { encoding: 'jsonParsed' } ]
-    }));
-
-    const balRes  = await fetch(CONFIG.RPC_URL, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body:   JSON.stringify(balRequests)
-    });
-    const balArr = await balRes.json();
+    // ── Step 1: get $WRONG balance at every burn address (individual calls) ──
+    const balResults = await parallel(EVENTS, async (ev) => {
+      try {
+        const result = await rpc('getTokenAccountsByOwner', [
+          ev.burnAddr,
+          { mint: CONFIG.TOKEN_MINT },
+          { encoding: 'jsonParsed' }
+        ]);
+        let total = 0;
+        (result?.value || []).forEach(acc => {
+          total += Number(acc.account?.data?.parsed?.info?.tokenAmount?.uiAmount || 0);
+        });
+        return { ref: ev.ref, total };
+      } catch (e) {
+        console.warn(`[WRONG] Balance fetch failed for ${ev.ref}:`, e.message);
+        return { ref: ev.ref, total: 0 };
+      }
+    }, 5);
 
     const totals = {};
-    (Array.isArray(balArr) ? balArr : [balArr]).forEach((item, idx) => {
-      const ev  = EVENTS[idx];
-      let total = 0;
-      (item.result?.value || []).forEach(acc => {
-        total += Number(acc.account?.data?.parsed?.info?.tokenAmount?.uiAmount || 0);
-      });
-      totals[ev.ref] = total;
-    });
+    balResults.forEach(r => { totals[r.ref] = r.total; });
 
     // ── Step 2: per-wallet tx breakdown, only for addresses with tokens ──
     const activeEvents = EVENTS.filter(ev => (totals[ev.ref] || 0) > 0);
 
-    const BATCH = 5;
-    for (let i = 0; i < activeEvents.length; i += BATCH) {
-      const slice = activeEvents.slice(i, i + BATCH);
-      const sigRequests = slice.map((ev, idx) => ({
-        jsonrpc: '2.0', id: idx,
-        method:  'getSignaturesForAddress',
-        params:  [ev.burnAddr, { limit: 50 }]
-      }));
-
-      const sigRes  = await fetch(CONFIG.RPC_URL, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body:   JSON.stringify(sigRequests)
-      });
-      const sigArr  = await sigRes.json();
-      const allSigs = [];
-      (Array.isArray(sigArr) ? sigArr : [sigArr]).forEach((item, idx) => {
-        const ev = slice[idx];
-        (item.result || []).forEach(s => allSigs.push({ sig: s.signature, ev }));
-      });
-
-      const TX_BATCH = 10;
-      for (let j = 0; j < allSigs.length; j += TX_BATCH) {
-        const chunk  = allSigs.slice(j, j + TX_BATCH);
-        const txReqs = chunk.map((item, idx) => ({
-          jsonrpc: '2.0', id: idx,
-          method:  'getTransaction',
-          params:  [item.sig, { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }]
-        }));
-
-        const txRes  = await fetch(CONFIG.RPC_URL, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body:   JSON.stringify(txReqs)
-        });
-        const txArr = await txRes.json();
-
-        (Array.isArray(txArr) ? txArr : [txArr]).forEach((item, idx) => {
-          const tx = item.result;
-          const ev = chunk[idx].ev;
-          if (!tx || tx.meta?.err) return;
-          txCount++;
-
-          const postBals = tx.meta?.postTokenBalances || [];
-          const preBals  = tx.meta?.preTokenBalances  || [];
-          let burnAmount = 0;
-          for (const post of postBals) {
-            if (post.mint !== CONFIG.TOKEN_MINT) continue;
-            if (post.owner !== ev.burnAddr) continue;
-            const pre   = preBals.find(p => p.accountIndex === post.accountIndex);
-            const delta = Number(post.uiTokenAmount.amount) - (pre ? Number(pre.uiTokenAmount.amount) : 0);
-            if (delta > 0) { burnAmount = delta; break; }
-          }
-          if (burnAmount === 0) return;
-
-          const accounts = tx.transaction?.message?.accountKeys || [];
-          const sender   = accounts.find(a => a.signer && a.writable && a.pubkey !== ev.burnAddr)
-                           ?.pubkey || accounts[0]?.pubkey || 'Unknown';
-          const date     = tx.blockTime ? new Date(tx.blockTime * 1000).toISOString().split('T')[0] : '—';
-          const sig      = tx.transaction?.signatures?.[0] || chunk[idx].sig;
-
-          if (!burns[ev.ref]) burns[ev.ref] = [];
-          burns[ev.ref].push({ wallet: sender, amount: burnAmount / Math.pow(10, CONFIG.TOKEN_DECIMALS), tx: sig, date });
-        });
+    // 2a. Get signatures for each active burn address
+    const sigResults = await parallel(activeEvents, async (ev) => {
+      try {
+        const sigs = await rpc('getSignaturesForAddress', [ev.burnAddr, { limit: 50 }]);
+        return { ev, sigs: sigs || [] };
+      } catch (e) {
+        console.warn(`[WRONG] Sig fetch failed for ${ev.ref}:`, e.message);
+        return { ev, sigs: [] };
       }
-    }
+    }, 5);
+
+    // Flatten into individual signature items
+    const allSigs = [];
+    sigResults.forEach(({ ev, sigs }) => {
+      sigs.forEach(s => allSigs.push({ sig: s.signature, ev }));
+    });
+
+    // 2b. Fetch each transaction individually
+    const txResults = await parallel(allSigs, async (item) => {
+      try {
+        const tx = await rpc('getTransaction', [
+          item.sig,
+          { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }
+        ]);
+        return { tx, ev: item.ev, sig: item.sig };
+      } catch (e) {
+        console.warn(`[WRONG] Tx fetch failed for ${item.sig}:`, e.message);
+        return { tx: null, ev: item.ev, sig: item.sig };
+      }
+    }, 5);
+
+    // 2c. Parse each transaction for burn amounts
+    txResults.forEach(({ tx, ev, sig }) => {
+      if (!tx || tx.meta?.err) return;
+      txCount++;
+
+      const postBals = tx.meta?.postTokenBalances || [];
+      const preBals  = tx.meta?.preTokenBalances  || [];
+      let burnAmount = 0;
+      for (const post of postBals) {
+        if (post.mint !== CONFIG.TOKEN_MINT) continue;
+        if (post.owner !== ev.burnAddr) continue;
+        const pre   = preBals.find(p => p.accountIndex === post.accountIndex);
+        const delta = Number(post.uiTokenAmount.amount) - (pre ? Number(pre.uiTokenAmount.amount) : 0);
+        if (delta > 0) { burnAmount = delta; break; }
+      }
+      if (burnAmount === 0) return;
+
+      const accounts = tx.transaction?.message?.accountKeys || [];
+      const sender   = accounts.find(a => a.signer && a.writable && a.pubkey !== ev.burnAddr)
+                       ?.pubkey || accounts[0]?.pubkey || 'Unknown';
+      const date     = tx.blockTime ? new Date(tx.blockTime * 1000).toISOString().split('T')[0] : '—';
+      const txSig    = tx.transaction?.signatures?.[0] || sig;
+
+      if (!burns[ev.ref]) burns[ev.ref] = [];
+      burns[ev.ref].push({ wallet: sender, amount: burnAmount / Math.pow(10, CONFIG.TOKEN_DECIMALS), tx: txSig, date });
+    });
 
     // ── Step 3: ensure progress bars reflect real balance even if tx parse missed it ──
     EVENTS.forEach(ev => {
@@ -911,9 +927,8 @@ function buildContribTable(contribs, ref) {
     return `
       <div class="no-burns-msg">
         <p>No burns recorded yet for this event.<br>
-        Include <strong>${ref}</strong> as your transaction memo when burning.<br>
-        Your wallet will appear here automatically.</p>
-        <div class="ref-pill">${ref}</div>
+        Send <strong>$WRONG</strong> to this event's unique burn address.<br>
+        Click <strong>"🔥 Burn for ${ref}"</strong> above to get the address and QR code.</p>
       </div>`;
   }
 
