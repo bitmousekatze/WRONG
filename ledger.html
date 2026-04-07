@@ -602,7 +602,7 @@ async function fetchBurnTransactions() {
     const burns   = {};
     let   txCount = 0;
 
-    // ── Step 1: get $WRONG balance at every burn address (individual calls) ──
+    // ── Step 1: get $WRONG balance + token account (ATA) pubkey at every burn address ──
     const balResults = await parallel(EVENTS, async (ev) => {
       try {
         const result = await rpc('getTokenAccountsByOwner', [
@@ -611,26 +611,30 @@ async function fetchBurnTransactions() {
           { encoding: 'jsonParsed' }
         ]);
         let total = 0;
+        let ataPubkey = null;
         (result?.value || []).forEach(acc => {
           total += Number(acc.account?.data?.parsed?.info?.tokenAmount?.uiAmount || 0);
+          if (!ataPubkey && acc.pubkey) ataPubkey = acc.pubkey;
         });
-        return { ref: ev.ref, total };
+        return { ref: ev.ref, total, ataPubkey };
       } catch (e) {
         console.warn(`[WRONG] Balance fetch failed for ${ev.ref}:`, e.message);
-        return { ref: ev.ref, total: 0 };
+        return { ref: ev.ref, total: 0, ataPubkey: null };
       }
     }, 5);
 
     const totals = {};
-    balResults.forEach(r => { totals[r.ref] = r.total; });
+    const atas   = {};
+    balResults.forEach(r => { totals[r.ref] = r.total; atas[r.ref] = r.ataPubkey; });
 
     // ── Step 2: per-wallet tx breakdown, only for addresses with tokens ──
-    const activeEvents = EVENTS.filter(ev => (totals[ev.ref] || 0) > 0);
+    const activeEvents = EVENTS.filter(ev => (totals[ev.ref] || 0) > 0 && atas[ev.ref]);
 
-    // 2a. Get signatures for each active burn address
+    // 2a. Get signatures using the TOKEN ACCOUNT (ATA) address, not the wallet address
+    //     (SPL token transfers are indexed under the ATA, not the owner wallet)
     const sigResults = await parallel(activeEvents, async (ev) => {
       try {
-        const sigs = await rpc('getSignaturesForAddress', [ev.burnAddr, { limit: 50 }]);
+        const sigs = await rpc('getSignaturesForAddress', [atas[ev.ref], { limit: 50 }]);
         return { ev, sigs: sigs || [] };
       } catch (e) {
         console.warn(`[WRONG] Sig fetch failed for ${ev.ref}:`, e.message);
