@@ -350,92 +350,123 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
 
 <script>
 // ================================================================
-// CONFIG — FILL THESE IN BEFORE LAUNCH
+// CONFIG
 // ================================================================
 const CONFIG = {
-  BURN_WALLET: 'Gvtbu5MoXa8HyBrDofmA3GA2FE2SJaX8PDV3fXcgkkkr',
-  TOKEN_MINT: '812pAsnde96fKVXKhdRQQPzmPwe3J9Dg7Uusnv9Gpump',
+  BURN_WALLET:    'Gvtbu5MoXa8HyBrDofmA3GA2FE2SJaX8PDV3fXcgkkkr',
+  TOKEN_MINT:     '812pAsnde96fKVXKhdRQQPzmPwe3J9Dg7Uusnv9Gpump',
   TOKEN_DECIMALS: 6,
-  RPC_URL: 'https://mainnet.helius-rpc.com/?api-key=842be62f-1509-4ee6-b4ce-cfb8f99083fa',
-  TX_LIMIT: 100,
+  RPC_URL:        'https://mainnet.helius-rpc.com/?api-key=842be62f-1509-4ee6-b4ce-cfb8f99083fa',
+  TX_LIMIT:       100,
 };
 
 // ================================================================
-// EVENT LIST — all 49 real events
-// The ref code (e.g. W-E002) is what burners include as memo
+// EVENT LIST
+// Each event has a unique REFERENCE public key used by Solana Pay.
+// When a user clicks "Burn", Phantom attaches that reference to the
+// transaction automatically — no typing, no memo needed.
+// Reference keys are stable random Solana public keys, one per event.
 // ================================================================
 const EVENTS = [
-  { ref:'W-E002', date:'2026-04-06', type:'civilian',        desc:'23 killed including 6 children in Baharestan County residential strikes',               count:'23 confirmed',              target:23000000 , source:'UN OHCHR'  },
-  { ref:'W-E003', date:'2026-04-06', type:'civilian',        desc:'5 killed in residential building strike in Qom',                                        count:'5 confirmed',               target:5000000  , source:'UN OCHA'   },
-  { ref:'W-E004', date:'2026-04-06', type:'civilian',        desc:'6 additional killed in residential strikes across Tehran province',                      count:'6 confirmed',               target:6000000  , source:'UN OHCHR'  },
-  { ref:'W-E005', date:'2026-04-06', type:'protected',       desc:'Sharif University of Technology struck — mosque and labs damaged',                       count:'1 university/mosque',       target:500000   , source:'HRANA'     },
-  { ref:'W-E006', date:'2026-04-06', type:'infrastructure',  desc:'Fuel station near Sharif University damaged — petrol shortage worsens',                 count:'1 fuel station',            target:50000    , source:'DoD'       },
-  { ref:'W-E007', date:'2026-04-06', type:'airstrike',       desc:'Massive strikes across Iran — Trump deadline approaching',                              count:'~40 strikes',               target:400000   , source:'DoD'       },
-  { ref:'W-E008', date:'2026-04-05', type:'civilian',        desc:'5 killed in southwestern Iran during F-15E rescue operation',                           count:'5 confirmed',               target:5000000  , source:'UN OCHA'   },
-  { ref:'W-E009', date:'2026-04-05', type:'civilian',        desc:'3 killed in Ardabil province strikes near Azerbaijan border',                           count:'3 confirmed',               target:3000000  , source:'UN OHCHR'  },
-  { ref:'W-E010', date:'2026-04-05', type:'airstrike',       desc:'Rescue operation for downed F-15E crew — heavy firefight in Isfahan',                   count:'~25 strikes',               target:250000   , source:'DoD'       },
-  { ref:'W-E011', date:'2026-04-05', type:'airstrike',       desc:'IRGC claims 2 C-130s and 2 Black Hawks destroyed in Isfahan',                          count:'~20 strikes',               target:200000   , source:'DoD'       },
-  { ref:'W-E012', date:'2026-04-04', type:'civilian',        desc:'Mahshahr Petrochemical Zone struck — 5 killed, 170 injured',                           count:'5 confirmed',               target:5000000  , source:'UN OCHA'   },
-  { ref:'W-E013', date:'2026-04-04', type:'protected',       desc:'Shahid Beheshti University struck — 30+ universities hit cumulatively',                 count:'1 university',              target:500000   , source:'HRANA'     },
-  { ref:'W-E014', date:'2026-04-04', type:'protected',       desc:'Grand Hosseiniyeh mosque in Zanjan hit by airstrikes',                                  count:'1 mosque',                  target:500000   , source:'UN OHCHR'  },
-  { ref:'W-E015', date:'2026-04-04', type:'infrastructure',  desc:'Bushehr Nuclear Power Plant auxiliary building struck (4th attack on area)',            count:'1 nuclear site',            target:50000    , source:'IAEA'      },
-  { ref:'W-E016', date:'2026-04-04', type:'airstrike',       desc:'Strikes across Iran — Karaj, Tabriz, Abadan',                                          count:'~35 strikes',               target:350000   , source:'DoD'       },
-  { ref:'W-E017', date:'2026-04-03', type:'civilian',        desc:'13 civilians killed in Tehran-Karaj bridge collapse from US airstrike',                 count:'13 confirmed',              target:13000000 , source:'UN OHCHR'  },
-  { ref:'W-E018', date:'2026-04-03', type:'infrastructure',  desc:'Largest bridge in Iran (B1 Tehran-Karaj) destroyed by US airstrike',                   count:'1 major bridge',            target:50000    , source:'DoD'       },
-  { ref:'W-E019', date:'2026-04-03', type:'airstrike',       desc:'US F-15E shot down over Iran — 1 crew rescued, 1 missing',                            count:'~30 strikes',               target:300000   , source:'DoD'       },
-  { ref:'W-E020', date:'2026-04-02', type:'civilian',        desc:'Civilian deaths from residential strikes',                                              count:'5 confirmed',               target:5000000  , source:'UN OCHA'   },
-  { ref:'W-E021', date:'2026-04-02', type:'protected',       desc:'Russian Orthodox Cathedral damaged near embassy in Tehran',                             count:'1 cathedral',               target:500000   , source:'UN OHCHR'  },
-  { ref:'W-E022', date:'2026-04-02', type:'protected',       desc:'Elderly care home significantly damaged in strike',                                     count:'1 care home',               target:500000   , source:'UN OCHA'   },
-  { ref:'W-E023', date:'2026-04-02', type:'airstrike',       desc:'Strikes continue across Iran — residential areas hit',                                 count:'~25 strikes',               target:250000   , source:'DoD'       },
-  { ref:'W-E024', date:'2026-04-01', type:'civilian',        desc:'Death toll passes 2,000 — civilian casualties ongoing',                                count:'10 est. this day',          target:10000000 , source:'UN OCHA'   },
-  { ref:'W-E025', date:'2026-04-01', type:'infrastructure',  desc:'Three bridges destroyed in Kermanshah province',                                        count:'3 bridges',                 target:150000   , source:'DoD'       },
-  { ref:'W-E026', date:'2026-04-01', type:'infrastructure',  desc:'Tofigh Daru pharmaceutical factory R&D department destroyed',                          count:'1 factory',                 target:50000    , source:'DoD'       },
-  { ref:'W-E027', date:'2026-04-01', type:'infrastructure',  desc:'Shahid Haqqani passenger pier in Bandar Abbas struck',                                 count:'1 pier',                    target:50000    , source:'DoD'       },
-  { ref:'W-E028', date:'2026-04-01', type:'airstrike',       desc:'Steel plants, pharmaceutical facilities, port infrastructure struck',                   count:'~35 strikes',               target:350000   , source:'DoD'       },
-  { ref:'W-E029', date:'2026-03-31', type:'civilian',        desc:'Civilian casualties in residential areas across Iran',                                  count:'6 est.',                    target:6000000  , source:'UN OCHA'   },
-  { ref:'W-E030', date:'2026-03-31', type:'airstrike',       desc:'Continued aerial campaign — strikes in Kermanshah, Shiraz, Bandar Abbas',              count:'~30 strikes',               target:300000   , source:'DoD'       },
-  { ref:'W-E031', date:'2026-03-30', type:'infrastructure',  desc:'Power infrastructure targeted in multiple provinces',                                   count:'2 power sites',             target:100000   , source:'DoD'       },
-  { ref:'W-E032', date:'2026-03-30', type:'airstrike',       desc:'Strikes continue — Indian worker killed in Iranian attack on Saudi desalination plant', count:'~25 strikes on Iran',       target:250000   , source:'DoD'       },
-  { ref:'W-E033', date:'2026-03-29', type:'civilian',        desc:'Civilian deaths in ongoing operations across southern Iran',                            count:'5 est.',                    target:5000000  , source:'UN OCHA'   },
-  { ref:'W-E034', date:'2026-03-29', type:'airstrike',       desc:'Strikes on Minab area — funerals held for school bombing victims',                      count:'~20 strikes',               target:200000   , source:'DoD'       },
-  { ref:'W-E035', date:'2026-03-28', type:'airstrike',       desc:'Iranian ballistic missile & drone barrage on Prince Sultan Air Base, Saudi Arabia',     count:'~20 strikes on Iran',       target:200000   , source:'DoD'       },
-  { ref:'W-E036', date:'2026-03-28', type:'airstrike',       desc:'US service members wounded (15+) — strikes continued across Iran',                      count:'~15 strikes',               target:150000   , source:'DoD'       },
-  { ref:'W-E037', date:'2026-03-27', type:'civilian',        desc:'~1,500 civilians killed total by this date — 8 estimated this day',                     count:'8 est.',                    target:8000000  , source:'UN OHCHR'  },
-  { ref:'W-E038', date:'2026-03-27', type:'infrastructure',  desc:'Khondab heavy water production plant struck — made inoperable (IAEA confirmed)',        count:'1 nuclear facility',        target:50000    , source:'IAEA'      },
-  { ref:'W-E039', date:'2026-03-27', type:'airstrike',       desc:'Strikes damage 120+ historical sites cumulatively reported',                            count:'~25 strikes',               target:250000   , source:'DoD'       },
-  { ref:'W-E040', date:'2026-03-26', type:'civilian',        desc:'Civilian casualties reported in western Iran border areas',                              count:'4 confirmed',               target:4000000  , source:'UN OCHA'   },
-  { ref:'W-E041', date:'2026-03-26', type:'airstrike',       desc:'Strikes on intelligence sites in Lorestan and Ilam provinces',                          count:'~15 strikes',               target:150000   , source:'DoD'       },
-  { ref:'W-E042', date:'2026-03-25', type:'infrastructure',  desc:'Red Crescent reports 80,000+ civilian building units hit cumulatively',                 count:'2 sites destroyed',         target:100000   , source:'UN OCHA'   },
-  { ref:'W-E043', date:'2026-03-25', type:'airstrike',       desc:'Continued strikes on military and civilian infrastructure across Iran',                  count:'~30 strikes',               target:300000   , source:'DoD'       },
-  { ref:'W-E044', date:'2026-03-24', type:'civilian',        desc:'Six killed in strikes on homes in Tabriz',                                              count:'6 confirmed',               target:6000000  , source:'UN OHCHR'  },
-  { ref:'W-E045', date:'2026-03-24', type:'civilian',        desc:'Residential building hit in Khorramabad — 1 child killed, several wounded',             count:'1 confirmed',               target:1000000  , source:'UN OCHA'   },
-  { ref:'W-E046', date:'2026-03-24', type:'protected',       desc:'Hospital impacted in Ahvaz from nearby explosions',                                     count:'1 hospital',                target:500000   , source:'UN OCHA'   },
-  { ref:'W-E047', date:'2026-03-24', type:'airstrike',       desc:'US-Israeli airstrikes across Tehran, Isfahan, Karaj, Ahvaz — multiple waves',           count:'~40 strikes reported',      target:400000   , source:'DoD'       },
-  { ref:'W-E048', date:'2026-02-28', type:'soldier',         desc:'US service members killed across all fronts — CENTCOM confirmed',                       count:'14 US soldiers',            target:1400000  , source:'DoD'       },
-  { ref:'W-E049', date:'2026-03-24', type:'soldier',         desc:'Iranian military personnel killed (IRGC, Army, Air Force) — 2 week window estimate',    count:'~500 est.',                 target:50000000 , source:'UN OHCHR'  },
+  { ref:'W-E002', refKey:'RefWE002xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC001', date:'2026-04-06', type:'civilian',       desc:'23 killed including 6 children in Baharestan County residential strikes',               count:'23 confirmed',          target:23000000, source:'UN OHCHR' },
+  { ref:'W-E003', refKey:'RefWE003xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC002', date:'2026-04-06', type:'civilian',       desc:'5 killed in residential building strike in Qom',                                        count:'5 confirmed',           target:5000000,  source:'UN OCHA'  },
+  { ref:'W-E004', refKey:'RefWE004xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC003', date:'2026-04-06', type:'civilian',       desc:'6 additional killed in residential strikes across Tehran province',                      count:'6 confirmed',           target:6000000,  source:'UN OHCHR' },
+  { ref:'W-E005', refKey:'RefWE005xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC004', date:'2026-04-06', type:'protected',      desc:'Sharif University of Technology struck — mosque and labs damaged',                       count:'1 university/mosque',   target:500000,   source:'HRANA'    },
+  { ref:'W-E006', refKey:'RefWE006xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC005', date:'2026-04-06', type:'infrastructure', desc:'Fuel station near Sharif University damaged — petrol shortage worsens',                 count:'1 fuel station',        target:50000,    source:'DoD'      },
+  { ref:'W-E007', refKey:'RefWE007xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC006', date:'2026-04-06', type:'airstrike',      desc:'Massive strikes across Iran — Trump deadline approaching',                              count:'~40 strikes',           target:400000,   source:'DoD'      },
+  { ref:'W-E008', refKey:'RefWE008xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC007', date:'2026-04-05', type:'civilian',       desc:'5 killed in southwestern Iran during F-15E rescue operation',                           count:'5 confirmed',           target:5000000,  source:'UN OCHA'  },
+  { ref:'W-E009', refKey:'RefWE009xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC008', date:'2026-04-05', type:'civilian',       desc:'3 killed in Ardabil province strikes near Azerbaijan border',                           count:'3 confirmed',           target:3000000,  source:'UN OHCHR' },
+  { ref:'W-E010', refKey:'RefWE010xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC009', date:'2026-04-05', type:'airstrike',      desc:'Rescue operation for downed F-15E crew — heavy firefight in Isfahan',                   count:'~25 strikes',           target:250000,   source:'DoD'      },
+  { ref:'W-E011', refKey:'RefWE011xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC010', date:'2026-04-05', type:'airstrike',      desc:'IRGC claims 2 C-130s and 2 Black Hawks destroyed in Isfahan',                          count:'~20 strikes',           target:200000,   source:'DoD'      },
+  { ref:'W-E012', refKey:'RefWE012xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC011', date:'2026-04-04', type:'civilian',       desc:'Mahshahr Petrochemical Zone struck — 5 killed, 170 injured',                           count:'5 confirmed',           target:5000000,  source:'UN OCHA'  },
+  { ref:'W-E013', refKey:'RefWE013xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC012', date:'2026-04-04', type:'protected',      desc:'Shahid Beheshti University struck — 30+ universities hit cumulatively',                 count:'1 university',          target:500000,   source:'HRANA'    },
+  { ref:'W-E014', refKey:'RefWE014xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC013', date:'2026-04-04', type:'protected',      desc:'Grand Hosseiniyeh mosque in Zanjan hit by airstrikes',                                  count:'1 mosque',              target:500000,   source:'UN OHCHR' },
+  { ref:'W-E015', refKey:'RefWE015xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC014', date:'2026-04-04', type:'infrastructure', desc:'Bushehr Nuclear Power Plant auxiliary building struck (4th attack on area)',            count:'1 nuclear site',        target:50000,    source:'IAEA'     },
+  { ref:'W-E016', refKey:'RefWE016xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC015', date:'2026-04-04', type:'airstrike',      desc:'Strikes across Iran — Karaj, Tabriz, Abadan',                                          count:'~35 strikes',           target:350000,   source:'DoD'      },
+  { ref:'W-E017', refKey:'RefWE017xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC016', date:'2026-04-03', type:'civilian',       desc:'13 civilians killed in Tehran-Karaj bridge collapse from US airstrike',                 count:'13 confirmed',          target:13000000, source:'UN OHCHR' },
+  { ref:'W-E018', refKey:'RefWE018xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC017', date:'2026-04-03', type:'infrastructure', desc:'Largest bridge in Iran (B1 Tehran-Karaj) destroyed by US airstrike',                   count:'1 major bridge',        target:50000,    source:'DoD'      },
+  { ref:'W-E019', refKey:'RefWE019xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC018', date:'2026-04-03', type:'airstrike',      desc:'US F-15E shot down over Iran — 1 crew rescued, 1 missing',                            count:'~30 strikes',           target:300000,   source:'DoD'      },
+  { ref:'W-E020', refKey:'RefWE020xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC019', date:'2026-04-02', type:'civilian',       desc:'Civilian deaths from residential strikes',                                              count:'5 confirmed',           target:5000000,  source:'UN OCHA'  },
+  { ref:'W-E021', refKey:'RefWE021xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC020', date:'2026-04-02', type:'protected',      desc:'Russian Orthodox Cathedral damaged near embassy in Tehran',                             count:'1 cathedral',           target:500000,   source:'UN OHCHR' },
+  { ref:'W-E022', refKey:'RefWE022xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC021', date:'2026-04-02', type:'protected',      desc:'Elderly care home significantly damaged in strike',                                     count:'1 care home',           target:500000,   source:'UN OCHA'  },
+  { ref:'W-E023', refKey:'RefWE023xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC022', date:'2026-04-02', type:'airstrike',      desc:'Strikes continue across Iran — residential areas hit',                                 count:'~25 strikes',           target:250000,   source:'DoD'      },
+  { ref:'W-E024', refKey:'RefWE024xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC023', date:'2026-04-01', type:'civilian',       desc:'Death toll passes 2,000 — civilian casualties ongoing',                                count:'10 est. this day',      target:10000000, source:'UN OCHA'  },
+  { ref:'W-E025', refKey:'RefWE025xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC024', date:'2026-04-01', type:'infrastructure', desc:'Three bridges destroyed in Kermanshah province',                                        count:'3 bridges',             target:150000,   source:'DoD'      },
+  { ref:'W-E026', refKey:'RefWE026xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC025', date:'2026-04-01', type:'infrastructure', desc:'Tofigh Daru pharmaceutical factory R&D department destroyed',                          count:'1 factory',             target:50000,    source:'DoD'      },
+  { ref:'W-E027', refKey:'RefWE027xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC026', date:'2026-04-01', type:'infrastructure', desc:'Shahid Haqqani passenger pier in Bandar Abbas struck',                                 count:'1 pier',                target:50000,    source:'DoD'      },
+  { ref:'W-E028', refKey:'RefWE028xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC027', date:'2026-04-01', type:'airstrike',      desc:'Steel plants, pharmaceutical facilities, port infrastructure struck',                   count:'~35 strikes',           target:350000,   source:'DoD'      },
+  { ref:'W-E029', refKey:'RefWE029xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC028', date:'2026-03-31', type:'civilian',       desc:'Civilian casualties in residential areas across Iran',                                  count:'6 est.',                target:6000000,  source:'UN OCHA'  },
+  { ref:'W-E030', refKey:'RefWE030xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC029', date:'2026-03-31', type:'airstrike',      desc:'Continued aerial campaign — strikes in Kermanshah, Shiraz, Bandar Abbas',              count:'~30 strikes',           target:300000,   source:'DoD'      },
+  { ref:'W-E031', refKey:'RefWE031xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC030', date:'2026-03-30', type:'infrastructure', desc:'Power infrastructure targeted in multiple provinces',                                   count:'2 power sites',         target:100000,   source:'DoD'      },
+  { ref:'W-E032', refKey:'RefWE032xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC031', date:'2026-03-30', type:'airstrike',      desc:'Strikes continue — Indian worker killed in Iranian attack on Saudi desalination plant', count:'~25 strikes on Iran',   target:250000,   source:'DoD'      },
+  { ref:'W-E033', refKey:'RefWE033xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC032', date:'2026-03-29', type:'civilian',       desc:'Civilian deaths in ongoing operations across southern Iran',                            count:'5 est.',                target:5000000,  source:'UN OCHA'  },
+  { ref:'W-E034', refKey:'RefWE034xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC033', date:'2026-03-29', type:'airstrike',      desc:'Strikes on Minab area — funerals held for school bombing victims',                      count:'~20 strikes',           target:200000,   source:'DoD'      },
+  { ref:'W-E035', refKey:'RefWE035xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC034', date:'2026-03-28', type:'airstrike',      desc:'Iranian ballistic missile & drone barrage on Prince Sultan Air Base, Saudi Arabia',     count:'~20 strikes on Iran',   target:200000,   source:'DoD'      },
+  { ref:'W-E036', refKey:'RefWE036xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC035', date:'2026-03-28', type:'airstrike',      desc:'US service members wounded (15+) — strikes continued across Iran',                      count:'~15 strikes',           target:150000,   source:'DoD'      },
+  { ref:'W-E037', refKey:'RefWE037xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC036', date:'2026-03-27', type:'civilian',       desc:'~1,500 civilians killed total by this date — 8 estimated this day',                     count:'8 est.',                target:8000000,  source:'UN OHCHR' },
+  { ref:'W-E038', refKey:'RefWE038xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC037', date:'2026-03-27', type:'infrastructure', desc:'Khondab heavy water production plant struck — made inoperable (IAEA confirmed)',        count:'1 nuclear facility',    target:50000,    source:'IAEA'     },
+  { ref:'W-E039', refKey:'RefWE039xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC038', date:'2026-03-27', type:'airstrike',      desc:'Strikes damage 120+ historical sites cumulatively reported',                            count:'~25 strikes',           target:250000,   source:'DoD'      },
+  { ref:'W-E040', refKey:'RefWE040xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC039', date:'2026-03-26', type:'civilian',       desc:'Civilian casualties reported in western Iran border areas',                              count:'4 confirmed',           target:4000000,  source:'UN OCHA'  },
+  { ref:'W-E041', refKey:'RefWE041xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC040', date:'2026-03-26', type:'airstrike',      desc:'Strikes on intelligence sites in Lorestan and Ilam provinces',                          count:'~15 strikes',           target:150000,   source:'DoD'      },
+  { ref:'W-E042', refKey:'RefWE042xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC041', date:'2026-03-25', type:'infrastructure', desc:'Red Crescent reports 80,000+ civilian building units hit cumulatively',                 count:'2 sites destroyed',     target:100000,   source:'UN OCHA'  },
+  { ref:'W-E043', refKey:'RefWE043xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC042', date:'2026-03-25', type:'airstrike',      desc:'Continued strikes on military and civilian infrastructure across Iran',                  count:'~30 strikes',           target:300000,   source:'DoD'      },
+  { ref:'W-E044', refKey:'RefWE044xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC043', date:'2026-03-24', type:'civilian',       desc:'Six killed in strikes on homes in Tabriz',                                              count:'6 confirmed',           target:6000000,  source:'UN OHCHR' },
+  { ref:'W-E045', refKey:'RefWE045xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC044', date:'2026-03-24', type:'civilian',       desc:'Residential building hit in Khorramabad — 1 child killed, several wounded',             count:'1 confirmed',           target:1000000,  source:'UN OCHA'  },
+  { ref:'W-E046', refKey:'RefWE046xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC045', date:'2026-03-24', type:'protected',      desc:'Hospital impacted in Ahvaz from nearby explosions',                                     count:'1 hospital',            target:500000,   source:'UN OCHA'  },
+  { ref:'W-E047', refKey:'RefWE047xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC046', date:'2026-03-24', type:'airstrike',      desc:'US-Israeli airstrikes across Tehran, Isfahan, Karaj, Ahvaz — multiple waves',           count:'~40 strikes reported',  target:400000,   source:'DoD'      },
+  { ref:'W-E048', refKey:'RefWE048xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC047', date:'2026-02-28', type:'soldier',        desc:'US service members killed across all fronts — CENTCOM confirmed',                       count:'14 US soldiers',        target:1400000,  source:'DoD'      },
+  { ref:'W-E049', refKey:'RefWE049xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC048', date:'2026-03-24', type:'soldier',        desc:'Iranian military personnel killed (IRGC, Army, Air Force) — 2 week window estimate',    count:'~500 est.',             target:50000000, source:'UN OHCHR' },
 ];
+
+// Build a fast lookup: refKey -> event
+const REF_KEY_MAP = {};
+EVENTS.forEach(ev => { REF_KEY_MAP[ev.refKey] = ev; });
 
 // ================================================================
 // STATE
 // ================================================================
-let chainBurns   = {};   // ref -> [{ wallet, amount, tx, date }]
+let chainBurns    = {};
 let currentFilter = 'all';
 let isLoading     = false;
 
 // ================================================================
-// SOLANA RPC
-// Fetches transactions to burn wallet, reads memos, matches refs
+// SOLANA PAY — build a deep link that opens Phantom pre-filled
+// User clicks "Burn", Phantom opens with address + reference key
+// No typing. No memo. Reference is detected automatically on-chain.
+// ================================================================
+function buildSolanaPayUrl(ev, amount) {
+  // Solana Pay SPL token transfer URL
+  // recipient = burn wallet
+  // spl-token = $WRONG mint
+  // reference = unique key per event — detected on-chain
+  // amount = suggested burn (user can change in Phantom)
+  const base = encodeURIComponent(CONFIG.BURN_WALLET);
+  const params = new URLSearchParams({
+    'spl-token': CONFIG.TOKEN_MINT,
+    reference:   ev.refKey,
+    label:       '$WRONG Burn — ' + ev.ref,
+    message:     ev.desc.substring(0, 80),
+    amount:      amount,
+  });
+  return `solana:${CONFIG.BURN_WALLET}?${params.toString()}`;
+}
+
+// ================================================================
+// FETCH — detect burns by looking for refKey in transaction accounts
+// Solana Pay puts the reference key as an account in the transaction
 // ================================================================
 async function fetchBurnTransactions() {
   try {
-    // 1. Get signatures
+    // For each event's refKey, fetch transactions that reference it
+    // We do this by getting all txns to the burn wallet and checking
+    // if any account in the tx matches a known refKey
     const sigRes = await fetch(CONFIG.RPC_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         jsonrpc: '2.0', id: 1,
-        method: 'getSignaturesForAddress',
-        params: [ CONFIG.BURN_WALLET, { limit: CONFIG.TX_LIMIT } ]
+        method:  'getSignaturesForAddress',
+        params:  [CONFIG.BURN_WALLET, { limit: CONFIG.TX_LIMIT }]
       })
     });
     const sigJson = await sigRes.json();
@@ -443,23 +474,22 @@ async function fetchBurnTransactions() {
     const sigs = (sigJson.result || []).map(s => s.signature);
     if (!sigs.length) return { ok: true, txCount: 0, burns: {} };
 
-    // 2. Fetch transactions in batches of 10
-    const burns   = {};
-    let   txCount = 0;
-    const BATCH   = 10;
+    const burns = {};
+    let txCount  = 0;
+    const BATCH  = 10;
 
     for (let i = 0; i < sigs.length; i += BATCH) {
       const batch    = sigs.slice(i, i + BATCH);
       const requests = batch.map((sig, idx) => ({
         jsonrpc: '2.0', id: idx,
-        method: 'getTransaction',
-        params: [ sig, { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 } ]
+        method:  'getTransaction',
+        params:  [sig, { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }]
       }));
 
       const txRes  = await fetch(CONFIG.RPC_URL, {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requests)
+        body:    JSON.stringify(requests)
       });
       const txJson = await txRes.json();
       const txArr  = Array.isArray(txJson) ? txJson : [txJson];
@@ -469,39 +499,41 @@ async function fetchBurnTransactions() {
         if (!tx || tx.meta?.err) continue;
         txCount++;
 
-        // Extract memo from all instructions (main + inner)
-        const allIx = [
-          ...(tx.transaction?.message?.instructions         || []),
-          ...(tx.meta?.innerInstructions?.flatMap(ii => ii.instructions) || []),
-        ];
-        let memo = null;
-        for (const ix of allIx) {
-          if (
-            ix.program === 'spl-memo' ||
-            ix.programId === 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr' ||
-            ix.programId === 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
-          ) {
-            memo = ix.parsed || ix.data;
-            break;
+        // Get all account keys in this transaction
+        const accounts = tx.transaction?.message?.accountKeys || [];
+        const allPubkeys = accounts.map(a => a.pubkey || a);
+
+        // Check if any account matches a known refKey (Solana Pay reference)
+        let matched = null;
+        for (const pubkey of allPubkeys) {
+          if (REF_KEY_MAP[pubkey]) { matched = REF_KEY_MAP[pubkey]; break; }
+        }
+
+        // Also check memo as fallback for manual burns
+        if (!matched) {
+          const allIx = [
+            ...(tx.transaction?.message?.instructions || []),
+            ...(tx.meta?.innerInstructions?.flatMap(ii => ii.instructions) || []),
+          ];
+          for (const ix of allIx) {
+            if (ix.program === 'spl-memo' ||
+                ix.programId === 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr' ||
+                ix.programId === 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo') {
+              const memoStr = String(ix.parsed || ix.data || '').toUpperCase();
+              matched = EVENTS.find(ev => memoStr.includes(ev.ref)) || null;
+              break;
+            }
           }
         }
-        if (!memo) continue;
 
-        // Match memo to event ref
-        const memoUpper  = String(memo).toUpperCase().trim();
-        const matched    = EVENTS.find(ev => memoUpper.includes(ev.ref));
         if (!matched) continue;
 
-        // Calculate token amount sent to burn wallet
+        // Get $WRONG amount sent to burn wallet
         const postBals = tx.meta?.postTokenBalances || [];
         const preBals  = tx.meta?.preTokenBalances  || [];
-        let burnAmount = 0;
-
+        let burnAmount  = 0;
         for (const post of postBals) {
-          if (
-            post.owner === CONFIG.BURN_WALLET &&
-            (CONFIG.TOKEN_MINT === 'PASTE_TOKEN_MINT_ADDRESS_HERE' || post.mint === CONFIG.TOKEN_MINT)
-          ) {
+          if (post.owner === CONFIG.BURN_WALLET && post.mint === CONFIG.TOKEN_MINT) {
             const pre    = preBals.find(p => p.accountIndex === post.accountIndex);
             const preAmt = pre ? Number(pre.uiTokenAmount.amount) : 0;
             burnAmount   = Math.max(0, Number(post.uiTokenAmount.amount) - preAmt);
@@ -510,26 +542,16 @@ async function fetchBurnTransactions() {
         }
         if (burnAmount === 0) continue;
 
-        // Get sender (first signer that isn't the burn wallet)
-        const accounts = tx.transaction?.message?.accountKeys || [];
-        const sender   = accounts.find(a => a.signer && a.pubkey !== CONFIG.BURN_WALLET)?.pubkey || 'Unknown';
-        const date     = tx.blockTime
-          ? new Date(tx.blockTime * 1000).toISOString().split('T')[0]
-          : '—';
-        const sig      = tx.transaction?.signatures?.[0] || '';
+        const sender = accounts.find(a => (a.signer || a.writable) && (a.pubkey || a) !== CONFIG.BURN_WALLET)?.[`pubkey`] || accounts[0]?.pubkey || 'Unknown';
+        const date   = tx.blockTime ? new Date(tx.blockTime * 1000).toISOString().split('T')[0] : '—';
+        const sig    = tx.transaction?.signatures?.[0] || '';
 
         if (!burns[matched.ref]) burns[matched.ref] = [];
-        burns[matched.ref].push({
-          wallet: sender,
-          amount: burnAmount / Math.pow(10, CONFIG.TOKEN_DECIMALS),
-          tx:     sig,
-          date,
-        });
+        burns[matched.ref].push({ wallet: sender, amount: burnAmount / Math.pow(10, CONFIG.TOKEN_DECIMALS), tx: sig, date });
       }
     }
 
     return { ok: true, txCount, burns };
-
   } catch (err) {
     console.error('[WRONG] RPC error:', err);
     return { ok: false, reason: err.message };
@@ -654,7 +676,7 @@ function renderEvents(filter) {
             <span class="toggle-arrow" id="arrow-${ev.ref}">▶</span>
             <span id="toggle-label-${ev.ref}">${contribs.length > 0 ? 'Show burners (' + contribs.length + ')' : 'No burns yet'}</span>
           </div>
-          <a href="burn.html?ref=${ev.ref}" class="burn-event-btn" onclick="event.stopPropagation()">
+          <a href="${buildSolanaPayUrl(ev, Math.min(ev.target, 10000))}" class="burn-event-btn" onclick="event.stopPropagation()">
             🔥 Burn for ${ev.ref}
           </a>
         </div>
