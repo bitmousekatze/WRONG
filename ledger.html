@@ -569,19 +569,44 @@ function buildSolanaPayUrl(ev, amount) {
   });
   return 'solana:' + ev.burnAddr + '?' + params.toString();
 }
-// We also read individual transactions to get per-wallet contribution amounts.
+// Two steps per event:
+// 1. getTokenAccountsByOwner → reliable total (handles ATA correctly)
+// 2. getSignaturesForAddress + getTransaction → per-wallet breakdown
 // ================================================================
 async function fetchBurnTransactions() {
   try {
-    const burns   = {};
-    let txCount   = 0;
+    const burns  = {};
+    let txCount  = 0;
 
-    // Batch all balance + transaction requests across all 48 addresses
-    const BATCH = 5; // 5 events at a time to avoid rate limiting
-    for (let i = 0; i < EVENTS.length; i += BATCH) {
-      const slice = EVENTS.slice(i, i + BATCH);
+    // ── Step 1: get $WRONG balance at every burn address in one batch ──
+    const balRequests = EVENTS.map((ev, idx) => ({
+      jsonrpc: '2.0', id: idx,
+      method:  'getTokenAccountsByOwner',
+      params:  [ ev.burnAddr, { mint: CONFIG.TOKEN_MINT }, { encoding: 'jsonParsed' } ]
+    }));
 
-      // For each event in this batch, get signatures for its burn address
+    const balRes  = await fetch(CONFIG.RPC_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body:   JSON.stringify(balRequests)
+    });
+    const balArr = await balRes.json();
+
+    const totals = {};
+    (Array.isArray(balArr) ? balArr : [balArr]).forEach((item, idx) => {
+      const ev  = EVENTS[idx];
+      let total = 0;
+      (item.result?.value || []).forEach(acc => {
+        total += Number(acc.account?.data?.parsed?.info?.tokenAmount?.uiAmount || 0);
+      });
+      totals[ev.ref] = total;
+    });
+
+    // ── Step 2: per-wallet tx breakdown, only for addresses with tokens ──
+    const activeEvents = EVENTS.filter(ev => (totals[ev.ref] || 0) > 0);
+
+    const BATCH = 5;
+    for (let i = 0; i < activeEvents.length; i += BATCH) {
+      const slice = activeEvents.slice(i, i + BATCH);
       const sigRequests = slice.map((ev, idx) => ({
         jsonrpc: '2.0', id: idx,
         method:  'getSignaturesForAddress',
@@ -589,84 +614,72 @@ async function fetchBurnTransactions() {
       }));
 
       const sigRes  = await fetch(CONFIG.RPC_URL, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(sigRequests)
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body:   JSON.stringify(sigRequests)
       });
-      const sigJson = await sigRes.json();
-      const sigArr  = Array.isArray(sigJson) ? sigJson : [sigJson];
-
-      // Collect all signatures across this batch
-      const allSigs = []; // { sig, ev }
-      sigArr.forEach((item, idx) => {
-        const ev   = slice[idx];
-        const sigs = (item.result || []).map(s => ({ sig: s.signature, ev }));
-        allSigs.push(...sigs);
+      const sigArr  = await sigRes.json();
+      const allSigs = [];
+      (Array.isArray(sigArr) ? sigArr : [sigArr]).forEach((item, idx) => {
+        const ev = slice[idx];
+        (item.result || []).forEach(s => allSigs.push({ sig: s.signature, ev }));
       });
 
-      if (!allSigs.length) continue;
-
-      // Fetch transactions in sub-batches of 10
       const TX_BATCH = 10;
       for (let j = 0; j < allSigs.length; j += TX_BATCH) {
-        const chunk    = allSigs.slice(j, j + TX_BATCH);
-        const txReqs   = chunk.map((item, idx) => ({
+        const chunk  = allSigs.slice(j, j + TX_BATCH);
+        const txReqs = chunk.map((item, idx) => ({
           jsonrpc: '2.0', id: idx,
           method:  'getTransaction',
           params:  [item.sig, { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }]
         }));
 
         const txRes  = await fetch(CONFIG.RPC_URL, {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify(txReqs)
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body:   JSON.stringify(txReqs)
         });
-        const txJson = await txRes.json();
-        const txArr2 = Array.isArray(txJson) ? txJson : [txJson];
+        const txArr = await txRes.json();
 
-        txArr2.forEach((item, idx) => {
+        (Array.isArray(txArr) ? txArr : [txArr]).forEach((item, idx) => {
           const tx = item.result;
           const ev = chunk[idx].ev;
           if (!tx || tx.meta?.err) return;
           txCount++;
 
-          // Find how many $WRONG tokens arrived at this event's burn address
           const postBals = tx.meta?.postTokenBalances || [];
           const preBals  = tx.meta?.preTokenBalances  || [];
           let burnAmount = 0;
-
           for (const post of postBals) {
-            if (post.owner === ev.burnAddr && post.mint === CONFIG.TOKEN_MINT) {
-              const pre    = preBals.find(p => p.accountIndex === post.accountIndex);
-              const preAmt = pre ? Number(pre.uiTokenAmount.amount) : 0;
-              burnAmount   = Math.max(0, Number(post.uiTokenAmount.amount) - preAmt);
-              break;
-            }
+            if (post.mint !== CONFIG.TOKEN_MINT) continue;
+            if (post.owner !== ev.burnAddr) continue;
+            const pre   = preBals.find(p => p.accountIndex === post.accountIndex);
+            const delta = Number(post.uiTokenAmount.amount) - (pre ? Number(pre.uiTokenAmount.amount) : 0);
+            if (delta > 0) { burnAmount = delta; break; }
           }
           if (burnAmount === 0) return;
 
-          // Find the sender (first signer that isn't the burn address)
           const accounts = tx.transaction?.message?.accountKeys || [];
-          const sender   = accounts.find(a =>
-            (a.signer === true || a.writable === true) &&
-            (a.pubkey || a) !== ev.burnAddr
-          )?.pubkey || accounts[0]?.pubkey || 'Unknown';
-
-          const date = tx.blockTime
-            ? new Date(tx.blockTime * 1000).toISOString().split('T')[0]
-            : '—';
-          const sig  = tx.transaction?.signatures?.[0] || chunk[idx].sig;
+          const sender   = accounts.find(a => a.signer && a.writable && a.pubkey !== ev.burnAddr)
+                           ?.pubkey || accounts[0]?.pubkey || 'Unknown';
+          const date     = tx.blockTime ? new Date(tx.blockTime * 1000).toISOString().split('T')[0] : '—';
+          const sig      = tx.transaction?.signatures?.[0] || chunk[idx].sig;
 
           if (!burns[ev.ref]) burns[ev.ref] = [];
-          burns[ev.ref].push({
-            wallet: sender,
-            amount: burnAmount / Math.pow(10, CONFIG.TOKEN_DECIMALS),
-            tx:     sig,
-            date
-          });
+          burns[ev.ref].push({ wallet: sender, amount: burnAmount / Math.pow(10, CONFIG.TOKEN_DECIMALS), tx: sig, date });
         });
       }
     }
+
+    // ── Step 3: ensure progress bars reflect real balance even if tx parse missed it ──
+    EVENTS.forEach(ev => {
+      const total       = totals[ev.ref] || 0;
+      if (total <= 0) return;
+      const parsedTotal = (burns[ev.ref] || []).reduce((s, b) => s + b.amount, 0);
+      const diff        = total - parsedTotal;
+      if (diff > 0.001) {
+        if (!burns[ev.ref]) burns[ev.ref] = [];
+        burns[ev.ref].push({ wallet: 'Unknown', amount: diff, tx: '', date: '—' });
+      }
+    });
 
     return { ok: true, txCount, burns };
   } catch (err) {
@@ -674,17 +687,6 @@ async function fetchBurnTransactions() {
     return { ok: false, reason: err.message };
   }
 }
-function buildSolanaPayUrl(ev, amount) {
-  const params = new URLSearchParams({
-    'spl-token': CONFIG.TOKEN_MINT,
-    reference:   ev.refKey,
-    label:       '$WRONG Burn \u2014 ' + ev.ref,
-    message:     ev.desc.substring(0, 80),
-    amount:      amount,
-  });
-  return 'solana:' + CONFIG.BURN_WALLET + '?' + params.toString();
-}
-
 // ================================================================
 // BURN MODAL
 // ================================================================
