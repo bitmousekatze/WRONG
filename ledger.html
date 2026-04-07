@@ -230,19 +230,6 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
 
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 @keyframes spin   { to{transform:rotate(360deg)} }
-@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-
-@media(max-width:800px){
-  .contrib-table-head,
-  .contrib-row { grid-template-columns: 1fr 130px 80px; }
-  .contrib-date, .contrib-table-head span:nth-child(3) { display:none; }
-}
-@media(max-width:600px){
-  .summary-strip{flex-wrap:wrap}
-  .summary-cell{min-width:50%}
-  .filters{gap:0.3rem}
-  .filter-btn{padding:0.4rem 0.6rem;font-size:0.55rem}
-}
 </style>
 </head>
 <body>
@@ -414,7 +401,6 @@ const EVENTS = [
   { ref:'W-E049', refKey:'RefWE049xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC048', date:'2026-03-24', type:'soldier',        desc:'Iranian military personnel killed (IRGC, Army, Air Force) — 2 week window estimate',    count:'~500 est.',             target:50000000, source:'UN OHCHR' },
 ];
 
-// Build a fast lookup: refKey -> event
 const REF_KEY_MAP = {};
 EVENTS.forEach(ev => { REF_KEY_MAP[ev.refKey] = ev; });
 
@@ -440,10 +426,7 @@ function buildSolanaPayUrl(ev, amount) {
 }
 
 // ================================================================
-// NEW: FIXED BURN TRIGGER (this fixes your error)
-// We no longer use <a href="solana:..."> because browsers block custom protocols
-// with the "unknown protocol" error (especially on local file:// or certain webviews).
-// Instead we use a clean JS handler → window.location.href. Phantom opens reliably.
+// FIXED BURN TRIGGER (dynamic anchor click — this solves the protocol block)
 // ================================================================
 function triggerBurn(ref) {
   const ev = EVENTS.find(e => e.ref === ref);
@@ -457,12 +440,13 @@ function triggerBurn(ref) {
   console.log('%c[Burn] Opening Phantom with Solana Pay URL for', 'color:#e74c3c;font-weight:bold', ev.ref);
   console.log(url);
 
-  try {
-    window.location.href = url;
-  } catch (err) {
-    console.error(err);
-    alert("Could not open Phantom.\n\nMake sure Phantom wallet is installed and try again.");
-  }
+  // This is the most reliable method in 2026
+  const tempLink = document.createElement('a');
+  tempLink.href = url;
+  tempLink.style.display = 'none';
+  document.body.appendChild(tempLink);
+  tempLink.click();
+  document.body.removeChild(tempLink);
 }
 
 // ================================================================
@@ -563,7 +547,7 @@ async function fetchBurnTransactions() {
 }
 
 // ================================================================
-// LOAD + RENDER (only the burn button part changed)
+// LOAD + RENDER
 // ================================================================
 async function loadChainData() {
   if (isLoading) return;
@@ -623,7 +607,7 @@ function renderEvents(filter) {
   grid.innerHTML = '';
   const list     = filter === 'all' ? EVENTS : EVENTS.filter(e => e.type === filter);
 
-  list.forEach((ev, i) => {
+  list.forEach((ev) => {
     const contribs = (chainBurns[ev.ref] || []).slice().sort((a,b) => b.amount - a.amount);
     const burned   = contribs.reduce((s, c) => s + c.amount, 0);
     const pct      = ev.target > 0 ? Math.min(100, (burned / ev.target) * 100) : 0;
@@ -678,7 +662,6 @@ function renderEvents(filter) {
             <span id="toggle-label-${ev.ref}">${contribs.length > 0 ? 'Show burners (' + contribs.length + ')' : 'No burns yet'}</span>
           </div>
           
-          <!-- FIXED BURN BUTTON – uses JS trigger instead of direct solana: href -->
           <button onclick="triggerBurn('${ev.ref}'); event.stopPropagation()" class="burn-event-btn">
             🔥 Burn for ${ev.ref}
           </button>
@@ -712,9 +695,7 @@ function buildContribTable(contribs, ref) {
   }
 
   const rows = contribs.map(c => {
-    const short  = c.wallet !== 'Unknown'
-      ? c.wallet.slice(0,5) + '...' + c.wallet.slice(-5)
-      : 'Unknown';
+    const short  = c.wallet !== 'Unknown' ? c.wallet.slice(0,5) + '...' + c.wallet.slice(-5) : 'Unknown';
     const wUrl   = `https://solscan.io/account/${c.wallet}`;
     const txUrl  = `https://solscan.io/tx/${c.tx}`;
     return `
