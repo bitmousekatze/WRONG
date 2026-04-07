@@ -293,7 +293,36 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
 .bm-opt-btn small { display:block; font-size:0.55rem; color:var(--grey-text); margin-top:0.2rem; letter-spacing:0; text-transform:none; }
 .bm-opt-btn.primary small { color:rgba(255,255,255,0.6); }
 
-.bm-divider { text-align:center; font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text); margin:0.3rem 0; }
+.bm-desktop-hint {
+  margin-top: 1rem;
+  font-family: var(--font-mono); font-size: 0.65rem; color: var(--grey-text);
+  line-height: 1.6; border-top: 1px solid var(--grey-mid); padding-top: 0.8rem;
+}
+.bm-desktop-hint strong { color: var(--white); }
+
+/* AMOUNT SELECTOR */
+.bm-amount-row { margin-bottom: 1.2rem; }
+.bm-amount-label {
+  font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--grey-text); margin-bottom: 0.5rem;
+}
+.bm-amount-pills { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+.bm-pill {
+  font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 1px;
+  padding: 0.35rem 0.75rem; border: 1px solid var(--grey-mid);
+  background: var(--black); color: var(--grey-text); cursor: pointer; transition: all 0.15s;
+}
+.bm-pill:hover { border-color: var(--red); color: var(--red-bright); }
+.bm-pill.active { border-color: var(--red-bright); background: rgba(231,76,60,0.15); color: var(--red-bright); }
+.bm-custom-row { display: flex; align-items: center; gap: 0.5rem; }
+.bm-custom-input {
+  flex: 1; font-family: var(--font-mono); font-size: 0.75rem;
+  background: var(--black); border: 1px solid var(--grey-mid); color: var(--white);
+  padding: 0.4rem 0.7rem; outline: none; transition: border-color 0.2s;
+}
+.bm-custom-input:focus { border-color: var(--red-bright); }
+.bm-custom-input::placeholder { color: var(--grey-text); }
+.bm-custom-unit { font-family: var(--font-mono); font-size: 0.65rem; color: var(--grey-text); white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -407,21 +436,36 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
     <div class="bm-title">🔥 Burn $WRONG</div>
     <div class="bm-desc" id="bm-desc">Loading event...</div>
 
+    <!-- AMOUNT SELECTOR -->
+    <div class="bm-amount-row">
+      <div class="bm-amount-label">Amount to burn</div>
+      <div class="bm-amount-pills" id="bm-amount-pills">
+        <button class="bm-pill active" data-amt="100"     onclick="setAmount(100)">100</button>
+        <button class="bm-pill"        data-amt="1000"    onclick="setAmount(1000)">1K</button>
+        <button class="bm-pill"        data-amt="10000"   onclick="setAmount(10000)">10K</button>
+        <button class="bm-pill"        data-amt="100000"  onclick="setAmount(100000)">100K</button>
+        <button class="bm-pill"        data-amt="1000000" onclick="setAmount(1000000)">1M</button>
+      </div>
+      <div class="bm-custom-row">
+        <input class="bm-custom-input" id="bm-custom-amt" type="number" min="1" placeholder="Custom amount…" oninput="setCustomAmount(this.value)">
+        <span class="bm-custom-unit">$WRONG</span>
+      </div>
+    </div>
+
     <div class="bm-qr-wrap">
       <div id="bm-qr-div"></div>
     </div>
-    <div class="bm-qr-label">Scan with Phantom mobile to burn instantly</div>
+    <div class="bm-qr-label">📱 Scan with Phantom mobile — amount pre-filled, confirm &amp; done</div>
 
     <div class="bm-options">
-      <a class="bm-opt-btn primary" id="bm-direct-link" href="#">
-        Open in Phantom (desktop extension)
-        <small>Click this link — if Phantom is installed it will open automatically</small>
-      </a>
-      <div class="bm-divider">— or —</div>
-      <button class="bm-opt-btn" id="bm-copy-url" onclick="copyBurnUrl()">
-        Copy Solana Pay URL
-        <small>Paste into any Solana Pay-compatible wallet</small>
+      <button class="bm-opt-btn primary" id="bm-copy-url" onclick="copyBurnUrl()">
+        📋 Copy Solana Pay URL
+        <small>Paste into Phantom's address bar or any Solana Pay wallet</small>
       </button>
+    </div>
+
+    <div class="bm-desktop-hint">
+      💻 <strong>Desktop Phantom:</strong> click Copy above → paste the URL into Phantom's browser address bar and press Enter
     </div>
   </div>
 </div>
@@ -526,27 +570,47 @@ function buildSolanaPayUrl(ev, amount) {
 }
 
 // ================================================================
-// BURN MODAL — QR code + direct link instead of protocol redirect
-// Browsers block window.location.href for unknown protocols.
-// The Solana Pay spec for web uses QR codes. We also provide a
-// direct <a href> link (not JS navigation) which works for Phantom
-// browser extension users on desktop.
+// BURN MODAL
 // ================================================================
-let _qrInstance = null;
+let _currentEv      = null;
+let _currentAmount  = 100;
 let _currentBurnUrl = '';
 
 function burnFor(ev) {
-  const url    = buildSolanaPayUrl(ev, Math.min(ev.target, 10000));
-  _currentBurnUrl = url;
-
+  _currentEv     = ev;
+  _currentAmount = 100;
   document.getElementById('bm-ref').textContent  = ev.ref;
   document.getElementById('bm-desc').textContent = ev.desc;
+  // Reset pills
+  document.querySelectorAll('.bm-pill').forEach(p => {
+    p.classList.toggle('active', Number(p.dataset.amt) === 100);
+  });
+  document.getElementById('bm-custom-amt').value = '';
+  renderQR();
+  document.getElementById('burnModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
 
-  // Update direct link — a real <a> href the browser won't block
-  const link = document.getElementById('bm-direct-link');
-  link.href  = url;
+function setAmount(amt) {
+  _currentAmount = amt;
+  document.querySelectorAll('.bm-pill').forEach(p => {
+    p.classList.toggle('active', Number(p.dataset.amt) === amt);
+  });
+  document.getElementById('bm-custom-amt').value = '';
+  renderQR();
+}
 
-  // Generate QR code into a fresh div (qrcodejs needs a clean div target)
+function setCustomAmount(val) {
+  const n = parseInt(val, 10);
+  if (!n || n < 1) return;
+  _currentAmount = n;
+  document.querySelectorAll('.bm-pill').forEach(p => p.classList.remove('active'));
+  renderQR();
+}
+
+function renderQR() {
+  const url = buildSolanaPayUrl(_currentEv, _currentAmount);
+  _currentBurnUrl = url;
   const wrap = document.querySelector('.bm-qr-wrap');
   wrap.innerHTML = '<div id="bm-qr-div"></div>';
   try {
@@ -558,14 +622,12 @@ function burnFor(ev) {
       colorLight:   '#ffffff',
       correctLevel: QRCode.CorrectLevel.M,
     });
-    _qrInstance = true;
   } catch(e) {
-    wrap.innerHTML =
-      '<p style="font-family:var(--font-mono);font-size:0.65rem;color:var(--grey-text);text-align:center;padding:1rem;">QR unavailable — use the link below</p>';
+    wrap.innerHTML = '<p style="font-family:var(--font-mono);font-size:0.65rem;color:var(--grey-text);text-align:center;padding:1rem;">QR unavailable — use Copy URL below</p>';
   }
-
-  document.getElementById('burnModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  // Reset copy button label
+  const btn = document.getElementById('bm-copy-url');
+  if (btn) btn.innerHTML = '📋 Copy Solana Pay URL<small>Paste into Phantom\'s address bar or any Solana Pay wallet</small>';
 }
 
 function closeBurnModal(e) {
@@ -577,10 +639,10 @@ function closeBurnModal(e) {
 function copyBurnUrl() {
   navigator.clipboard.writeText(_currentBurnUrl).then(() => {
     const btn = document.getElementById('bm-copy-url');
-    btn.textContent = '✓ Copied!';
+    btn.innerHTML = '✓ Copied! Paste into Phantom\'s address bar<small>solana:Gvtbu5M… is now in your clipboard</small>';
     setTimeout(() => {
-      btn.innerHTML = 'Copy Solana Pay URL<small>Paste into any Solana Pay-compatible wallet</small>';
-    }, 2000);
+      btn.innerHTML = '📋 Copy Solana Pay URL<small>Paste into Phantom\'s address bar or any Solana Pay wallet</small>';
+    }, 3000);
   });
 }
 
