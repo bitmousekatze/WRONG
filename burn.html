@@ -59,6 +59,38 @@ nav .links a:hover, nav .links a.active { color: var(--white); }
 .addr-verify { font-family:var(--font-mono); font-size:0.65rem; color:var(--grey-text); margin-top:0.8rem; }
 .addr-verify a { color:var(--green); text-decoration:underline; }
 
+/* MEMO WARNING — the big one */
+.memo-warning-banner {
+  max-width:800px; margin:0 auto; padding:0 2rem 3rem;
+}
+.memo-warning-box {
+  background:rgba(231,76,60,0.08);
+  border:2px solid var(--red-bright);
+  padding:2rem;
+  position:relative;
+  overflow:hidden;
+}
+.memo-warning-box::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg, var(--red), var(--red-bright), var(--red));
+}
+.mw-top { display:flex; align-items:center; gap:1rem; margin-bottom:1.2rem; }
+.mw-icon { font-family:var(--font-display); font-size:2.5rem; color:var(--red-bright); line-height:1; flex-shrink:0; }
+.mw-heading { font-family:var(--font-display); font-size:clamp(1.4rem,3vw,2rem); color:var(--red-bright); line-height:1.1; }
+.mw-body { font-size:0.92rem; color:var(--white); line-height:1.8; margin-bottom:1.5rem; font-weight:300; }
+.mw-body strong { color:var(--red-bright); font-weight:700; }
+.mw-rule {
+  background:rgba(0,0,0,0.4); border:1px solid rgba(231,76,60,0.3);
+  padding:1rem 1.2rem; font-family:var(--font-mono); font-size:0.78rem;
+  color:var(--grey-text); line-height:1.8;
+}
+.mw-rule .rule-line { display:flex; align-items:flex-start; gap:0.6rem; margin-bottom:0.3rem; }
+.mw-rule .rule-line:last-child { margin-bottom:0; }
+.mw-rule .rule-check { color:var(--green); flex-shrink:0; }
+.mw-rule .rule-x { color:var(--red-bright); flex-shrink:0; }
+.mw-rule strong { color:var(--white); }
+
 /* STEPS */
 .steps-section { max-width:800px; margin:0 auto; padding:0 2rem 2rem; }
 
@@ -82,6 +114,22 @@ nav .links a:hover, nav .links a.active { color: var(--white); }
 }
 .step-note strong { color:var(--white); }
 .step-note code { color:var(--red-bright); }
+
+/* MEMO COPY ROW inside step 5 */
+.memo-copy-row {
+  margin-top:1rem; background:var(--black); border:1px solid var(--grey-mid);
+  padding:0.8rem 1rem; display:flex; align-items:center; justify-content:space-between;
+  gap:1rem; flex-wrap:wrap;
+}
+.memo-copy-row .mcr-label { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:2px; text-transform:uppercase; color:var(--grey-text); margin-bottom:0.3rem; }
+.memo-copy-row .mcr-code { font-family:var(--font-mono); font-size:1rem; color:var(--red-bright); font-weight:700; }
+.mcr-btn {
+  font-family:var(--font-mono); font-size:0.65rem; letter-spacing:1px; text-transform:uppercase;
+  background:var(--red); border:1px solid var(--red); color:var(--white);
+  padding:0.5rem 1rem; cursor:pointer; transition:all 0.2s; white-space:nowrap; flex-shrink:0;
+}
+.mcr-btn:hover { background:var(--red-bright); }
+.mcr-btn.copied { background:var(--green); border-color:var(--green); }
 
 .step-link {
   display:inline-flex; align-items:center; gap:0.4rem; margin-top:0.8rem;
@@ -114,19 +162,22 @@ nav .links a:hover, nav .links a.active { color: var(--white); }
   background:var(--black); border:1px solid var(--grey-mid); padding:1.5rem;
 }
 .ref-example .re-label { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:3px; text-transform:uppercase; color:var(--grey-text); margin-bottom:1rem; }
-.ref-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:0.8rem; }
+.ref-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:0.8rem; }
 .ref-pill {
-  background:var(--grey); border:1px solid var(--grey-mid); padding:0.7rem 1rem;
+  background:var(--grey); border:1px solid var(--grey-mid); padding:0.9rem 1rem;
   display:flex; align-items:center; justify-content:space-between; gap:0.5rem;
+  transition:border-color 0.2s;
 }
-.ref-pill .rp-code { font-family:var(--font-mono); font-size:0.8rem; color:var(--red-bright); font-weight:700; }
-.ref-pill .rp-desc { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text); margin-top:2px; }
+.ref-pill:hover { border-color:var(--red); }
+.ref-pill .rp-code { font-family:var(--font-mono); font-size:0.9rem; color:var(--red-bright); font-weight:700; }
+.ref-pill .rp-desc { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text); margin-top:3px; }
 .ref-pill .rp-copy {
-  font-family:var(--font-mono); font-size:0.55rem; letter-spacing:1px; text-transform:uppercase;
-  background:transparent; border:1px solid var(--grey-mid); color:var(--grey-text);
-  padding:0.2rem 0.4rem; cursor:pointer; transition:all 0.2s; flex-shrink:0;
+  font-family:var(--font-mono); font-size:0.6rem; letter-spacing:1px; text-transform:uppercase;
+  background:var(--red); border:1px solid var(--red); color:var(--white);
+  padding:0.35rem 0.7rem; cursor:pointer; transition:all 0.2s; flex-shrink:0; white-space:nowrap;
 }
-.ref-pill .rp-copy:hover { border-color:var(--red-bright); color:var(--red-bright); }
+.ref-pill .rp-copy:hover { background:var(--red-bright); }
+.ref-pill .rp-copy.copied { background:var(--green); border-color:var(--green); }
 
 /* AMOUNT GUIDE */
 .amounts-section { max-width:800px; margin:0 auto; padding:4rem 2rem; }
@@ -209,6 +260,27 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
   </div>
 </div>
 
+<!-- MEMO WARNING -->
+<div class="memo-warning-banner">
+  <div class="memo-warning-box">
+    <div class="mw-top">
+      <div class="mw-icon">⚠</div>
+      <div class="mw-heading">You Must Include A Memo.<br>No Exceptions.</div>
+    </div>
+    <div class="mw-body">
+      Every burn event has a <strong>reference code</strong> (e.g. W-E002). When you send $WRONG to the burn address,
+      you <strong>must paste that code in the memo field</strong> of your transaction.
+      Without it, the ledger has no way to know which event you're burning for —
+      and your burn <strong>will not be recorded against any event.</strong>
+      There is no way to fix this after the fact. The transaction is permanent.
+    </div>
+    <div class="mw-rule">
+      <div class="rule-line"><span class="rule-check">✓</span><span><strong>With memo W-E002</strong> → Your wallet appears on the ledger under that event within ~60 seconds</span></div>
+      <div class="rule-line"><span class="rule-x">✗</span><span><strong>Without memo</strong> → Tokens are burned forever but your contribution is invisible to the ledger. We cannot recover it.</span></div>
+    </div>
+  </div>
+</div>
+
 <!-- STEPS -->
 <div class="steps-section">
   <div class="section-label">// Step By Step</div>
@@ -257,12 +329,20 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
   <div class="step-block">
     <div class="step-num">05</div>
     <div>
-      <div class="step-title">Send $WRONG To The Burn Address — With The Ref Code As Memo</div>
-      <div class="step-desc">In Phantom, tap Send. Paste the burn address. Enter how much $WRONG you want to burn. Then find the <strong>memo field</strong> and paste your event reference code. Confirm the transaction.</div>
+      <div class="step-title">Send $WRONG To The Burn Address — Memo Is Mandatory</div>
+      <div class="step-desc">In Phantom, tap Send. Paste the burn address. Enter your amount. Then find the <strong>memo field</strong> and paste the event reference code <strong>exactly as shown</strong>. Confirm the transaction.</div>
       <div class="step-note">
-        <strong>Burn address:</strong> <code>1nc1nerator11111111111111111111111111111111</code><br>
-        <strong>Memo field:</strong> paste the ref code exactly, e.g. <code>W-E002</code><br><br>
-        The memo is how the ledger knows which event you're burning for. Without it, your burn still counts toward total supply burned — but won't be assigned to a specific event.
+        <strong>Burn address:</strong> <code>1nc1nerator11111111111111111111111111111111</code><br><br>
+        <strong>Memo field:</strong> paste the ref code for the event you're burning for.<br>
+        Copy it from the ledger or use the button below. One wrong character = not recorded.<br><br>
+        <strong style="color:var(--red-bright);">⚠ No memo = burn not recorded. Cannot be undone or fixed.</strong>
+      </div>
+      <div class="memo-copy-row">
+        <div>
+          <div class="mcr-label">Your event ref code (copy from ledger)</div>
+          <div class="mcr-code" id="activeMemoCode">← Go to ledger, pick an event</div>
+        </div>
+        <button class="mcr-btn" id="memoBtn" onclick="copyMemo()">Copy Memo</button>
       </div>
     </div>
   </div>
@@ -391,6 +471,15 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
 </footer>
 
 <script>
+// If user arrives from ledger with ?ref=W-E002 pre-fill the memo copy button
+const urlRef = new URLSearchParams(window.location.search).get('ref');
+if (urlRef) {
+  const codeEl = document.getElementById('activeMemoCode');
+  const btn    = document.getElementById('memoBtn');
+  if (codeEl) codeEl.textContent = urlRef;
+  if (btn)    btn.textContent = 'Copy Memo — ' + urlRef;
+}
+
 // Sample ref codes shown in the memo explainer
 const SAMPLE_REFS = [
   { ref: 'W-E002', desc: '23 civilians, Baharestan' },
@@ -417,8 +506,25 @@ SAMPLE_REFS.forEach(r => {
 
 function copyRef(code, btn) {
   navigator.clipboard.writeText(code);
-  btn.textContent = 'Copied!';
-  setTimeout(() => btn.textContent = 'Copy', 2000);
+  // Also update the step 5 memo box
+  const codeEl = document.getElementById('activeMemoCode');
+  if (codeEl) codeEl.textContent = code;
+  btn.textContent = '✓ Copied';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+}
+
+function copyMemo() {
+  const code = document.getElementById('activeMemoCode').textContent;
+  if (!code || code.startsWith('←')) {
+    alert('Go to the Burn Ledger first, pick an event, then come back to copy its ref code.');
+    return;
+  }
+  navigator.clipboard.writeText(code);
+  const btn = document.getElementById('memoBtn');
+  btn.textContent = '✓ Copied!';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'Copy Memo'; btn.classList.remove('copied'); }, 2000);
 }
 
 function copyBurn() {
@@ -433,7 +539,7 @@ function copyBurn() {
 // Scroll reveal for steps
 const obs = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.15 });
+}, { threshold: 0.12 });
 document.querySelectorAll('.step-block').forEach(el => obs.observe(el));
 
 // FAQ
