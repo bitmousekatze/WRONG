@@ -217,19 +217,19 @@ footer p { font-family: var(--font-mono); font-size: 0.6rem; color: var(--grey-t
 
   <div class="stats-bar">
     <div class="stat-cell">
-      <div class="num" id="supply">835,500,000</div>
+      <div class="num" id="supply">—</div>
       <div class="label">Circulating Supply</div>
     </div>
     <div class="stat-cell">
-      <div class="num" id="burned">164,500,000</div>
+      <div class="num" id="burned">—</div>
       <div class="label">Total Burned</div>
     </div>
     <div class="stat-cell">
-      <div class="num" id="events">49</div>
+      <div class="num" id="events">—</div>
       <div class="label">Events Recorded</div>
     </div>
     <div class="stat-cell">
-      <div class="num">16.45%</div>
+      <div class="num" id="pct">—</div>
       <div class="label">% Burned</div>
     </div>
   </div>
@@ -397,19 +397,52 @@ const obs = new IntersectionObserver((entries) => {
 }, { threshold: 0.15 });
 document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
-function animateCounter(el, target, duration) {
-  let start = 0;
-  const step = (ts) => {
-    if(!start) start = ts;
-    const p = Math.min((ts - start) / duration, 1);
-    el.textContent = Math.floor(p * target).toLocaleString();
-    if(p < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
+// Pull live stats from the same Solana RPC as the ledger
+// Reads total burned by summing all token transfers to the burn wallet
+const BURN_WALLET = 'PASTE_YOUR_BURN_WALLET_ADDRESS_HERE';
+const RPC_URL     = 'https://api.mainnet-beta.solana.com';
+const TOTAL_EVENTS = 48; // W-E002 through W-E049 (W-E001 Apr 7 removed)
+const SUPPLY = 1_000_000_000;
+
+async function loadIndexStats() {
+  if (BURN_WALLET === 'PASTE_YOUR_BURN_WALLET_ADDRESS_HERE') {
+    // Wallet not configured yet — show zeroes
+    document.getElementById('supply').textContent = SUPPLY.toLocaleString();
+    document.getElementById('burned').textContent = '0';
+    document.getElementById('events').textContent = TOTAL_EVENTS;
+    document.getElementById('pct').textContent    = '0%';
+    return;
+  }
+  try {
+    const res = await fetch(RPC_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 1,
+        method: 'getTokenAccountsByOwner',
+        params: [ BURN_WALLET, { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' },
+          { encoding: 'jsonParsed' } ]
+      })
+    });
+    const data = await res.json();
+    let totalBurned = 0;
+    (data.result?.value || []).forEach(acc => {
+      totalBurned += Number(acc.account?.data?.parsed?.info?.tokenAmount?.uiAmount || 0);
+    });
+    const remaining = SUPPLY - totalBurned;
+    const pct = ((totalBurned / SUPPLY) * 100).toFixed(2);
+    document.getElementById('supply').textContent = remaining.toLocaleString();
+    document.getElementById('burned').textContent = totalBurned.toLocaleString();
+    document.getElementById('events').textContent = TOTAL_EVENTS;
+    document.getElementById('pct').textContent    = pct + '%';
+  } catch(e) {
+    document.getElementById('supply').textContent = '—';
+    document.getElementById('burned').textContent = '—';
+    document.getElementById('events').textContent = TOTAL_EVENTS;
+    document.getElementById('pct').textContent    = '—';
+  }
 }
-animateCounter(document.getElementById('supply'), 835500000, 2000);
-animateCounter(document.getElementById('burned'), 164500000, 2000);
-animateCounter(document.getElementById('events'), 49, 1200);
+loadIndexStats();
 
 // Animate progress bar
 setTimeout(() => {
