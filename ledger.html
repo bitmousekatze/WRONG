@@ -294,7 +294,7 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
     <div class="n-label">Notice</div>
     <p>
       <strong>Retroactive Burns (Mar 24 – Apr 6, 2026):</strong> These events pre-date the $WRONG launch and form the baseline ledger.
-      Burn toward any of them now — include the event's <strong>reference code</strong> (e.g. W-E001) as a memo when sending to the burn address.
+      Burn toward any of them now — include the event's <strong>reference code</strong> (e.g. W-E002) as a memo when sending to the burn address.
       Your wallet appears here automatically within ~60 seconds. Sources: DoD, UN OCHA, UN OHCHR, IAEA.
     </p>
   </div>
@@ -353,27 +353,16 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
 // CONFIG — FILL THESE IN BEFORE LAUNCH
 // ================================================================
 const CONFIG = {
-  // Your burn wallet address — paste after creating your Solana wallet
   BURN_WALLET: '1nc1nerator11111111111111111111111111111111',
-
-  // Token mint address — paste after launching on Pump.fun
-  // ⬇ PASTE CONTRACT ADDRESS FROM PUMP.FUN HERE AFTER LAUNCH
-  TOKEN_MINT: 'TOKEN_MINT: '812pAsnde96fKVXKhdRQQPzmPwe3J9Dg7Uusnv9Gpump',',
-
-  // Token decimals — Pump.fun uses 6
+  TOKEN_MINT: '812pAsnde96fKVXKhdRQQPzmPwe3J9Dg7Uusnv9Gpump',
   TOKEN_DECIMALS: 6,
-
-  // Solana RPC — public endpoint works, Helius free tier is faster
-  // Sign up free: https://helius.dev — replace URL with your key
-  RPC_URL: 'https://api.mainnet-beta.solana.com',
-
-  // How many transactions to pull per refresh
+  RPC_URL: 'https://mainnet.helius-rpc.com/?api-key=842be62f-1509-4ee6-b4ce-cfb8f99083fa',
   TX_LIMIT: 100,
 };
 
 // ================================================================
 // EVENT LIST — all 49 real events
-// The ref code (e.g. W-E001) is what burners include as memo
+// The ref code (e.g. W-E002) is what burners include as memo
 // ================================================================
 const EVENTS = [
   { ref:'W-E002', date:'2026-04-06', type:'civilian',        desc:'23 killed including 6 children in Baharestan County residential strikes',               count:'23 confirmed',              target:23000000 , source:'UN OHCHR'  },
