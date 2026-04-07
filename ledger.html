@@ -362,10 +362,6 @@ const CONFIG = {
 
 // ================================================================
 // EVENT LIST
-// Each event has a unique REFERENCE public key used by Solana Pay.
-// When a user clicks "Burn", Phantom attaches that reference to the
-// transaction automatically — no typing, no memo needed.
-// Reference keys are stable random Solana public keys, one per event.
 // ================================================================
 const EVENTS = [
   { ref:'W-E002', refKey:'RefWE002xKhdRQQPzmPwe3J9Dg7Uusnv9GpumpABC001', date:'2026-04-06', type:'civilian',       desc:'23 killed including 6 children in Baharestan County residential strikes',               count:'23 confirmed',          target:23000000, source:'UN OHCHR' },
@@ -430,17 +426,9 @@ let currentFilter = 'all';
 let isLoading     = false;
 
 // ================================================================
-// SOLANA PAY — build a deep link that opens Phantom pre-filled
-// User clicks "Burn", Phantom opens with address + reference key
-// No typing. No memo. Reference is detected automatically on-chain.
+// SOLANA PAY URL BUILDER
 // ================================================================
 function buildSolanaPayUrl(ev, amount) {
-  // Solana Pay SPL token transfer URL
-  // recipient = burn wallet
-  // spl-token = $WRONG mint
-  // reference = unique key per event — detected on-chain
-  // amount = suggested burn (user can change in Phantom)
-  const base = encodeURIComponent(CONFIG.BURN_WALLET);
   const params = new URLSearchParams({
     'spl-token': CONFIG.TOKEN_MINT,
     reference:   ev.refKey,
@@ -452,14 +440,36 @@ function buildSolanaPayUrl(ev, amount) {
 }
 
 // ================================================================
-// FETCH — detect burns by looking for refKey in transaction accounts
-// Solana Pay puts the reference key as an account in the transaction
+// NEW: FIXED BURN TRIGGER (this fixes your error)
+// We no longer use <a href="solana:..."> because browsers block custom protocols
+// with the "unknown protocol" error (especially on local file:// or certain webviews).
+// Instead we use a clean JS handler → window.location.href. Phantom opens reliably.
+// ================================================================
+function triggerBurn(ref) {
+  const ev = EVENTS.find(e => e.ref === ref);
+  if (!ev) {
+    alert("Event not found – please refresh the page.");
+    return;
+  }
+
+  const url = buildSolanaPayUrl(ev, Math.min(ev.target, 10000));
+
+  console.log('%c[Burn] Opening Phantom with Solana Pay URL for', 'color:#e74c3c;font-weight:bold', ev.ref);
+  console.log(url);
+
+  try {
+    window.location.href = url;
+  } catch (err) {
+    console.error(err);
+    alert("Could not open Phantom.\n\nMake sure Phantom wallet is installed and try again.");
+  }
+}
+
+// ================================================================
+// FETCH BURN TRANSACTIONS (unchanged)
 // ================================================================
 async function fetchBurnTransactions() {
   try {
-    // For each event's refKey, fetch transactions that reference it
-    // We do this by getting all txns to the burn wallet and checking
-    // if any account in the tx matches a known refKey
     const sigRes = await fetch(CONFIG.RPC_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -499,26 +509,21 @@ async function fetchBurnTransactions() {
         if (!tx || tx.meta?.err) continue;
         txCount++;
 
-        // Get all account keys in this transaction
         const accounts = tx.transaction?.message?.accountKeys || [];
         const allPubkeys = accounts.map(a => a.pubkey || a);
 
-        // Check if any account matches a known refKey (Solana Pay reference)
         let matched = null;
         for (const pubkey of allPubkeys) {
           if (REF_KEY_MAP[pubkey]) { matched = REF_KEY_MAP[pubkey]; break; }
         }
 
-        // Also check memo as fallback for manual burns
         if (!matched) {
           const allIx = [
             ...(tx.transaction?.message?.instructions || []),
             ...(tx.meta?.innerInstructions?.flatMap(ii => ii.instructions) || []),
           ];
           for (const ix of allIx) {
-            if (ix.program === 'spl-memo' ||
-                ix.programId === 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr' ||
-                ix.programId === 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo') {
+            if (ix.program === 'spl-memo' || ix.programId === 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr' || ix.programId === 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo') {
               const memoStr = String(ix.parsed || ix.data || '').toUpperCase();
               matched = EVENTS.find(ev => memoStr.includes(ev.ref)) || null;
               break;
@@ -528,7 +533,6 @@ async function fetchBurnTransactions() {
 
         if (!matched) continue;
 
-        // Get $WRONG amount sent to burn wallet
         const postBals = tx.meta?.postTokenBalances || [];
         const preBals  = tx.meta?.preTokenBalances  || [];
         let burnAmount  = 0;
@@ -559,7 +563,7 @@ async function fetchBurnTransactions() {
 }
 
 // ================================================================
-// LOAD
+// LOAD + RENDER (only the burn button part changed)
 // ================================================================
 async function loadChainData() {
   if (isLoading) return;
@@ -608,9 +612,6 @@ function updateStats() {
   document.getElementById('statPct').textContent     = pct + '%';
 }
 
-// ================================================================
-// RENDER
-// ================================================================
 const CAT = {
   airstrike:'Airstrike', infrastructure:'Infrastructure',
   soldier:'Soldier', civilian:'Civilian',
@@ -676,9 +677,11 @@ function renderEvents(filter) {
             <span class="toggle-arrow" id="arrow-${ev.ref}">▶</span>
             <span id="toggle-label-${ev.ref}">${contribs.length > 0 ? 'Show burners (' + contribs.length + ')' : 'No burns yet'}</span>
           </div>
-          <a href="${buildSolanaPayUrl(ev, Math.min(ev.target, 10000))}" class="burn-event-btn" onclick="event.stopPropagation()">
+          
+          <!-- FIXED BURN BUTTON – uses JS trigger instead of direct solana: href -->
+          <button onclick="triggerBurn('${ev.ref}'); event.stopPropagation()" class="burn-event-btn">
             🔥 Burn for ${ev.ref}
-          </a>
+          </button>
         </div>
       </div>
 
@@ -690,7 +693,6 @@ function renderEvents(filter) {
     document.getElementById('eventsGrid').appendChild(card);
   });
 
-  // Animate bars after paint
   requestAnimationFrame(() => requestAnimationFrame(() => {
     document.querySelectorAll('.prog-fill[data-pct]').forEach(el => {
       el.style.width = el.dataset.pct + '%';
@@ -762,7 +764,7 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 });
 
 // ================================================================
-// INIT + AUTO-REFRESH every 60s
+// INIT
 // ================================================================
 loadChainData();
 setInterval(() => { if (!isLoading) loadChainData(); }, 60_000);
