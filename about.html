@@ -307,14 +307,15 @@ footer p {
   <div class="links">
     <a href="index.html">Home</a>
     <a href="ledger.html">Burn Ledger</a>
-    <a href="about.html" class="active">How It Works</a>
+    <a href="burn.html">How To Burn</a>
+    <a href="about.html" class="active">About</a>
   </div>
 </nav>
 
 <div class="page-header">
   <div class="section-label">// Documentation</div>
   <h1>How It Works</h1>
-  <p>Six steps from verified war event to permanent on-chain burn. No shortcuts. No unverified claims. Every burn is sourced, voted, reviewed, and publicly recorded.</p>
+  <p>Four steps from verified war event to permanent on-chain record. No admin approval. No middleman. Every burn is sourced, community-executed, and publicly verifiable on Solana.</p>
 </div>
 
 <!-- PROCESS -->
@@ -324,48 +325,32 @@ footer p {
   <div class="step">
     <div class="step-num">01</div>
     <div>
-      <div class="step-title">Event Detected</div>
-      <div class="step-desc">A community member spots a verified war event from an official source — US Department of Defense, UN OCHA, UN Human Rights (OHCHR), or IAEA. No social media. No unverified news outlets. Only official government and international organization reports.</div>
+      <div class="step-title">Event Verified</div>
+      <div class="step-desc">A war event is confirmed from an official source — US Department of Defense, UN OCHA, UN Human Rights (OHCHR), or IAEA. No social media. No unverified news. Only institutions with direct legal accountability for what they publish. The event is added to the public ledger with its source link and a unique reference code.</div>
     </div>
   </div>
 
   <div class="step">
     <div class="step-num">02</div>
     <div>
-      <div class="step-title">Submission</div>
-      <div class="step-desc">The event and its official source link are posted in the Discord <span style="color:var(--white);font-family:var(--font-mono);font-size:0.85rem;">#burn-submissions</span> channel. The submission must include the event type, date, location, and a direct link to the official source document.</div>
+      <div class="step-title">Burn Target Set</div>
+      <div class="step-desc">Each event type has a fixed burn target — 10,000 tokens per airstrike, 1,000,000 per civilian killed. The target is posted publicly on the ledger. The community burns toward it collectively. No minimum. No deadline. Anyone holding $WRONG can contribute.</div>
     </div>
   </div>
 
   <div class="step">
     <div class="step-num">03</div>
     <div>
-      <div class="step-title">Community Vote</div>
-      <div class="step-desc">The community votes on the submission. A simple majority is required to confirm the event. This prevents any single actor from manipulating the burn ledger. Every holder has a voice.</div>
+      <div class="step-title">Community Burns</div>
+      <div class="step-desc">Anyone holding $WRONG sends tokens to the Solana burn address — <span style="color:var(--white);font-family:var(--font-mono);font-size:0.82rem;">1nc1nerator11111111111111111111111111111111</span> — with the event's reference code as the transaction memo. The tokens are permanently destroyed. No admin required. No approval needed. The blockchain is the record.</div>
     </div>
   </div>
 
   <div class="step">
     <div class="step-num">04</div>
     <div>
-      <div class="step-title">Admin Review</div>
-      <div class="step-desc">After the community vote passes, an admin independently verifies the source. The admin has final say and can reject any submission that doesn't meet the sourcing standard — even if the vote passed. Integrity over speed.</div>
-    </div>
-  </div>
-
-  <div class="step">
-    <div class="step-num">05</div>
-    <div>
-      <div class="step-title">On-Chain Burn</div>
-      <div class="step-desc">The admin executes the burn transaction on Solana. The tokens are sent to a verified, public burn wallet — removing them from circulation permanently. The transaction hash is recorded.</div>
-    </div>
-  </div>
-
-  <div class="step">
-    <div class="step-num">06</div>
-    <div>
-      <div class="step-title">Ledger Update</div>
-      <div class="step-desc">The burn is recorded on the public burn ledger with the Solana transaction hash, the source link, the event type, date, and the exact number of tokens burned. Anyone can verify any burn at any time on Solscan.</div>
+      <div class="step-title">Ledger Updates Automatically</div>
+      <div class="step-desc">The burn ledger reads directly from Solana in real time. Within ~60 seconds of a burn transaction confirming, the wallet address, amount, and date appear publicly under that event. Every contributor is listed. Every transaction is verifiable on Solscan. No trust required.</div>
     </div>
   </div>
 </div>
@@ -410,22 +395,22 @@ footer p {
     <div class="safeguard">
       <div class="sg-icon">&#10003; Safeguard</div>
       <div class="sg-title">Official Sources Only</div>
-      <div class="sg-desc">No social media, no unverified news, no anonymous reports. Only DoD, UN, and IAEA publications are accepted as source material.</div>
+      <div class="sg-desc">No social media, no unverified news, no anonymous reports. Only DoD, UN OCHA, UN OHCHR, and IAEA publications are accepted as source material for events.</div>
     </div>
     <div class="safeguard">
       <div class="sg-icon">&#10003; Safeguard</div>
-      <div class="sg-title">Community Majority Vote</div>
-      <div class="sg-desc">Every burn submission requires a community majority vote before it can proceed. No single actor can force a burn.</div>
+      <div class="sg-title">Memo-Matched Burns</div>
+      <div class="sg-desc">Every burn must include the event reference code as a transaction memo. This links each burn to a verified event on the ledger. Burns without a valid memo are not counted toward any event.</div>
     </div>
     <div class="safeguard">
       <div class="sg-icon">&#10003; Safeguard</div>
-      <div class="sg-title">Admin Veto Power</div>
-      <div class="sg-desc">Admin independently verifies every source and can reject any submission — even those that passed the community vote — if sourcing doesn't meet the standard.</div>
+      <div class="sg-title">Uncontrolled Burn Address</div>
+      <div class="sg-desc">Tokens are burned to Solana's standard burn address — no private key exists for it. Nobody controls it. No admin, no team, no one can move or recover burned tokens. Ever.</div>
     </div>
     <div class="safeguard">
       <div class="sg-icon">&#10003; Safeguard</div>
       <div class="sg-title">Public Verification</div>
-      <div class="sg-desc">Every burn includes a Solana transaction hash. Anyone can verify any burn on Solscan at any time. Full transparency, zero trust required.</div>
+      <div class="sg-desc">Every burn is read live from Solana. Every wallet, every amount, every transaction hash is publicly visible on Solscan. The ledger requires zero trust — verify everything yourself.</div>
     </div>
   </div>
 </section>
@@ -457,7 +442,7 @@ footer p {
         <h3>Can burns be faked or manipulated?</h3>
         <span class="toggle">+</span>
       </div>
-      <div class="faq-a"><p>Every burn requires an official source (DoD, UN, IAEA), a community majority vote, and independent admin verification. All burns are on-chain with public transaction hashes. The system is designed to be transparent and verifiable at every step.</p></div>
+      <div class="faq-a"><p>Every event requires an official source — DoD, UN OCHA, UN OHCHR, or IAEA. Burns are matched to events via transaction memo codes. The burn address has no private key — nobody can move or fake burned tokens. Every transaction is publicly verifiable on Solscan. The system is trustless by design.</p></div>
     </div>
 
     <div class="faq-item">
