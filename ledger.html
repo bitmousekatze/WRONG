@@ -679,9 +679,20 @@ async function fetchBurnTransactions() {
       }
       if (burnAmount === 0) return;
 
+      // Find sender by looking at which token account lost balance — more reliable than account flags
+      let senderWallet = null;
+      for (const pre of preBals) {
+        if (pre.mint !== CONFIG.TOKEN_MINT) continue;
+        if (pre.owner === ev.burnAddr) continue;
+        const post2   = postBals.find(p => p.accountIndex === pre.accountIndex);
+        const preAmt  = Number(pre.uiTokenAmount.amount);
+        const postAmt = post2 ? Number(post2.uiTokenAmount.amount) : 0;
+        if (preAmt > postAmt) { senderWallet = pre.owner; break; }
+      }
       const accounts = tx.transaction?.message?.accountKeys || [];
-      const sender   = accounts.find(a => a.signer && a.writable && a.pubkey !== ev.burnAddr)
-                       ?.pubkey || accounts[0]?.pubkey || 'Unknown';
+      const sender   = senderWallet
+                       || accounts.find(a => a.signer && a.writable && a.pubkey !== ev.burnAddr)?.pubkey
+                       || 'Unknown';
       const date     = tx.blockTime ? new Date(tx.blockTime * 1000).toISOString().split('T')[0] : '—';
       const txSig    = tx.transaction?.signatures?.[0] || sig;
 
@@ -937,20 +948,21 @@ function buildContribTable(contribs, ref) {
   }
 
   const rows = contribs.map(c => {
-    const short  = c.wallet !== 'Unknown'
-      ? c.wallet.slice(0,5) + '...' + c.wallet.slice(-5)
-      : 'Unknown';
-    const wUrl   = `https://solscan.io/account/${c.wallet}`;
-    const txUrl  = `https://solscan.io/tx/${c.tx}`;
+    const isKnown = c.wallet && c.wallet !== 'Unknown';
+    const short   = isKnown ? c.wallet.slice(0,5) + '...' + c.wallet.slice(-5) : 'Unknown';
+    const walletHtml = isKnown
+      ? `<a href="https://solscan.io/account/${c.wallet}" target="_blank">${short}</a>
+         <div class="full-addr">${c.wallet}</div>`
+      : `<span style="color:var(--grey-text)">${short}</span>`;
+    const txHtml = c.tx
+      ? `<a href="https://solscan.io/tx/${c.tx}" target="_blank">↗ Solscan</a>`
+      : `<span style="color:var(--grey-text)">—</span>`;
     return `
       <div class="contrib-row">
-        <div class="contrib-wallet">
-          <a href="${wUrl}" target="_blank">${short}</a>
-          <div class="full-addr">${c.wallet}</div>
-        </div>
+        <div class="contrib-wallet">${walletHtml}</div>
         <div class="contrib-amount">${c.amount.toLocaleString()}</div>
         <div class="contrib-date">${c.date}</div>
-        <div class="contrib-tx"><a href="${txUrl}" target="_blank">↗ Solscan</a></div>
+        <div class="contrib-tx">${txHtml}</div>
       </div>`;
   }).join('');
 
