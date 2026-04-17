@@ -573,13 +573,16 @@ function buildSolanaPayUrl(ev, amount) {
 // No chained RPC calls, no token balance math, no v0 lookup table issues.
 // ================================================================
 
-// Run promises in chunks to stay under rate limits
-async function parallel(items, fn, concurrency = 5) {
+// Run promises in chunks with a delay between batches to stay under Helius rate limits
+async function parallel(items, fn, concurrency = 3, delayMs = 250) {
   const results = [];
   for (let i = 0; i < items.length; i += concurrency) {
     const chunk = items.slice(i, i + concurrency);
     const batch = await Promise.all(chunk.map(fn));
     results.push(...batch);
+    if (i + concurrency < items.length) {
+      await new Promise(r => setTimeout(r, delayMs));
+    }
   }
   return results;
 }
@@ -726,7 +729,9 @@ async function loadChainData() {
   if (!result.ok) {
     setStatus('error', `RPC error — ${result.reason}`);
   } else {
-    chainBurns = result.burns;
+    // Merge: only overwrite events that returned data — keep existing records for
+    // any event whose API call was silently rate-limited (returned empty).
+    Object.keys(result.burns).forEach(ref => { chainBurns[ref] = result.burns[ref]; });
     document.getElementById('txScanned').textContent  = result.txCount;
     document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
     setStatus('live', 'Live — reading directly from Solana');
