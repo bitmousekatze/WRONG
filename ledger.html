@@ -130,6 +130,8 @@ nav .links a:hover, nav .links a.active { color: var(--white); }
 
 .event-desc { font-size:0.9rem; color:var(--white); margin-bottom:0.4rem; line-height:1.5; }
 .event-source { font-family:var(--font-mono); font-size:0.62rem; color:var(--grey-text); margin-bottom:1rem; }
+.source-link { color:var(--grey-text); text-decoration:underline; text-underline-offset:3px; transition:color 0.2s; }
+.source-link:hover { color:var(--red-bright); }
 
 /* PROGRESS */
 .prog-numbers { display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:0.65rem; margin-bottom:0.4rem; }
@@ -617,7 +619,7 @@ async function fetchBurnTransactions(onEventReady) {
         console.warn(`[WRONG] ATA lookup failed for ${ev.ref}:`, e.message);
         return { ev, ata: null };
       }
-    }, 2, 300);
+    }, 1, 150);
 
     // ── Step 2: fetch tx history per ATA, process and notify as each event lands ──
     const activeEntries = ataResults.filter(r => r.ata);
@@ -658,7 +660,7 @@ async function fetchBurnTransactions(onEventReady) {
         console.warn(`[WRONG] Tx history failed for ${ev.ref}:`, e.message);
         // Don't call onEventReady on error — caller keeps whatever it already had
       }
-    }, 2, 350);
+    }, 1, 200);
 
     return { ok: true, txCount, burns };
   } catch (err) {
@@ -858,6 +860,13 @@ function patchEventCard(ref) {
 // ================================================================
 // RENDER
 // ================================================================
+// Build a Google search URL for the event's source — searches source name + event keywords + year
+function sourceSearchUrl(ev) {
+  const keywords = ev.desc.split(' ').slice(0, 7).join(' ');
+  const q = encodeURIComponent(`${ev.source} ${keywords} 2026`);
+  return `https://www.google.com/search?q=${q}`;
+}
+
 const CAT = {
   airstrike:'Airstrike', infrastructure:'Infrastructure',
   soldier:'Soldier', civilian:'Civilian',
@@ -909,7 +918,7 @@ function renderEvents(filter) {
         </div>
 
         <div class="event-desc">${ev.desc}</div>
-        <div class="event-source">📎 ${ev.source} &nbsp;·&nbsp; ${ev.count}</div>
+        <div class="event-source">📎 <a href="${sourceSearchUrl(ev)}" target="_blank" rel="noopener" class="source-link" onclick="event.stopPropagation()">${ev.source}</a> &nbsp;·&nbsp; ${ev.count}</div>
 
         <div class="prog-numbers">
           <span class="prog-burned-num${loadingCls}" id="bn-${ev.ref}">${burnedTxt}</span>
