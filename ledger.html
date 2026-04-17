@@ -479,9 +479,10 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
 // CONFIG
 // ================================================================
 const CONFIG = {
-  BURN_WALLET:    'Gvtbu5MoXa8HyBrDofmA3GA2FE2SJaX8PDV3fXcgkkkr',
-  TOKEN_MINT:     '812pAsnde96fKVXKhdRQQPzmPwe3J9Dg7Uusnv9Gpump',
-  HELIUS_KEY:     '2b56defc-7d71-41ee-8e4e-cb35a216951e',
+  BURN_WALLET:  'Gvtbu5MoXa8HyBrDofmA3GA2FE2SJaX8PDV3fXcgkkkr',
+  TOKEN_MINT:   '812pAsnde96fKVXKhdRQQPzmPwe3J9Dg7Uusnv9Gpump',
+  HELIUS_KEY:   '2b56defc-7d71-41ee-8e4e-cb35a216951e',
+  RPC_URL:      'https://mainnet.helius-rpc.com/?api-key=2b56defc-7d71-41ee-8e4e-cb35a216951e',
 };
 
 // ================================================================
@@ -592,46 +593,74 @@ async function fetchBurnTransactions() {
     const burns   = {};
     let   txCount = 0;
 
-    const results = await parallel(EVENTS, async (ev) => {
+    // ── Step 1: get ATA pubkey for each burn address ──────────────────────────
+    // The wallet address is NOT always in a transfer tx (only on first-ever send
+    // when the ATA is created). The ATA address is always present. We must query
+    // by ATA, not wallet, so we capture every burn — not just the first one.
+    const ataResults = await parallel(EVENTS, async (ev) => {
       try {
-        const url = `https://api.helius.xyz/v0/addresses/${ev.burnAddr}/transactions`
+        const res = await fetch(CONFIG.RPC_URL, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0', id: 1,
+            method:  'getTokenAccountsByOwner',
+            params:  [ev.burnAddr, { mint: CONFIG.TOKEN_MINT }, { encoding: 'jsonParsed' }]
+          })
+        });
+        const json = await res.json();
+        const ata  = json.result?.value?.[0]?.pubkey || null;
+        return { ev, ata };
+      } catch (e) {
+        console.warn(`[WRONG] ATA lookup failed for ${ev.ref}:`, e.message);
+        return { ev, ata: null };
+      }
+    }, 3, 200);
+
+    // ── Step 2: fetch full tx history by ATA address via Helius enhanced API ──
+    const activeEntries = ataResults.filter(r => r.ata);
+    const txResults = await parallel(activeEntries, async ({ ev, ata }) => {
+      try {
+        const url = `https://api.helius.xyz/v0/addresses/${ata}/transactions`
                   + `?api-key=${CONFIG.HELIUS_KEY}&limit=100`;
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const txs = await res.json();
-        return { ev, txs: Array.isArray(txs) ? txs : [] };
+        return { ev, ata, txs: Array.isArray(txs) ? txs : [] };
       } catch (e) {
-        console.warn(`[WRONG] Helius API failed for ${ev.ref}:`, e.message);
-        return { ev, txs: [] };
+        console.warn(`[WRONG] Tx history failed for ${ev.ref}:`, e.message);
+        return { ev, ata, txs: [] };
       }
-    }, 5);
+    }, 3, 250);
 
-    results.forEach(({ ev, txs }) => {
+    txResults.forEach(({ ev, ata, txs }) => {
       txs.forEach(tx => {
-        // Find $WRONG transfers going TO this event's burn address
+        // Match $WRONG transfers going TO this burn address.
+        // toUserAccount = wallet owner; toTokenAccount = the ATA itself.
+        // Check both since Helius may populate either depending on tx type.
         const transfers = (tx.tokenTransfers || []).filter(t =>
           t.mint === CONFIG.TOKEN_MINT &&
-          t.toUserAccount === ev.burnAddr &&
-          Number(t.tokenAmount) > 0
+          Number(t.tokenAmount) > 0 &&
+          (t.toUserAccount === ev.burnAddr || t.toTokenAccount === ata)
         );
         transfers.forEach(transfer => {
           txCount++;
-          // tokenAmount from Helius is already human-readable (no decimal division needed)
-          const amount = Number(transfer.tokenAmount);
-          const sender = transfer.fromUserAccount || 'Unknown';
-          const date   = tx.timestamp
-            ? new Date(tx.timestamp * 1000).toISOString().split('T')[0]
-            : '—';
-          const txSig  = tx.signature || '';
           if (!burns[ev.ref]) burns[ev.ref] = [];
-          burns[ev.ref].push({ wallet: sender, amount, tx: txSig, date });
+          burns[ev.ref].push({
+            wallet: transfer.fromUserAccount || 'Unknown',
+            amount: Number(transfer.tokenAmount),
+            tx:     tx.signature || '',
+            date:   tx.timestamp
+                    ? new Date(tx.timestamp * 1000).toISOString().split('T')[0]
+                    : '—'
+          });
         });
       });
     });
 
     return { ok: true, txCount, burns };
   } catch (err) {
-    console.error('[WRONG] Fetch error:', err);
+    console.error('[WRONG] Error:', err);
     return { ok: false, reason: err.message };
   }
 }
