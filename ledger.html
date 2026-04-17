@@ -667,34 +667,47 @@ async function fetchBurnTransactions() {
       if (!tx || tx.meta?.err) return;
       txCount++;
 
-      const postBals = tx.meta?.postTokenBalances || [];
-      const preBals  = tx.meta?.preTokenBalances  || [];
+      const postBals   = tx.meta?.postTokenBalances || [];
+      const preBals    = tx.meta?.preTokenBalances  || [];
+      const txAccounts = tx.transaction?.message?.accountKeys || [];
+      const accountPubkeys = txAccounts.map(a => a.pubkey || a);
+
+      // Find the burn ATA's account index — match by known ATA pubkey first, fall back to owner field
+      const burnAtaIdx = atas[ev.ref] ? accountPubkeys.indexOf(atas[ev.ref]) : -1;
+      const isBurnDest = (post) => burnAtaIdx >= 0
+        ? post.accountIndex === burnAtaIdx
+        : post.owner === ev.burnAddr;
+
       let burnAmount = 0;
       for (const post of postBals) {
         if (post.mint !== CONFIG.TOKEN_MINT) continue;
-        if (post.owner !== ev.burnAddr) continue;
+        if (!isBurnDest(post)) continue;
         const pre   = preBals.find(p => p.accountIndex === post.accountIndex);
         const delta = Number(post.uiTokenAmount.amount) - (pre ? Number(pre.uiTokenAmount.amount) : 0);
         if (delta > 0) { burnAmount = delta; break; }
       }
       if (burnAmount === 0) return;
 
-      // Find sender by looking at which token account lost balance — more reliable than account flags
+      // Find sender: which token account lost balance? owner field is the wallet.
       let senderWallet = null;
       for (const pre of preBals) {
         if (pre.mint !== CONFIG.TOKEN_MINT) continue;
-        if (pre.owner === ev.burnAddr) continue;
-        const post2   = postBals.find(p => p.accountIndex === pre.accountIndex);
-        const preAmt  = Number(pre.uiTokenAmount.amount);
+        if (isBurnDest(pre)) continue;
+        const post2  = postBals.find(p => p.accountIndex === pre.accountIndex);
+        const preAmt = Number(pre.uiTokenAmount.amount);
         const postAmt = post2 ? Number(post2.uiTokenAmount.amount) : 0;
-        if (preAmt > postAmt) { senderWallet = pre.owner; break; }
+        if (preAmt > postAmt) {
+          senderWallet = pre.owner || accountPubkeys[pre.accountIndex] || null;
+          break;
+        }
       }
-      const accounts = tx.transaction?.message?.accountKeys || [];
-      const sender   = senderWallet
-                       || accounts.find(a => a.signer && a.writable && a.pubkey !== ev.burnAddr)?.pubkey
-                       || 'Unknown';
-      const date     = tx.blockTime ? new Date(tx.blockTime * 1000).toISOString().split('T')[0] : '—';
-      const txSig    = tx.transaction?.signatures?.[0] || sig;
+      // Last resort: first signer in accountKeys that isn't the burn destination
+      const sender = senderWallet
+        || txAccounts.find(a => a.signer && a.writable && a.pubkey !== ev.burnAddr)?.pubkey
+        || 'Unknown';
+
+      const date  = tx.blockTime ? new Date(tx.blockTime * 1000).toISOString().split('T')[0] : '—';
+      const txSig = tx.transaction?.signatures?.[0] || sig;
 
       if (!burns[ev.ref]) burns[ev.ref] = [];
       burns[ev.ref].push({ wallet: sender, amount: burnAmount / Math.pow(10, CONFIG.TOKEN_DECIMALS), tx: txSig, date });
