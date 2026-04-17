@@ -670,13 +670,23 @@ async function fetchBurnTransactions() {
       const postBals   = tx.meta?.postTokenBalances || [];
       const preBals    = tx.meta?.preTokenBalances  || [];
       const txAccounts = tx.transaction?.message?.accountKeys || [];
-      const accountPubkeys = txAccounts.map(a => a.pubkey || a);
 
-      // Find the burn ATA's account index — match by known ATA pubkey first, fall back to owner field
-      const burnAtaIdx = atas[ev.ref] ? accountPubkeys.indexOf(atas[ev.ref]) : -1;
-      const isBurnDest = (post) => burnAtaIdx >= 0
-        ? post.accountIndex === burnAtaIdx
-        : post.owner === ev.burnAddr;
+      // For v0 transactions, the full account list = static accountKeys
+      // + meta.loadedAddresses.writable + meta.loadedAddresses.readonly (in that order).
+      // preTokenBalances accountIndex references this combined list, so we must build it fully.
+      const loadedWritable = tx.meta?.loadedAddresses?.writable || [];
+      const loadedReadonly = tx.meta?.loadedAddresses?.readonly || [];
+      const allPubkeys = [
+        ...txAccounts.map(a => a.pubkey || a),
+        ...loadedWritable,
+        ...loadedReadonly,
+      ];
+
+      // Find the burn ATA's index in the full account list
+      const burnAtaIdx = atas[ev.ref] ? allPubkeys.indexOf(atas[ev.ref]) : -1;
+      const isBurnDest = (entry) => burnAtaIdx >= 0
+        ? entry.accountIndex === burnAtaIdx
+        : entry.owner === ev.burnAddr;
 
       let burnAmount = 0;
       for (const post of postBals) {
@@ -688,7 +698,8 @@ async function fetchBurnTransactions() {
       }
       if (burnAmount === 0) return;
 
-      // Find sender: which token account lost balance? owner field is the wallet.
+      // Find sender: which $WRONG token account lost balance?
+      // pre.owner is the wallet that owns the ATA — use allPubkeys as fallback for missing owner.
       let senderWallet = null;
       for (const pre of preBals) {
         if (pre.mint !== CONFIG.TOKEN_MINT) continue;
@@ -697,13 +708,13 @@ async function fetchBurnTransactions() {
         const preAmt = Number(pre.uiTokenAmount.amount);
         const postAmt = post2 ? Number(post2.uiTokenAmount.amount) : 0;
         if (preAmt > postAmt) {
-          senderWallet = pre.owner || accountPubkeys[pre.accountIndex] || null;
+          senderWallet = pre.owner || allPubkeys[pre.accountIndex] || null;
           break;
         }
       }
-      // Last resort: first signer in accountKeys that isn't the burn destination
+      // Last resort: first signer+writable in static accountKeys (always the fee payer / sender)
       const sender = senderWallet
-        || txAccounts.find(a => a.signer && a.writable && a.pubkey !== ev.burnAddr)?.pubkey
+        || txAccounts.find(a => a.signer && a.writable)?.pubkey
         || 'Unknown';
 
       const date  = tx.blockTime ? new Date(tx.blockTime * 1000).toISOString().split('T')[0] : '—';
