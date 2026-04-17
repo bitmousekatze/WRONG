@@ -481,9 +481,7 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
 const CONFIG = {
   BURN_WALLET:    'Gvtbu5MoXa8HyBrDofmA3GA2FE2SJaX8PDV3fXcgkkkr',
   TOKEN_MINT:     '812pAsnde96fKVXKhdRQQPzmPwe3J9Dg7Uusnv9Gpump',
-  TOKEN_DECIMALS: 6,
-  RPC_URL:        'https://rpc.helius.xyz/?api-key=2b56defc-7d71-41ee-8e4e-cb35a216951e',
-  TX_LIMIT:       100,
+  HELIUS_KEY:     '2b56defc-7d71-41ee-8e4e-cb35a216951e',
 };
 
 // ================================================================
@@ -569,24 +567,13 @@ function buildSolanaPayUrl(ev, amount) {
   return 'solana:' + ev.burnAddr + '?' + params.toString();
 }
 // ================================================================
-// CHAIN INDEXER — individual RPC calls (Helius free tier rejects batch)
-// 1. getTokenAccountsByOwner per burnAddr → reliable total
-// 2. getSignaturesForAddress + getTransaction → per-wallet breakdown
+// CHAIN INDEXER
+// Uses Helius Enhanced Transaction API — one call per burn address,
+// returns fully parsed token transfers (sender, amount, timestamp, signature).
+// No chained RPC calls, no token balance math, no v0 lookup table issues.
 // ================================================================
-// Helper: single non-batched JSON-RPC call (Helius free tier rejects batch arrays)
-async function rpc(method, params) {
-  const res = await fetch(CONFIG.RPC_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
-  });
-  if (!res.ok) throw new Error(`RPC ${res.status}: ${res.statusText}`);
-  const json = await res.json();
-  if (json.error) throw new Error(json.error.message || JSON.stringify(json.error));
-  return json.result;
-}
 
-// Throttled parallel helper — run promises in chunks to stay under rate limits
+// Run promises in chunks to stay under rate limits
 async function parallel(items, fn, concurrency = 5) {
   const results = [];
   for (let i = 0; i < items.length; i += concurrency) {
@@ -602,143 +589,46 @@ async function fetchBurnTransactions() {
     const burns   = {};
     let   txCount = 0;
 
-    // ── Step 1: get $WRONG balance + token account (ATA) pubkey at every burn address ──
-    const balResults = await parallel(EVENTS, async (ev) => {
+    const results = await parallel(EVENTS, async (ev) => {
       try {
-        const result = await rpc('getTokenAccountsByOwner', [
-          ev.burnAddr,
-          { mint: CONFIG.TOKEN_MINT },
-          { encoding: 'jsonParsed' }
-        ]);
-        let total = 0;
-        let ataPubkey = null;
-        (result?.value || []).forEach(acc => {
-          total += Number(acc.account?.data?.parsed?.info?.tokenAmount?.uiAmount || 0);
-          if (!ataPubkey && acc.pubkey) ataPubkey = acc.pubkey;
+        const url = `https://api.helius.xyz/v0/addresses/${ev.burnAddr}/transactions`
+                  + `?api-key=${CONFIG.HELIUS_KEY}&limit=100`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const txs = await res.json();
+        return { ev, txs: Array.isArray(txs) ? txs : [] };
+      } catch (e) {
+        console.warn(`[WRONG] Helius API failed for ${ev.ref}:`, e.message);
+        return { ev, txs: [] };
+      }
+    }, 5);
+
+    results.forEach(({ ev, txs }) => {
+      txs.forEach(tx => {
+        // Find $WRONG transfers going TO this event's burn address
+        const transfers = (tx.tokenTransfers || []).filter(t =>
+          t.mint === CONFIG.TOKEN_MINT &&
+          t.toUserAccount === ev.burnAddr &&
+          Number(t.tokenAmount) > 0
+        );
+        transfers.forEach(transfer => {
+          txCount++;
+          // tokenAmount from Helius is already human-readable (no decimal division needed)
+          const amount = Number(transfer.tokenAmount);
+          const sender = transfer.fromUserAccount || 'Unknown';
+          const date   = tx.timestamp
+            ? new Date(tx.timestamp * 1000).toISOString().split('T')[0]
+            : '—';
+          const txSig  = tx.signature || '';
+          if (!burns[ev.ref]) burns[ev.ref] = [];
+          burns[ev.ref].push({ wallet: sender, amount, tx: txSig, date });
         });
-        return { ref: ev.ref, total, ataPubkey };
-      } catch (e) {
-        console.warn(`[WRONG] Balance fetch failed for ${ev.ref}:`, e.message);
-        return { ref: ev.ref, total: 0, ataPubkey: null };
-      }
-    }, 5);
-
-    const totals = {};
-    const atas   = {};
-    balResults.forEach(r => { totals[r.ref] = r.total; atas[r.ref] = r.ataPubkey; });
-
-    // ── Step 2: per-wallet tx breakdown, only for addresses with tokens ──
-    const activeEvents = EVENTS.filter(ev => (totals[ev.ref] || 0) > 0 && atas[ev.ref]);
-
-    // 2a. Get signatures using the TOKEN ACCOUNT (ATA) address, not the wallet address
-    //     (SPL token transfers are indexed under the ATA, not the owner wallet)
-    const sigResults = await parallel(activeEvents, async (ev) => {
-      try {
-        const sigs = await rpc('getSignaturesForAddress', [atas[ev.ref], { limit: 50 }]);
-        return { ev, sigs: sigs || [] };
-      } catch (e) {
-        console.warn(`[WRONG] Sig fetch failed for ${ev.ref}:`, e.message);
-        return { ev, sigs: [] };
-      }
-    }, 5);
-
-    // Flatten into individual signature items
-    const allSigs = [];
-    sigResults.forEach(({ ev, sigs }) => {
-      sigs.forEach(s => allSigs.push({ sig: s.signature, ev }));
-    });
-
-    // 2b. Fetch each transaction individually
-    const txResults = await parallel(allSigs, async (item) => {
-      try {
-        const tx = await rpc('getTransaction', [
-          item.sig,
-          { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }
-        ]);
-        return { tx, ev: item.ev, sig: item.sig };
-      } catch (e) {
-        console.warn(`[WRONG] Tx fetch failed for ${item.sig}:`, e.message);
-        return { tx: null, ev: item.ev, sig: item.sig };
-      }
-    }, 5);
-
-    // 2c. Parse each transaction for burn amounts
-    txResults.forEach(({ tx, ev, sig }) => {
-      if (!tx || tx.meta?.err) return;
-      txCount++;
-
-      const postBals   = tx.meta?.postTokenBalances || [];
-      const preBals    = tx.meta?.preTokenBalances  || [];
-      const txAccounts = tx.transaction?.message?.accountKeys || [];
-
-      // For v0 transactions, the full account list = static accountKeys
-      // + meta.loadedAddresses.writable + meta.loadedAddresses.readonly (in that order).
-      // preTokenBalances accountIndex references this combined list, so we must build it fully.
-      const loadedWritable = tx.meta?.loadedAddresses?.writable || [];
-      const loadedReadonly = tx.meta?.loadedAddresses?.readonly || [];
-      const allPubkeys = [
-        ...txAccounts.map(a => a.pubkey || a),
-        ...loadedWritable,
-        ...loadedReadonly,
-      ];
-
-      // Find the burn ATA's index in the full account list
-      const burnAtaIdx = atas[ev.ref] ? allPubkeys.indexOf(atas[ev.ref]) : -1;
-      const isBurnDest = (entry) => burnAtaIdx >= 0
-        ? entry.accountIndex === burnAtaIdx
-        : entry.owner === ev.burnAddr;
-
-      let burnAmount = 0;
-      for (const post of postBals) {
-        if (post.mint !== CONFIG.TOKEN_MINT) continue;
-        if (!isBurnDest(post)) continue;
-        const pre   = preBals.find(p => p.accountIndex === post.accountIndex);
-        const delta = Number(post.uiTokenAmount.amount) - (pre ? Number(pre.uiTokenAmount.amount) : 0);
-        if (delta > 0) { burnAmount = delta; break; }
-      }
-      if (burnAmount === 0) return;
-
-      // Find sender: which $WRONG token account lost balance?
-      // pre.owner is the wallet that owns the ATA — use allPubkeys as fallback for missing owner.
-      let senderWallet = null;
-      for (const pre of preBals) {
-        if (pre.mint !== CONFIG.TOKEN_MINT) continue;
-        if (isBurnDest(pre)) continue;
-        const post2  = postBals.find(p => p.accountIndex === pre.accountIndex);
-        const preAmt = Number(pre.uiTokenAmount.amount);
-        const postAmt = post2 ? Number(post2.uiTokenAmount.amount) : 0;
-        if (preAmt > postAmt) {
-          senderWallet = pre.owner || allPubkeys[pre.accountIndex] || null;
-          break;
-        }
-      }
-      // Last resort: first signer+writable in static accountKeys (always the fee payer / sender)
-      const sender = senderWallet
-        || txAccounts.find(a => a.signer && a.writable)?.pubkey
-        || 'Unknown';
-
-      const date  = tx.blockTime ? new Date(tx.blockTime * 1000).toISOString().split('T')[0] : '—';
-      const txSig = tx.transaction?.signatures?.[0] || sig;
-
-      if (!burns[ev.ref]) burns[ev.ref] = [];
-      burns[ev.ref].push({ wallet: sender, amount: burnAmount / Math.pow(10, CONFIG.TOKEN_DECIMALS), tx: txSig, date });
-    });
-
-    // ── Step 3: ensure progress bars reflect real balance even if tx parse missed it ──
-    EVENTS.forEach(ev => {
-      const total       = totals[ev.ref] || 0;
-      if (total <= 0) return;
-      const parsedTotal = (burns[ev.ref] || []).reduce((s, b) => s + b.amount, 0);
-      const diff        = total - parsedTotal;
-      if (diff > 0.001) {
-        if (!burns[ev.ref]) burns[ev.ref] = [];
-        burns[ev.ref].push({ wallet: 'Unknown', amount: diff, tx: '', date: '—' });
-      }
+      });
     });
 
     return { ok: true, txCount, burns };
   } catch (err) {
-    console.error('[WRONG] RPC error:', err);
+    console.error('[WRONG] Fetch error:', err);
     return { ok: false, reason: err.message };
   }
 }
