@@ -599,7 +599,7 @@ async function fetchBurnTransactions(onEventReady) {
     // The wallet address is NOT always in a transfer tx (only on first-ever send
     // when the ATA is created). The ATA address is always present. We must query
     // by ATA, not wallet, so we capture every burn — not just the first one.
-    const ataResults = await parallel(EVENTS, async (ev) => {
+    const ataResults = await parallel(EVENTS, async (ev) => {  // 2 concurrent, 300ms → ~6.7 req/s, under Helius free tier limit
       try {
         const res = await fetch(CONFIG.RPC_URL, {
           method:  'POST',
@@ -617,7 +617,7 @@ async function fetchBurnTransactions(onEventReady) {
         console.warn(`[WRONG] ATA lookup failed for ${ev.ref}:`, e.message);
         return { ev, ata: null };
       }
-    }, 3, 200);
+    }, 2, 300);
 
     // ── Step 2: fetch tx history per ATA, process and notify as each event lands ──
     const activeEntries = ataResults.filter(r => r.ata);
@@ -658,7 +658,7 @@ async function fetchBurnTransactions(onEventReady) {
         console.warn(`[WRONG] Tx history failed for ${ev.ref}:`, e.message);
         // Don't call onEventReady on error — caller keeps whatever it already had
       }
-    }, 3, 250);
+    }, 2, 350);
 
     return { ok: true, txCount, burns };
   } catch (err) {
@@ -792,8 +792,8 @@ function setStatus(state, msg) {
 }
 
 function showStatsLoading() {
-  document.getElementById('statBurned').textContent = '—';
-  document.getElementById('statSupply').textContent = '—';
+  document.getElementById('statBurned').textContent = 'Loading...';
+  document.getElementById('statSupply').textContent = 'Loading...';
   document.getElementById('statPct').textContent    = '—';
   ['statBurned', 'statSupply', 'statPct'].forEach(id =>
     document.getElementById(id).classList.add('stat-loading')
@@ -837,7 +837,7 @@ function patchEventCard(ref) {
   const tlEl = document.getElementById(`toggle-label-${ref}`);
   const pnEl = document.getElementById(`panel-${ref}`);
 
-  if (bnEl) bnEl.textContent = (burned > 0 ? burned.toLocaleString() : '0') + ' burned';
+  if (bnEl) { bnEl.textContent = (burned > 0 ? burned.toLocaleString() : '0') + ' burned'; bnEl.classList.remove('stat-loading'); }
   if (rnEl) rnEl.textContent = remainTxt;
   if (pfEl) {
     pfEl.className = `prog-fill ${done ? 'c-complete' : hasAny ? 'c-active' : 'c-open'}`;
@@ -847,7 +847,7 @@ function patchEventCard(ref) {
     stEl.className   = `prog-status ${done ? 's-complete' : hasAny ? 's-active' : 's-open'}`;
     stEl.textContent = done ? '● COMPLETE' : hasAny ? '● ACTIVE' : '○ OPEN';
   }
-  if (clEl) clEl.textContent = contribLbl;
+  if (clEl) { clEl.textContent = contribLbl; clEl.classList.remove('stat-loading'); }
   if (tlEl) tlEl.textContent = contribs.length > 0 ? `Show burners (${contribs.length})` : 'No burns yet';
   // Only rebuild contributors panel if it's not currently open (avoid collapsing it mid-read)
   if (pnEl && !pnEl.classList.contains('open')) {
@@ -886,6 +886,11 @@ function renderEvents(filter) {
       ? 'Target reached'
       : (ev.target - burned).toLocaleString() + ' remaining';
 
+    // When called during initial load, mark dynamic elements as loading
+    const loadingCls = isLoading ? ' stat-loading' : '';
+    const burnedTxt  = isLoading ? 'reading chain…' : (burned > 0 ? burned.toLocaleString() : '0') + ' burned';
+    const clTxt      = isLoading ? 'reading chain…' : contribLbl;
+
     const card = document.createElement('div');
     card.className = 'event-card';
 
@@ -907,15 +912,15 @@ function renderEvents(filter) {
         <div class="event-source">📎 ${ev.source} &nbsp;·&nbsp; ${ev.count}</div>
 
         <div class="prog-numbers">
-          <span class="prog-burned-num" id="bn-${ev.ref}">${burned > 0 ? burned.toLocaleString() : '0'} burned</span>
-          <span class="prog-remain-num" id="rn-${ev.ref}">${remainTxt}</span>
+          <span class="prog-burned-num${loadingCls}" id="bn-${ev.ref}">${burnedTxt}</span>
+          <span class="prog-remain-num" id="rn-${ev.ref}">${isLoading ? '' : remainTxt}</span>
         </div>
         <div class="prog-track">
           <div class="prog-fill ${fillCls}" id="pf-${ev.ref}" style="width:0%" data-pct="${pct.toFixed(2)}"></div>
         </div>
         <div class="prog-footer">
-          <span class="prog-contrib-label" id="cl-${ev.ref}">${contribLbl}</span>
-          <span class="prog-status ${statusCls}" id="st-${ev.ref}">${statusTxt}</span>
+          <span class="prog-contrib-label${loadingCls}" id="cl-${ev.ref}">${clTxt}</span>
+          <span class="prog-status ${statusCls}" id="st-${ev.ref}">${isLoading ? '' : statusTxt}</span>
         </div>
 
         <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1rem;flex-wrap:wrap;gap:0.8rem;">
