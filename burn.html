@@ -29,67 +29,29 @@ nav .logo { font-family: var(--font-display); font-size: 1.4rem; letter-spacing:
 nav .links { display:flex; gap:1.5rem; }
 nav .links a { color: var(--grey-text); text-decoration:none; font-family:var(--font-mono); font-size:0.75rem; letter-spacing:1px; text-transform:uppercase; transition:color 0.3s; }
 nav .links a:hover, nav .links a.active { color: var(--white); }
+nav .links a.buy { color: var(--red-bright); }
 
 .page-header { padding: 8rem 2rem 4rem; max-width: 800px; margin: 0 auto; }
 .section-label { font-family:var(--font-mono); font-size:0.65rem; letter-spacing:4px; text-transform:uppercase; color:var(--red); margin-bottom:1rem; }
 .page-header h1 { font-family: var(--font-display); font-size: clamp(2.5rem,6vw,4.5rem); line-height:1; }
 .page-header p { color:var(--grey-text); font-weight:300; margin-top:1rem; max-width:580px; line-height:1.7; }
 
-/* BURN ADDRESS */
-.addr-section { max-width:800px; margin:0 auto; padding:0 2rem 3rem; }
-.addr-box {
+/* HOW IT WORKS CALLOUT */
+.how-it-works { max-width:800px; margin:0 auto; padding:0 2rem 3rem; }
+.hiw-box {
   background:rgba(39,174,96,0.05); border:1px solid var(--green);
   padding:2rem;
 }
-.addr-box .ab-label { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:3px; text-transform:uppercase; color:var(--green); margin-bottom:0.8rem; }
-.addr-box .ab-title { font-family:var(--font-display); font-size:1.4rem; margin-bottom:0.5rem; }
-.addr-box .ab-desc { font-size:0.85rem; color:var(--grey-text); margin-bottom:1.2rem; line-height:1.6; font-weight:300; }
-.addr-row {
-  background:var(--black); border:1px solid var(--grey-mid);
-  padding:1rem 1.2rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+.hiw-box .hiw-label { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:3px; text-transform:uppercase; color:var(--green); margin-bottom:1rem; }
+.hiw-box h2 { font-family:var(--font-display); font-size:1.6rem; margin-bottom:1rem; }
+.hiw-steps {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+  background:rgba(39,174,96,0.15); border:1px solid rgba(39,174,96,0.2); margin-top:1.5rem;
 }
-.addr-row .addr-text { font-family:var(--font-mono); font-size:0.8rem; color:var(--white); word-break:break-all; }
-.copy-btn {
-  font-family:var(--font-mono); font-size:0.65rem; letter-spacing:1px; text-transform:uppercase;
-  background:var(--grey); border:1px solid var(--grey-mid); color:var(--grey-text);
-  padding:0.4rem 0.9rem; cursor:pointer; transition:all 0.3s; flex-shrink:0; white-space:nowrap;
-}
-.copy-btn:hover { border-color:var(--green); color:var(--green); }
-.copy-btn.copied { border-color:var(--green); color:var(--green); }
-.addr-verify { font-family:var(--font-mono); font-size:0.65rem; color:var(--grey-text); margin-top:0.8rem; }
-.addr-verify a { color:var(--green); text-decoration:underline; }
-
-/* MEMO WARNING — the big one */
-.memo-warning-banner {
-  max-width:800px; margin:0 auto; padding:0 2rem 3rem;
-}
-.memo-warning-box {
-  background:rgba(231,76,60,0.08);
-  border:2px solid var(--red-bright);
-  padding:2rem;
-  position:relative;
-  overflow:hidden;
-}
-.memo-warning-box::before {
-  content:'';
-  position:absolute; top:0; left:0; right:0; height:3px;
-  background:linear-gradient(90deg, var(--red), var(--red-bright), var(--red));
-}
-.mw-top { display:flex; align-items:center; gap:1rem; margin-bottom:1.2rem; }
-.mw-icon { font-family:var(--font-display); font-size:2.5rem; color:var(--red-bright); line-height:1; flex-shrink:0; }
-.mw-heading { font-family:var(--font-display); font-size:clamp(1.4rem,3vw,2rem); color:var(--red-bright); line-height:1.1; }
-.mw-body { font-size:0.92rem; color:var(--white); line-height:1.8; margin-bottom:1.5rem; font-weight:300; }
-.mw-body strong { color:var(--red-bright); font-weight:700; }
-.mw-rule {
-  background:rgba(0,0,0,0.4); border:1px solid rgba(231,76,60,0.3);
-  padding:1rem 1.2rem; font-family:var(--font-mono); font-size:0.78rem;
-  color:var(--grey-text); line-height:1.8;
-}
-.mw-rule .rule-line { display:flex; align-items:flex-start; gap:0.6rem; margin-bottom:0.3rem; }
-.mw-rule .rule-line:last-child { margin-bottom:0; }
-.mw-rule .rule-check { color:var(--green); flex-shrink:0; }
-.mw-rule .rule-x { color:var(--red-bright); flex-shrink:0; }
-.mw-rule strong { color:var(--white); }
+.hiw-step { background:var(--black); padding:1.2rem 1rem; }
+.hiw-step .hs-num { font-family:var(--font-display); font-size:1.8rem; color:var(--green); line-height:1; margin-bottom:0.4rem; }
+.hiw-step .hs-title { font-family:var(--font-display); font-size:0.9rem; margin-bottom:0.3rem; }
+.hiw-step .hs-desc { font-size:0.78rem; color:var(--grey-text); font-weight:300; line-height:1.5; }
 
 /* STEPS */
 .steps-section { max-width:800px; margin:0 auto; padding:0 2rem 2rem; }
@@ -115,22 +77,6 @@ nav .links a:hover, nav .links a.active { color: var(--white); }
 .step-note strong { color:var(--white); }
 .step-note code { color:var(--red-bright); }
 
-/* MEMO COPY ROW inside step 5 */
-.memo-copy-row {
-  margin-top:1rem; background:var(--black); border:1px solid var(--grey-mid);
-  padding:0.8rem 1rem; display:flex; align-items:center; justify-content:space-between;
-  gap:1rem; flex-wrap:wrap;
-}
-.memo-copy-row .mcr-label { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:2px; text-transform:uppercase; color:var(--grey-text); margin-bottom:0.3rem; }
-.memo-copy-row .mcr-code { font-family:var(--font-mono); font-size:1rem; color:var(--red-bright); font-weight:700; }
-.mcr-btn {
-  font-family:var(--font-mono); font-size:0.65rem; letter-spacing:1px; text-transform:uppercase;
-  background:var(--red); border:1px solid var(--red); color:var(--white);
-  padding:0.5rem 1rem; cursor:pointer; transition:all 0.2s; white-space:nowrap; flex-shrink:0;
-}
-.mcr-btn:hover { background:var(--red-bright); }
-.mcr-btn.copied { background:var(--green); border-color:var(--green); }
-
 .step-link {
   display:inline-flex; align-items:center; gap:0.4rem; margin-top:0.8rem;
   font-family:var(--font-mono); font-size:0.7rem; letter-spacing:1px; text-transform:uppercase;
@@ -139,45 +85,14 @@ nav .links a:hover, nav .links a.active { color: var(--white); }
 }
 .step-link:hover { border-color:var(--red-bright); }
 
-/* MEMO EXPLAINER — the key section */
-.memo-section {
-  background:var(--grey); border-top:1px solid var(--grey-mid); border-bottom:1px solid var(--grey-mid);
-  padding:4rem 2rem;
+/* ADDRESS HIGHLIGHT BOX (inside step 4) */
+.addr-highlight {
+  margin-top:1rem; background:var(--black); border:1px solid var(--grey-mid);
+  padding:1.2rem 1.5rem;
 }
-.memo-inner { max-width:800px; margin:0 auto; }
-.memo-inner h2 { font-family:var(--font-display); font-size:clamp(1.8rem,4vw,2.8rem); margin-bottom:1rem; }
-.memo-inner > p { color:var(--grey-text); font-weight:300; line-height:1.7; margin-bottom:2rem; }
-
-.memo-flow {
-  display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
-  background:var(--grey-mid); border:1px solid var(--grey-mid); margin-bottom:2rem;
-}
-.memo-step { background:var(--black); padding:1.5rem; }
-.memo-step .ms-num { font-family:var(--font-display); font-size:2rem; color:var(--red); line-height:1; margin-bottom:0.6rem; }
-.memo-step .ms-title { font-family:var(--font-display); font-size:1rem; margin-bottom:0.4rem; }
-.memo-step .ms-desc { font-size:0.82rem; color:var(--grey-text); font-weight:300; line-height:1.5; }
-.memo-step code { font-family:var(--font-mono); font-size:0.85rem; color:var(--red-bright); }
-
-.ref-example {
-  background:var(--black); border:1px solid var(--grey-mid); padding:1.5rem;
-}
-.ref-example .re-label { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:3px; text-transform:uppercase; color:var(--grey-text); margin-bottom:1rem; }
-.ref-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:0.8rem; }
-.ref-pill {
-  background:var(--grey); border:1px solid var(--grey-mid); padding:0.9rem 1rem;
-  display:flex; align-items:center; justify-content:space-between; gap:0.5rem;
-  transition:border-color 0.2s;
-}
-.ref-pill:hover { border-color:var(--red); }
-.ref-pill .rp-code { font-family:var(--font-mono); font-size:0.9rem; color:var(--red-bright); font-weight:700; }
-.ref-pill .rp-desc { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text); margin-top:3px; }
-.ref-pill .rp-copy {
-  font-family:var(--font-mono); font-size:0.6rem; letter-spacing:1px; text-transform:uppercase;
-  background:var(--red); border:1px solid var(--red); color:var(--white);
-  padding:0.35rem 0.7rem; cursor:pointer; transition:all 0.2s; flex-shrink:0; white-space:nowrap;
-}
-.ref-pill .rp-copy:hover { background:var(--red-bright); }
-.ref-pill .rp-copy.copied { background:var(--green); border-color:var(--green); }
+.addr-highlight .ah-label { font-family:var(--font-mono); font-size:0.55rem; letter-spacing:3px; text-transform:uppercase; color:var(--grey-text); margin-bottom:0.6rem; }
+.addr-highlight .ah-body { font-family:var(--font-mono); font-size:0.82rem; color:var(--white); line-height:1.7; }
+.addr-highlight .ah-body span { color:var(--red-bright); font-weight:700; }
 
 /* AMOUNT GUIDE */
 .amounts-section { max-width:800px; margin:0 auto; padding:4rem 2rem; }
@@ -223,7 +138,7 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
 @media(max-width:640px){
   .step-block { grid-template-columns:44px 1fr; gap:1rem; }
   .step-num { font-size:2rem; }
-  .memo-flow { grid-template-columns:1fr; }
+  .hiw-steps { grid-template-columns:1fr; }
   .amounts-grid { grid-template-columns:1fr 1fr; }
 }
 </style>
@@ -237,46 +152,38 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
     <a href="ledger.html">Burn Ledger</a>
     <a href="burn.html" class="active">How To Burn</a>
     <a href="about.html">About</a>
+    <a href="https://pump.fun/coin/812pAsnde96fKVXKhdRQQPzmPwe3J9Dg7Uusnv9Gpump" target="_blank" rel="noopener" class="buy">Buy $WRONG ↗</a>
   </div>
 </nav>
 
 <div class="page-header">
   <div class="section-label">// Burn Guide</div>
   <h1>How To Burn</h1>
-  <p>Buy $WRONG on Pump.fun. Pick an event from the ledger. Send tokens to the burn address with the event's reference code as your memo. Your wallet appears on the ledger automatically.</p>
+  <p>Get $WRONG on Pump.fun. Go to the ledger. Pick an event. Copy its burn address. Send directly. That's the whole thing.</p>
 </div>
 
-<!-- BURN ADDRESS -->
-<div class="addr-section">
-  <div class="addr-box">
-    <div class="ab-label">✦ Official Burn Address</div>
-    <div class="ab-title">Send Your $WRONG Here</div>
-    <div class="ab-desc">This is Solana's standard token burn address. Anything sent here is permanently destroyed — removed from supply forever. Fully public and verifiable on Solscan.</div>
-    <div class="addr-row">
-      <span class="addr-text" id="burnAddr">Gvtbu5MoXa8HyBrDofmA3GA2FE2SJaX8PDV3fXcgkkkr</span>
-      <button class="copy-btn" id="copyBurnBtn" onclick="copyBurn()">Copy</button>
-    </div>
-    <div class="addr-verify">↗ Verify on <a href="https://solscan.io/account/Gvtbu5MoXa8HyBrDofmA3GA2FE2SJaX8PDV3fXcgkkkr" target="_blank">Solscan</a> — every burn to this address is publicly visible</div>
-  </div>
-</div>
-
-<!-- MEMO WARNING -->
-<div class="memo-warning-banner">
-  <div class="memo-warning-box">
-    <div class="mw-top">
-      <div class="mw-icon">⚠</div>
-      <div class="mw-heading">You Must Include A Memo.<br>No Exceptions.</div>
-    </div>
-    <div class="mw-body">
-      Every burn event has a <strong>reference code</strong> (e.g. W-E002). When you send $WRONG to the burn address,
-      you <strong>must paste that code in the memo field</strong> of your transaction.
-      Without it, the ledger has no way to know which event you're burning for —
-      and your burn <strong>will not be recorded against any event.</strong>
-      There is no way to fix this after the fact. The transaction is permanent.
-    </div>
-    <div class="mw-rule">
-      <div class="rule-line"><span class="rule-check">✓</span><span><strong>With memo W-E002</strong> → Your wallet appears on the ledger under that event within ~60 seconds</span></div>
-      <div class="rule-line"><span class="rule-x">✗</span><span><strong>Without memo</strong> → Tokens are burned forever but your contribution is invisible to the ledger. We cannot recover it.</span></div>
+<!-- HOW IT WORKS SUMMARY -->
+<div class="how-it-works">
+  <div class="hiw-box">
+    <div class="hiw-label">// The Short Version</div>
+    <h2>Each Event Has Its Own Burn Address</h2>
+    <p style="color:var(--grey-text);font-weight:300;line-height:1.7;font-size:0.92rem;">Every war event on the ledger has a unique Solana wallet — dedicated to that event only. You copy the address, send $WRONG to it, and your wallet appears on the ledger automatically. No memo field. No extra steps. Just send.</p>
+    <div class="hiw-steps">
+      <div class="hiw-step">
+        <div class="hs-num">1</div>
+        <div class="hs-title">Pick An Event</div>
+        <div class="hs-desc">Go to the Burn Ledger. Every event card shows its unique burn address.</div>
+      </div>
+      <div class="hiw-step">
+        <div class="hs-num">2</div>
+        <div class="hs-title">Copy The Address</div>
+        <div class="hs-desc">Hit the copy button on the event card. Each address is unique to that event.</div>
+      </div>
+      <div class="hiw-step">
+        <div class="hs-num">3</div>
+        <div class="hs-title">Send $WRONG</div>
+        <div class="hs-desc">Send any amount directly to that address. Your wallet appears on the ledger within ~60s.</div>
+      </div>
     </div>
   </div>
 </div>
@@ -288,10 +195,10 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
   <div class="step-block">
     <div class="step-num">01</div>
     <div>
-      <div class="step-title">Get Phantom Wallet</div>
+      <div class="step-title">Get A Solana Wallet</div>
       <div class="step-desc">You need a Solana wallet to hold and send $WRONG. Phantom is the simplest — browser extension and mobile app, free, takes 2 minutes.</div>
       <div class="step-note"><strong>Important:</strong> Write down your seed phrase and store it somewhere safe. If you lose it, your wallet is gone forever.</div>
-      <a href="https://phantom.app" target="_blank" class="step-link">Get Phantom →</a>
+      <a href="https://phantom.app" target="_blank" rel="noopener" class="step-link">Get Phantom →</a>
     </div>
   </div>
 
@@ -299,8 +206,8 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
     <div class="step-num">02</div>
     <div>
       <div class="step-title">Fund Your Wallet With SOL</div>
-      <div class="step-desc">You need a small amount of SOL to pay Solana transaction fees — less than €0.01 per burn. Buy SOL on any exchange (Coinbase, Kraken, Binance) and send it to your Phantom wallet address.</div>
-      <div class="step-note"><strong>How much:</strong> 0.01 SOL covers dozens of burns in fees. Buy however much extra you want to spend on $WRONG itself.</div>
+      <div class="step-desc">You need a small amount of SOL to pay Solana transaction fees — less than $0.01 per burn. Buy SOL on any exchange (Coinbase, Kraken, Binance) and send it to your Phantom wallet address.</div>
+      <div class="step-note"><strong>How much SOL:</strong> 0.01 SOL covers dozens of burns in fees. Buy however much extra you want to spend on $WRONG itself.</div>
     </div>
   </div>
 
@@ -308,12 +215,13 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
     <div class="step-num">03</div>
     <div>
       <div class="step-title">Buy $WRONG on Pump.fun</div>
-      <div class="step-desc">$WRONG launched on Pump.fun. Connect your Phantom wallet, find $WRONG by its contract address, and swap SOL for $WRONG. Always verify the contract address before buying.</div>
+      <div class="step-desc">$WRONG launched on Pump.fun. Connect your Phantom wallet and swap SOL for $WRONG. Always verify the contract address — never buy from a DM link.</div>
       <div class="step-note">
-        <strong>Contract address:</strong> <code>[Posted in Discord at launch]</code><br>
-        Never buy from a link someone sends you in a DM. Always go to pump.fun directly and search by contract address.
+        <strong>Contract address (CA):</strong><br>
+        <code>812pAsnde96fKVXKhdRQQPzmPwe3J9Dg7Uusnv9Gpump</code><br><br>
+        Go to pump.fun directly and paste this address. Do not trust links from strangers.
       </div>
-      <a href="https://pump.fun" target="_blank" class="step-link">Go to Pump.fun →</a>
+      <a href="https://pump.fun/coin/812pAsnde96fKVXKhdRQQPzmPwe3J9Dg7Uusnv9Gpump" target="_blank" rel="noopener" class="step-link">Buy $WRONG on Pump.fun →</a>
     </div>
   </div>
 
@@ -321,7 +229,15 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
     <div class="step-num">04</div>
     <div>
       <div class="step-title">Pick An Event From The Ledger</div>
-      <div class="step-desc">Go to the Burn Ledger and find an event you want to burn for. Each event has a unique reference code — like <strong style="color:var(--red-bright)">W-E002</strong> or <strong style="color:var(--red-bright)">W-E017</strong>. This is what connects your burn to that specific event. Copy it.</div>
+      <div class="step-desc">Go to the Burn Ledger. Each event card has a unique burn address dedicated to that event. Click the card to expand it and copy its burn address — this is where you'll send your $WRONG.</div>
+      <div class="addr-highlight">
+        <div class="ah-label">// How It Looks On The Ledger</div>
+        <div class="ah-body">
+          Event: <span>W-E002 — 23 civilians killed, Baharestan County</span><br>
+          Burn address: <span>8BiudQY...SETey</span> ← unique to this event only<br>
+          Progress: 1,412,000 / 23,000,000 burned
+        </div>
+      </div>
       <a href="ledger.html" class="step-link">Open Burn Ledger →</a>
     </div>
   </div>
@@ -329,20 +245,11 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
   <div class="step-block">
     <div class="step-num">05</div>
     <div>
-      <div class="step-title">Send $WRONG To The Burn Address — Memo Is Mandatory</div>
-      <div class="step-desc">In Phantom, tap Send. Paste the burn address. Enter your amount. Then find the <strong>memo field</strong> and paste the event reference code <strong>exactly as shown</strong>. Confirm the transaction.</div>
+      <div class="step-title">Send $WRONG Directly To That Address</div>
+      <div class="step-desc">In Phantom, tap Send. Paste the event's burn address. Enter your amount. Confirm. That's it — no memo field, no extra steps.</div>
       <div class="step-note">
-        <strong>Burn address:</strong> <code>Gvtbu5MoXa8HyBrDofmA3GA2FE2SJaX8PDV3fXcgkkkr</code><br><br>
-        <strong>Memo field:</strong> paste the ref code for the event you're burning for.<br>
-        Copy it from the ledger or use the button below. One wrong character = not recorded.<br><br>
-        <strong style="color:var(--red-bright);">⚠ No memo = burn not recorded. Cannot be undone or fixed.</strong>
-      </div>
-      <div class="memo-copy-row">
-        <div>
-          <div class="mcr-label">Your event ref code (copy from ledger)</div>
-          <div class="mcr-code" id="activeMemoCode">← Go to ledger, pick an event</div>
-        </div>
-        <button class="mcr-btn" id="memoBtn" onclick="copyMemo()">Copy Memo</button>
+        <strong>Every event has a different address.</strong> Make sure you're copying from the specific event you want to burn for — not a random address.<br><br>
+        Double-check the first and last few characters of the address match what's on the ledger card before confirming.
       </div>
     </div>
   </div>
@@ -351,7 +258,7 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
     <div class="step-num">06</div>
     <div>
       <div class="step-title">Watch Your Wallet Appear On The Ledger</div>
-      <div class="step-desc">That's it. Within about 60 seconds the ledger reads your transaction from Solana and your wallet address appears under that event — showing how much you burned and when. No signup. No submission. Automatic.</div>
+      <div class="step-desc">Within about 60 seconds the ledger reads your transaction from Solana and your wallet address appears under that event — showing how much you burned and when. No signup. No submission. Automatic.</div>
       <div class="step-note">
         <strong>Optional:</strong> Post your tx hash in the Discord <code>#burns</code> channel so the community can celebrate it. Big burns get announced.
       </div>
@@ -360,38 +267,6 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
   </div>
 
 </div>
-
-<!-- MEMO EXPLAINER -->
-<section class="memo-section">
-  <div class="memo-inner">
-    <div class="section-label">// The Memo System</div>
-    <h2>How The Ref Code Works</h2>
-    <p>Every event on the ledger has a unique reference code. When you include it as a memo on your Solana transaction, the ledger automatically detects it, reads your wallet and burn amount, and adds you to that event's contributor list. No manual submission. No trust required. Pure on-chain.</p>
-
-    <div class="memo-flow">
-      <div class="memo-step">
-        <div class="ms-num">1</div>
-        <div class="ms-title">Find The Code</div>
-        <div class="ms-desc">Every event card on the ledger shows its ref code — e.g. <code>W-E002</code>. Copy it.</div>
-      </div>
-      <div class="memo-step">
-        <div class="ms-num">2</div>
-        <div class="ms-title">Add As Memo</div>
-        <div class="ms-desc">In Phantom → Send → paste the ref code in the memo field before confirming.</div>
-      </div>
-      <div class="memo-step">
-        <div class="ms-num">3</div>
-        <div class="ms-title">Ledger Updates</div>
-        <div class="ms-desc">Within ~60 seconds your wallet, amount, and date appear under that event. Permanent.</div>
-      </div>
-    </div>
-
-    <div class="ref-example">
-      <div class="re-label">// Example Ref Codes — copy and use as memo</div>
-      <div class="ref-grid" id="refGrid"></div>
-    </div>
-  </div>
-</section>
 
 <!-- AMOUNT GUIDE -->
 <section class="amounts-section">
@@ -429,16 +304,16 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
     <h2>Burn FAQ</h2>
 
     <div class="faq-item">
-      <div class="faq-q"><h3>Where do I find the memo field in Phantom?</h3><span class="faq-toggle">+</span></div>
-      <div class="faq-a"><p>When sending tokens in Phantom, tap the transaction details area or look for an optional "Add memo" or "Reference" field before you confirm. On mobile it may be tucked under advanced settings. If you can't find it, you can also use any Solana wallet app that supports memos — or use a tool like Solflare which has a visible memo field.</p></div>
+      <div class="faq-q"><h3>Do I need to add a memo when sending?</h3><span class="faq-toggle">+</span></div>
+      <div class="faq-a"><p>No. Each event has its own dedicated burn address — the address itself tells the ledger which event you're burning for. Just send $WRONG to the event's address and you're done. No memo, no reference code, nothing extra.</p></div>
     </div>
     <div class="faq-item">
-      <div class="faq-q"><h3>What if I forgot to include the memo?</h3><span class="faq-toggle">+</span></div>
-      <div class="faq-a"><p>Your tokens are still burned — permanently removed from supply. But without a memo the ledger can't assign your burn to a specific event, so it won't show under any event's contributor list. You can post the tx hash in Discord and an admin can manually note it, but it won't be auto-detected.</p></div>
+      <div class="faq-q"><h3>Where do I find the burn address for a specific event?</h3><span class="faq-toggle">+</span></div>
+      <div class="faq-a"><p>On the Burn Ledger — click any event card to expand it. The unique burn address for that event is shown inside the card with a copy button. Each event's address is different, so make sure you're copying from the right card.</p></div>
     </div>
     <div class="faq-item">
-      <div class="faq-q"><h3>Can I burn for multiple events in one transaction?</h3><span class="faq-toggle">+</span></div>
-      <div class="faq-a"><p>One transaction = one memo = one event. To burn for multiple events, send separate transactions with different ref codes as memos. Each will be detected and assigned independently.</p></div>
+      <div class="faq-q"><h3>Can I burn for multiple events?</h3><span class="faq-toggle">+</span></div>
+      <div class="faq-a"><p>Yes — send separate transactions to each event's burn address. Each one is tracked independently on the ledger. No limit on how many events you burn for.</p></div>
     </div>
     <div class="faq-item">
       <div class="faq-q"><h3>Can I burn tokens I bought before launch?</h3><span class="faq-toggle">+</span></div>
@@ -446,21 +321,21 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
     </div>
     <div class="faq-item">
       <div class="faq-q"><h3>Is the burn truly permanent?</h3><span class="faq-toggle">+</span></div>
-      <div class="faq-a"><p>Yes. The burn wallet is a dedicated Solana address — tokens sent there are publicly visible to everyone on Solscan at all times. The wallet address is hardcoded on this site and anyone can monitor it. Every transaction in is permanent and publicly recorded on-chain. You can verify the full history at any time.</p></div>
+      <div class="faq-a"><p>Yes. Each event's burn wallet is a Solana address with no private key — tokens sent there cannot be moved by anyone. Fully public and verifiable on Solscan. Every transaction in is permanent and on-chain forever.</p></div>
     </div>
     <div class="faq-item">
       <div class="faq-q"><h3>Does my wallet address get exposed publicly?</h3><span class="faq-toggle">+</span></div>
-      <div class="faq-a"><p>Yes — your Solana wallet address is visible on the ledger next to your burn amount. Solana transactions are public by design. Your wallet address is not your identity, but if you've connected your wallet to other platforms it may be traceable. Use a fresh wallet if anonymity matters to you.</p></div>
+      <div class="faq-a"><p>Yes — your Solana wallet address is visible on the ledger next to your burn amount. Solana transactions are public by design. Your wallet address is not your identity, but if you've connected it to other platforms it may be traceable. Use a fresh wallet if anonymity matters to you.</p></div>
     </div>
   </div>
 </section>
 
 <section class="cta">
   <h2>Ready To Burn?</h2>
-  <p>Check the ledger. Copy a ref code. Make it permanent.</p>
+  <p>Open the ledger. Find an event. Copy its address. Send. Done.</p>
   <div class="cta-buttons">
     <a href="ledger.html" class="btn primary">Open Burn Ledger</a>
-    <a href="#" class="btn">Join Discord</a>
+    <a href="https://pump.fun/coin/812pAsnde96fKVXKhdRQQPzmPwe3J9Dg7Uusnv9Gpump" target="_blank" rel="noopener" class="btn">Buy $WRONG on Pump.fun ↗</a>
   </div>
 </section>
 
@@ -471,71 +346,6 @@ footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text
 </footer>
 
 <script>
-// If user arrives from ledger with ?ref=W-E002 pre-fill the memo copy button
-const urlRef = new URLSearchParams(window.location.search).get('ref');
-if (urlRef) {
-  const codeEl = document.getElementById('activeMemoCode');
-  const btn    = document.getElementById('memoBtn');
-  if (codeEl) codeEl.textContent = urlRef;
-  if (btn)    btn.textContent = 'Copy Memo — ' + urlRef;
-}
-
-// Sample ref codes shown in the memo explainer
-const SAMPLE_REFS = [
-  { ref: 'W-E002', desc: '23 civilians, Baharestan' },
-  { ref: 'W-E017', desc: '13 killed, Tehran-Karaj bridge' },
-  { ref: 'W-E024', desc: 'Death toll passes 2,000' },
-  { ref: 'W-E014', desc: 'Mosque struck, Zanjan' },
-  { ref: 'W-E047', desc: 'Opening strikes, Mar 24' },
-  { ref: 'W-E049', desc: '~500 Iranian soldiers killed' },
-];
-
-const grid = document.getElementById('refGrid');
-SAMPLE_REFS.forEach(r => {
-  const pill = document.createElement('div');
-  pill.className = 'ref-pill';
-  pill.innerHTML = `
-    <div>
-      <div class="rp-code">${r.ref}</div>
-      <div class="rp-desc">${r.desc}</div>
-    </div>
-    <button class="rp-copy" onclick="copyRef('${r.ref}', this)">Copy</button>
-  `;
-  grid.appendChild(pill);
-});
-
-function copyRef(code, btn) {
-  navigator.clipboard.writeText(code);
-  // Also update the step 5 memo box
-  const codeEl = document.getElementById('activeMemoCode');
-  if (codeEl) codeEl.textContent = code;
-  btn.textContent = '✓ Copied';
-  btn.classList.add('copied');
-  setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
-}
-
-function copyMemo() {
-  const code = document.getElementById('activeMemoCode').textContent;
-  if (!code || code.startsWith('←')) {
-    alert('Go to the Burn Ledger first, pick an event, then come back to copy its ref code.');
-    return;
-  }
-  navigator.clipboard.writeText(code);
-  const btn = document.getElementById('memoBtn');
-  btn.textContent = '✓ Copied!';
-  btn.classList.add('copied');
-  setTimeout(() => { btn.textContent = 'Copy Memo'; btn.classList.remove('copied'); }, 2000);
-}
-
-function copyBurn() {
-  const addr = document.getElementById('burnAddr').textContent;
-  navigator.clipboard.writeText(addr);
-  const btn = document.getElementById('copyBurnBtn');
-  btn.textContent = 'Copied!';
-  btn.classList.add('copied');
-  setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
-}
-
 // Scroll reveal for steps
 const obs = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
