@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>$WRONG — The War Is Wrong</title>
-<meta name="description" content="A deflationary Solana meme coin where every act of war burns the supply. Community-powered burns.">
+<title>$WRONG — yeah. all of it.</title>
+<meta name="description" content="A deflationary Solana meme coin where every act of war burns the supply. The worse it gets, the less exists.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
@@ -13,11 +13,12 @@
   --white: #e8e4df;
   --red: #c0392b;
   --red-bright: #e74c3c;
-  --red-glow: rgba(231,76,60,0.25);
+  --red-glow: rgba(231,76,60,0.2);
   --grey: #1a1a1a;
   --grey-mid: #2a2a2a;
   --grey-text: #888;
   --green: #27ae60;
+  --cyan: #00e5ff;
   --font-display: 'Anton', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   --font-body: 'Space Grotesk', sans-serif;
@@ -32,12 +33,22 @@ body {
   cursor: crosshair;
 }
 
+/* GRAIN OVERLAY */
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 9999;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+}
+
 /* NAV */
 nav {
   position: fixed; top:0; left:0; right:0; z-index:100;
   display: flex; align-items: center; justify-content: space-between;
   padding: 1rem 2rem;
-  background: rgba(10,10,10,0.95);
+  background: rgba(10,10,10,0.97);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--grey-mid);
 }
@@ -45,7 +56,7 @@ nav .logo { font-family: var(--font-display); font-size: 1.4rem; letter-spacing:
 nav .links { display:flex; gap:1.5rem; }
 nav .links a {
   color: var(--grey-text); text-decoration: none; font-family: var(--font-mono);
-  font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s;
+  font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; transition: color 0.2s;
 }
 nav .links a:hover, nav .links a.active { color: var(--white); }
 
@@ -54,146 +65,275 @@ nav .links a:hover, nav .links a.active { color: var(--white); }
   min-height: 100vh;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  text-align: center; padding: 6rem 2rem 4rem;
-  position: relative;
+  text-align: center; padding: 7rem 2rem 4rem;
+  position: relative; overflow: hidden;
 }
 .hero::before {
   content:''; position:absolute; inset:0;
   background:
-    radial-gradient(ellipse 60% 40% at 50% 50%, var(--red-glow), transparent),
-    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.012) 2px, rgba(255,255,255,0.012) 4px);
+    radial-gradient(ellipse 70% 50% at 50% 60%, var(--red-glow), transparent 70%),
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.008) 2px, rgba(255,255,255,0.008) 4px);
   pointer-events:none;
 }
-.hero-label {
-  font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 4px;
-  text-transform: uppercase; color: var(--red); margin-bottom: 2rem;
-  opacity:0; animation: fadeUp 0.8s 0.2s forwards;
+
+.hero-eyebrow {
+  font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 5px;
+  text-transform: uppercase; color: var(--grey-text); margin-bottom: 2.5rem;
+  opacity:0; animation: fadeUp 0.6s 0.1s forwards;
 }
+.hero-eyebrow span { color: var(--red); }
+
 .hero h1 {
   font-family: var(--font-display);
-  font-size: clamp(5rem, 15vw, 14rem);
-  line-height: 0.85; letter-spacing: -2px; color: var(--white); position: relative;
-  opacity:0; animation: fadeUp 0.8s 0.4s forwards;
+  font-size: clamp(6rem, 20vw, 18rem);
+  line-height: 0.82; letter-spacing: -4px;
+  color: var(--white); position: relative;
+  opacity:0; animation: fadeUp 0.6s 0.3s forwards;
+  animation-name: fadeUp, glitch-intro;
+  animation-duration: 0.6s, 0.3s;
+  animation-delay: 0.3s, 1.2s;
+  animation-fill-mode: forwards, none;
+  animation-iteration-count: 1, 1;
 }
 .hero h1 .dollar { color: var(--red-bright); }
+.hero h1::after {
+  content: '$WRONG';
+  position: absolute; left: 0; top: 0; width: 100%;
+  color: var(--cyan);
+  opacity: 0;
+  animation: glitch-layer 8s 2s infinite;
+  clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+}
+
 .hero-sub {
-  font-family: var(--font-display); font-size: clamp(1.2rem, 3vw, 2.4rem);
-  margin-top: 1.5rem; color: var(--red); letter-spacing: 6px; text-transform: uppercase;
-  opacity:0; animation: fadeUp 0.8s 0.6s forwards;
+  font-family: var(--font-mono); font-size: clamp(0.9rem, 2vw, 1.3rem);
+  margin-top: 1.2rem; color: var(--grey-text); letter-spacing: 3px;
+  opacity:0; animation: fadeUp 0.6s 0.6s forwards;
 }
+
 .hero-desc {
-  max-width: 560px; margin-top: 2rem; font-size: 1rem;
-  line-height: 1.7; color: var(--grey-text); font-weight: 300;
-  opacity:0; animation: fadeUp 0.8s 0.8s forwards;
+  max-width: 520px; margin-top: 2rem; font-size: 1rem;
+  line-height: 1.75; color: var(--grey-text); font-weight: 300;
+  opacity:0; animation: fadeUp 0.6s 0.8s forwards;
 }
+.hero-desc em { color: var(--white); font-style: normal; }
 
 /* STATS BAR */
 .stats-bar {
-  display: flex; gap: 1px; margin-top: 3rem;
+  display: flex; gap: 1px; margin-top: 3.5rem;
   background: var(--grey-mid); border: 1px solid var(--grey-mid);
-  opacity:0; animation: fadeUp 0.8s 1s forwards;
+  opacity:0; animation: fadeUp 0.6s 1s forwards;
+  position: relative;
 }
-.stat-cell { background: var(--grey); padding: 1.5rem 2.5rem; text-align: center; }
-.stat-cell .num { font-family: var(--font-mono); font-size: 1.6rem; color: var(--red-bright); font-weight: 700; }
-.stat-cell .label { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--grey-text); margin-top: 0.4rem; }
+.stats-bar::before {
+  content: '⬤ LIVE ON-CHAIN';
+  position: absolute; top: -1.8rem; left: 0;
+  font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 3px;
+  color: var(--green); animation: blink 2s infinite;
+}
+.stat-cell { background: var(--grey); padding: 1.4rem 2.5rem; text-align: center; }
+.stat-cell .num { font-family: var(--font-mono); font-size: 1.5rem; color: var(--red-bright); font-weight: 700; }
+.stat-cell .label { font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 2px; text-transform: uppercase; color: var(--grey-text); margin-top: 0.4rem; }
 
-.scroll-hint { margin-top: 3rem; opacity:0; animation: fadeUp 0.8s 1.2s forwards; }
+.scroll-hint { margin-top: 3.5rem; opacity:0; animation: fadeUp 0.6s 1.2s forwards; }
 .scroll-hint span { display: block; width: 1px; height: 48px; background: linear-gradient(to bottom, var(--red), transparent); margin: 0 auto; animation: pulse 2s infinite; }
 
 /* TICKER */
 .ticker-strip {
-  overflow: hidden; border-top: 1px solid var(--grey-mid); border-bottom: 1px solid var(--grey-mid);
-  padding: 0.8rem 0; background: var(--grey);
+  overflow: hidden;
+  border-top: 1px solid var(--grey-mid); border-bottom: 1px solid var(--grey-mid);
+  padding: 0.75rem 0; background: var(--grey);
 }
-.ticker-inner { display: flex; gap: 4rem; animation: ticker 25s linear infinite; width: max-content; }
-.ticker-inner span { font-family: var(--font-display); font-size: 1rem; letter-spacing: 4px; color: var(--red); white-space: nowrap; text-transform: uppercase; }
+.ticker-inner { display: flex; gap: 3rem; animation: ticker 30s linear infinite; width: max-content; }
+.ticker-inner span {
+  font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 3px;
+  color: var(--grey-text); white-space: nowrap; text-transform: uppercase;
+}
+.ticker-inner span.hot { color: var(--red-bright); }
 
 /* SECTIONS */
 .section { padding: 6rem 2rem; max-width: 900px; margin: 0 auto; }
-.section-label { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 4px; text-transform: uppercase; color: var(--red); margin-bottom: 1rem; }
-.section h2 { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1; margin-bottom: 2rem; }
-.section p { color: var(--grey-text); line-height: 1.8; font-weight: 300; margin-bottom: 1.5rem; }
-.section p strong { color: var(--white); font-weight:700; }
+.section-label {
+  font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 4px;
+  text-transform: uppercase; color: var(--red); margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 0.8rem;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--grey-mid); max-width: 120px; }
+.section h2 { font-family: var(--font-display); font-size: clamp(2.2rem, 5vw, 4rem); line-height: 0.95; margin-bottom: 2rem; }
+.section p { color: var(--grey-text); line-height: 1.85; font-weight: 300; margin-bottom: 1.5rem; font-size: 0.97rem; }
+.section p strong, .section p em { color: var(--white); font-style: normal; font-weight: 600; }
 
-/* HOW IT WORKS — 3 STEPS */
+/* CALLOUT */
+.callout-bar {
+  border-left: 3px solid var(--red-bright);
+  padding: 1rem 1.5rem; margin: 2rem 0;
+  background: rgba(231,76,60,0.05);
+  font-family: var(--font-mono); font-size: 0.8rem; color: var(--white); line-height: 1.7;
+}
+.callout-bar .co-label { font-size: 0.55rem; letter-spacing: 3px; text-transform: uppercase; color: var(--red); margin-bottom: 0.4rem; }
+
+/* STEPS */
 .steps-row {
   display: grid; grid-template-columns: repeat(3,1fr); gap: 1px;
   background: var(--grey-mid); border: 1px solid var(--grey-mid);
-  margin-top: 2rem;
+  margin-top: 2.5rem;
 }
-.step-box { background: var(--black); padding: 2rem 1.5rem; }
-.step-box .s-num { font-family: var(--font-display); font-size: 3rem; color: var(--red); line-height:1; margin-bottom:0.8rem; }
-.step-box .s-title { font-family: var(--font-display); font-size: 1.1rem; margin-bottom:0.5rem; }
-.step-box .s-desc { font-size:0.85rem; color: var(--grey-text); font-weight:300; line-height:1.6; }
+.step-box { background: var(--black); padding: 2rem 1.5rem; position: relative; overflow: hidden; }
+.step-box::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--red); transform: scaleX(0); transform-origin: left;
+  transition: transform 0.4s ease;
+}
+.step-box:hover::before { transform: scaleX(1); }
+.step-box .s-num {
+  font-family: var(--font-display); font-size: 3.5rem; color: var(--grey-mid);
+  line-height:1; margin-bottom:1rem; transition: color 0.3s;
+}
+.step-box:hover .s-num { color: var(--red); }
+.step-box .s-title { font-family: var(--font-display); font-size: 1.1rem; margin-bottom:0.6rem; }
+.step-box .s-desc { font-size:0.82rem; color: var(--grey-text); font-weight:300; line-height:1.7; }
 
 /* BURN TIERS */
-.burn-tiers { padding: 6rem 2rem; background: var(--grey); border-top: 1px solid var(--grey-mid); border-bottom: 1px solid var(--grey-mid); }
+.burn-tiers {
+  padding: 6rem 2rem;
+  background: repeating-linear-gradient(
+    -45deg, transparent, transparent 40px,
+    rgba(255,255,255,0.008) 40px, rgba(255,255,255,0.008) 41px
+  );
+  border-top: 1px solid var(--grey-mid); border-bottom: 1px solid var(--grey-mid);
+}
 .burn-tiers-inner { max-width: 900px; margin: 0 auto; }
 .tier-grid { display: grid; gap: 1px; background: var(--grey-mid); margin-top: 2rem; border: 1px solid var(--grey-mid); }
-.tier-row { display: grid; grid-template-columns: 1fr auto auto; background: var(--black); align-items: center; }
-.tier-row.header { background: var(--grey-mid); }
-.tier-row .cell { padding: 1rem 1.5rem; font-family: var(--font-mono); font-size: 0.8rem; }
+.tier-row { display: grid; grid-template-columns: 1fr auto auto; background: var(--black); align-items: center; transition: background 0.15s; }
+.tier-row:not(.header):hover { background: rgba(192,57,43,0.07); }
+.tier-row.header { background: rgba(255,255,255,0.03); }
+.tier-row .cell { padding: 1rem 1.5rem; font-family: var(--font-mono); font-size: 0.78rem; }
 .tier-row .cell.event { color: var(--white); }
 .tier-row .cell.amount { color: var(--red-bright); text-align:right; font-weight:700; }
 .tier-row .cell.severity { text-align:center; }
-.tier-row.header .cell { font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--grey-text); }
+.tier-row.header .cell { font-size: 0.55rem; letter-spacing: 2px; text-transform: uppercase; color: var(--grey-text); }
 .sev-dots { display:flex; gap:3px; justify-content:center; }
-.sev-dot { width:8px; height:8px; border-radius:50%; background: var(--grey-mid); }
+.sev-dot { width:7px; height:7px; border-radius:50%; background: var(--grey-mid); }
 .sev-dot.on { background: var(--red-bright); }
 
-/* COMMUNITY BURN SECTION */
+/* COMMUNITY */
 .community-section { padding: 6rem 2rem; max-width: 900px; margin: 0 auto; }
-.burn-model-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 1px; background: var(--grey-mid); border: 1px solid var(--grey-mid); margin-top: 2rem; }
+.burn-model-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr));
+  gap: 1px; background: var(--grey-mid); border: 1px solid var(--grey-mid); margin-top: 2rem;
+}
 .burn-model-card { background: var(--black); padding: 2rem 1.5rem; }
-.burn-model-card .bm-icon { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 0.8rem; }
+.burn-model-card .bm-icon {
+  font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--grey-text); margin-bottom: 0.8rem;
+}
 .burn-model-card .bm-title { font-family: var(--font-display); font-size: 1.2rem; margin-bottom: 0.6rem; }
-.burn-model-card .bm-desc { font-size: 0.85rem; color: var(--grey-text); font-weight: 300; line-height: 1.6; }
+.burn-model-card .bm-desc { font-size: 0.83rem; color: var(--grey-text); font-weight: 300; line-height: 1.65; }
 
-/* EXAMPLE BOX */
+/* LIVE EXAMPLE */
 .example-box {
   background: var(--grey); border: 1px solid var(--grey-mid);
   border-left: 3px solid var(--red); padding: 2rem; margin-top: 2rem;
+  position: relative;
 }
-.example-box .ex-label { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase; color: var(--red); margin-bottom: 1rem; }
-.example-box .ex-event { font-family: var(--font-display); font-size: 1.3rem; margin-bottom: 1rem; }
+.example-box::before {
+  content: '⬤ LIVE';
+  position: absolute; top: 1rem; right: 1.5rem;
+  font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 3px;
+  color: var(--green); animation: blink 1.5s infinite;
+}
+.example-box .ex-label { font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 3px; text-transform: uppercase; color: var(--red); margin-bottom: 0.8rem; }
+.example-box .ex-event { font-family: var(--font-display); font-size: 1.2rem; margin-bottom: 1.2rem; line-height: 1.2; }
 .progress-wrap { margin-top: 1rem; }
-.progress-label { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.65rem; color: var(--grey-text); margin-bottom: 0.4rem; }
-.progress-bar { height: 6px; background: var(--grey-mid); border-radius: 3px; overflow: hidden; }
-.progress-fill { height: 100%; background: var(--red-bright); border-radius: 3px; transition: width 1s ease; }
-.progress-contributors { font-family: var(--font-mono); font-size: 0.65rem; color: var(--grey-text); margin-top: 0.5rem; }
+.progress-label { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.65rem; color: var(--grey-text); margin-bottom: 0.5rem; }
+.progress-bar { height: 5px; background: var(--grey-mid); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--red-bright); border-radius: 2px; transition: width 1.2s ease; }
+.progress-contributors { font-family: var(--font-mono); font-size: 0.63rem; color: var(--grey-text); margin-top: 0.6rem; }
 
 /* TOKENOMICS */
-.tokenomics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1px; background: var(--grey-mid); border: 1px solid var(--grey-mid); margin-top: 2rem; }
-.tok-cell { background: var(--black); padding: 2rem; }
-.tok-cell .val { font-family: var(--font-mono); font-size: 1.1rem; color: var(--white); font-weight: 700; }
-.tok-cell .key { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--grey-text); margin-top: 0.3rem; }
+.tokenomics-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1px; background: var(--grey-mid); border: 1px solid var(--grey-mid); margin-top: 2rem;
+}
+.tok-cell { background: var(--black); padding: 1.8rem; }
+.tok-cell .val { font-family: var(--font-mono); font-size: 1rem; color: var(--white); font-weight: 700; }
+.tok-cell .key { font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 2px; text-transform: uppercase; color: var(--grey-text); margin-top: 0.35rem; }
 
 /* CTA */
-.cta { padding: 8rem 2rem; text-align: center; position: relative; }
-.cta::before { content:''; position:absolute; inset:0; background: radial-gradient(ellipse 50% 60% at 50% 50%, var(--red-glow), transparent); pointer-events: none; }
-.cta h2 { font-family: var(--font-display); font-size: clamp(2.5rem, 8vw, 6rem); line-height: 0.9; position: relative; }
-.cta p { margin-top: 1.5rem; color: var(--grey-text); font-weight: 300; position: relative; }
-.cta-buttons { display: flex; gap: 1rem; justify-content: center; margin-top: 2.5rem; position: relative; flex-wrap: wrap; }
-.btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 1rem 2rem; font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; text-decoration: none; border: 1px solid var(--grey-mid); background: var(--grey); color: var(--white); transition: all 0.3s; cursor: pointer; }
+.cta { padding: 9rem 2rem; text-align: center; position: relative; overflow: hidden; }
+.cta::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(ellipse 60% 70% at 50% 50%, var(--red-glow), transparent);
+  pointer-events: none;
+}
+.cta-tag {
+  font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 4px;
+  text-transform: uppercase; color: var(--grey-text); margin-bottom: 1.5rem;
+  position: relative;
+}
+.cta h2 {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 10vw, 8rem);
+  line-height: 0.88; position: relative;
+}
+.cta h2 .accent { color: var(--red-bright); }
+.cta-sub {
+  margin-top: 2rem; color: var(--grey-text); font-weight: 300;
+  font-size: 1rem; line-height: 1.8; max-width: 500px; margin-left: auto; margin-right: auto;
+  position: relative;
+}
+.cta-sub em { color: var(--white); font-style: normal; }
+.cta-buttons {
+  display: flex; gap: 1rem; justify-content: center; margin-top: 2.5rem;
+  position: relative; flex-wrap: wrap;
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.9rem 2rem; font-family: var(--font-mono); font-size: 0.72rem;
+  letter-spacing: 1px; text-transform: uppercase; text-decoration: none;
+  border: 1px solid var(--grey-mid); background: var(--grey);
+  color: var(--white); transition: all 0.2s; cursor: pointer;
+}
 .btn:hover { background: var(--grey-mid); border-color: var(--grey-text); }
 .btn.primary { background: var(--red); border-color: var(--red); }
-.btn.primary:hover { background: var(--red-bright); }
+.btn.primary:hover { background: var(--red-bright); border-color: var(--red-bright); }
 
-footer { padding: 2rem; text-align: center; border-top: 1px solid var(--grey-mid); }
-footer p { font-family: var(--font-mono); font-size: 0.6rem; color: var(--grey-text); letter-spacing: 1px; line-height: 1.8; }
+footer {
+  padding: 2.5rem 2rem; text-align: center;
+  border-top: 1px solid var(--grey-mid);
+}
+footer p { font-family: var(--font-mono); font-size: 0.58rem; color: var(--grey-text); letter-spacing: 1px; line-height: 2; }
 
-@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-@keyframes pulse { 0%,100% { opacity:0.3; } 50% { opacity:1; } }
+/* ANIMATIONS */
+@keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+@keyframes pulse  { 0%,100% { opacity:0.3; } 50% { opacity:1; } }
+@keyframes blink  { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
 @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-.reveal { opacity:0; transform: translateY(30px); transition: opacity 0.8s, transform 0.8s; }
+@keyframes glitch-layer {
+  0%, 88%, 100% { opacity: 0; transform: none; }
+  89%  { opacity: 0.7; transform: translate(-4px, 0); }
+  90%  { opacity: 0; transform: translate(4px, 2px); }
+  91%  { opacity: 0.5; transform: translate(-2px, -1px); }
+  92%  { opacity: 0; }
+}
+
+@keyframes glitch-intro {
+  0%   { text-shadow: none; }
+  30%  { text-shadow: -3px 0 var(--red-bright), 3px 0 var(--cyan); }
+  60%  { text-shadow: 3px 0 var(--red-bright), -3px 0 var(--cyan); }
+  100% { text-shadow: none; }
+}
+
+.reveal { opacity:0; transform: translateY(28px); transition: opacity 0.7s, transform 0.7s; }
 .reveal.visible { opacity:1; transform: translateY(0); }
 
 @media (max-width: 700px) {
-  nav { padding: 0.8rem 1rem; } nav .links { gap: 1rem; }
+  nav { padding: 0.8rem 1rem; } nav .links { gap: 0.8rem; }
   .stats-bar { flex-direction: column; } .stat-cell { padding: 1rem 1.5rem; }
   .steps-row { grid-template-columns: 1fr; }
   .tier-row { grid-template-columns: 1fr auto; } .tier-row .cell.severity { display:none; }
+  .hero h1 { letter-spacing: -2px; }
 }
 </style>
 </head>
@@ -209,20 +349,26 @@ footer p { font-family: var(--font-mono); font-size: 0.6rem; color: var(--grey-t
   </div>
 </nav>
 
+<!-- HERO -->
 <section class="hero">
-  <div class="hero-label">Community-powered deflationary protest token — Solana</div>
+  <div class="hero-eyebrow">Solana &nbsp;·&nbsp; Pump.fun &nbsp;·&nbsp; <span>Deflationary</span> &nbsp;·&nbsp; Community Burns</div>
   <h1><span class="dollar">$</span>WRONG</h1>
-  <div class="hero-sub">The War Is Wrong</div>
-  <p class="hero-desc">Every act of war creates a burn target. The community fills it. Every token burned is a permanent on-chain record of what happened.</p>
+  <div class="hero-sub">yeah. all of it.</div>
+  <p class="hero-desc">
+    A meme coin that burns every time the war escalates. <em>Which is often.</em>
+    The worse it gets, the less $WRONG exists.
+    This is either the most cursed coin ever made or the most honest one.
+    Probably both.
+  </p>
 
   <div class="stats-bar">
     <div class="stat-cell">
-      <div class="num" id="supply">835,500,000</div>
-      <div class="label">Circulating Supply</div>
+      <div class="num" id="burned">—</div>
+      <div class="label">Total Burned</div>
     </div>
     <div class="stat-cell">
-      <div class="num" id="burned">164,500,000</div>
-      <div class="label">Total Burned</div>
+      <div class="num" id="supply">—</div>
+      <div class="label">Circulating Supply</div>
     </div>
     <div class="stat-cell">
       <div class="num" id="events">49</div>
@@ -230,88 +376,69 @@ footer p { font-family: var(--font-mono); font-size: 0.6rem; color: var(--grey-t
     </div>
     <div class="stat-cell">
       <div class="num" id="pct-burned">—</div>
-      <div class="label">% Burned</div>
+      <div class="label">% Gone Forever</div>
     </div>
   </div>
 
   <div class="scroll-hint"><span></span></div>
 </section>
 
+<!-- TICKER -->
 <div class="ticker-strip">
   <div class="ticker-inner">
-    <span>Every bomb is wrong</span>
-    <span>Every bridge is wrong</span>
-    <span>Every civilian is wrong</span>
-    <span>We can't stop the war but we can count it</span>
-    <span>Burn together. Record forever.</span>
-    <span>Every bomb is wrong</span>
-    <span>Every bridge is wrong</span>
-    <span>Every civilian is wrong</span>
-    <span>We can't stop the war but we can count it</span>
-    <span>Burn together. Record forever.</span>
+    <span class="hot">$WRONG</span>
+    <span>everything is wrong</span>
+    <span class="hot">burn it</span>
+    <span>verified on-chain</span>
+    <span>not financial advice</span>
+    <span class="hot">obviously</span>
+    <span>the coin that shrinks as the world doesn't</span>
+    <span>send it</span>
+    <span class="hot">we're so wrong</span>
+    <span>permanent record</span>
+    <span>touch grass after</span>
+    <span class="hot">$WRONG</span>
+    <span>everything is wrong</span>
+    <span class="hot">burn it</span>
+    <span>verified on-chain</span>
+    <span>not financial advice</span>
+    <span class="hot">obviously</span>
+    <span>the coin that shrinks as the world doesn't</span>
+    <span>send it</span>
+    <span class="hot">we're so wrong</span>
+    <span>permanent record</span>
+    <span>touch grass after</span>
   </div>
 </div>
 
-<!-- HOW IT WORKS -->
+<!-- WHAT IS THIS -->
 <section class="section reveal">
   <div class="section-label">// 001 — The Concept</div>
-  <h2>A Protest In Code</h2>
-  <p>$WRONG tracks the US–Iran military conflict in real time. Verified war events create <strong>community burn targets</strong> — anyone holding $WRONG can burn toward that target, removing tokens from circulation <strong>permanently, on-chain, forever.</strong></p>
-  <p>This isn't one person's project. It's thousands of people choosing to make their protest permanent. Every burn is a statement. Every tx hash is evidence.</p>
+  <h2>A Coin That Gets Smaller<br>As The World Gets Worse</h2>
+  <p>Every verified war event creates a <em>community burn target</em>. Anyone holding $WRONG can burn toward it — sending tokens to a unique on-chain address permanently. Gone. Forever. The supply shrinks. The ledger grows.</p>
+  <p>We can't stop anything. But we can count it. <strong>And every count burns.</strong></p>
+
+  <div class="callout-bar">
+    <div class="co-label">// The Math</div>
+    10 bombs dropped in one day + 2 bridges destroyed + 3 civilians confirmed killed
+    = <strong style="color:var(--red-bright)">3,100,000 $WRONG</strong> burned. Permanently. On-chain.
+  </div>
 
   <div class="steps-row">
     <div class="step-box">
       <div class="s-num">01</div>
-      <div class="s-title">Event Verified</div>
-      <div class="s-desc">Community spots a confirmed war event from official sources (DoD, UN OCHA, IAEA). Posted to Discord, voted in, admin confirmed.</div>
+      <div class="s-title">War Does Something Bad</div>
+      <div class="s-desc">Community spots a verified event from official sources — DoD, UN OCHA, IAEA. Posted to Discord, voted in, confirmed. We add it to the ledger.</div>
     </div>
     <div class="step-box">
       <div class="s-num">02</div>
-      <div class="s-title">Target Set</div>
-      <div class="s-desc">A burn target is posted publicly. 1 civilian killed = 1,000,000 $WRONG target. The community burns toward it — every contribution counts.</div>
+      <div class="s-title">Target Gets Set</div>
+      <div class="s-desc">Civilian killed? 1,000,000 $WRONG target. Airstrike? 10,000. It scales with severity. The math is not complicated. The situation is.</div>
     </div>
     <div class="step-box">
       <div class="s-num">03</div>
-      <div class="s-title">Burn & Record</div>
-      <div class="s-desc">You burn what you can. Send $WRONG to the event's unique burn address. The ledger tracks every contribution automatically — on-chain, in real time.</div>
-    </div>
-  </div>
-</section>
-
-<!-- LIVE EXAMPLE -->
-<section class="community-section reveal">
-  <div class="section-label">// 002 — Community Burns</div>
-  <h2>Burn Together</h2>
-  <p style="color:var(--grey-text);font-weight:300;line-height:1.8;margin-bottom:0;">No whale required. No single person responsible. You burn what you can — 10,000 or 10,000,000. Every contribution is recorded on-chain. When enough people burn, the target is filled and the event is permanently marked.</p>
-
-  <div class="example-box">
-    <div class="ex-label">// Live Example</div>
-    <div class="ex-event">Apr 6 — 23 civilians killed in Baharestan County</div>
-    <div class="progress-wrap">
-      <div class="progress-label">
-        <span>Community Burned</span>
-        <span id="prog-num">Loading… / 23,000,000</span>
-      </div>
-      <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
-      <div class="progress-contributors">↑ Loading live data from Solana…</div>
-    </div>
-  </div>
-
-  <div class="burn-model-grid" style="margin-top:2rem;">
-    <div class="burn-model-card">
-      <div class="bm-icon">✦ For Everyone</div>
-      <div class="bm-title">Burn What You Can</div>
-      <div class="bm-desc">100 tokens or 10 million — every burn is recorded, every tx hash is permanent. No minimum. No pressure.</div>
-    </div>
-    <div class="burn-model-card">
-      <div class="bm-icon">✦ For Whales</div>
-      <div class="bm-title">Make Headlines</div>
-      <div class="bm-desc">A single massive burn gets announced in Discord, immortalized in the ledger, and drives buying pressure from people who want to join.</div>
-    </div>
-    <div class="burn-model-card">
-      <div class="bm-icon">✦ For The Record</div>
-      <div class="bm-title">Permanent Protest</div>
-      <div class="bm-desc">When the war ends, the burn ledger remains. An immutable on-chain count of what happened — funded by thousands of people who said: this is wrong.</div>
+      <div class="s-title">You Burn. It's Permanent.</div>
+      <div class="s-desc">Send $WRONG to the event's unique address. It's gone. On-chain. Immutable. The ledger never forgets, even when everyone else does.</div>
     </div>
   </div>
 </section>
@@ -319,9 +446,9 @@ footer p { font-family: var(--font-mono); font-size: 0.6rem; color: var(--grey-t
 <!-- BURN TIERS -->
 <section class="burn-tiers reveal">
   <div class="burn-tiers-inner">
-    <div class="section-label">// 003 — Burn Targets</div>
-    <h2>Severity Scale</h2>
-    <p style="color:var(--grey-text);font-weight:300;margin-bottom:0;">Each verified event type sets a fixed burn target. The community fills it together. The worse the war, the larger the target — and the harder the community burns.</p>
+    <div class="section-label">// 002 — The Wrong Scale</div>
+    <h2>How Bad Was It?</h2>
+    <p style="color:var(--grey-text);font-weight:300;line-height:1.85;margin-bottom:0;font-size:0.97rem;">Each event type maps to a fixed burn target. Community fills it together. The worse the war gets, the larger the target — and the harder we burn.</p>
 
     <div class="tier-grid">
       <div class="tier-row header">
@@ -363,10 +490,48 @@ footer p { font-family: var(--font-mono); font-size: 0.6rem; color: var(--grey-t
   </div>
 </section>
 
+<!-- COMMUNITY BURNS -->
+<section class="community-section reveal">
+  <div class="section-label">// 003 — Numbers Go Brrr</div>
+  <h2>Burn Together.<br>Cope Together.</h2>
+  <p style="color:var(--grey-text);font-weight:300;line-height:1.85;font-size:0.97rem;">No whale required. No minimum. Send 100 or send 10 million — the ledger records everything on-chain. When enough people burn, the target fills and the event is <em>permanently marked complete</em>. It's the most chaotic form of collective memory ever invented.</p>
+
+  <div class="example-box">
+    <div class="ex-label">// Live Example — W-E002</div>
+    <div class="ex-event">Apr 6, 2026 — 23 civilians killed in Baharestan County</div>
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>Community Burned</span>
+        <span id="prog-num">Loading… / 23,000,000</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+      <div class="progress-contributors">↑ Loading live data from Solana…</div>
+    </div>
+  </div>
+
+  <div class="burn-model-grid" style="margin-top:2rem;">
+    <div class="burn-model-card">
+      <div class="bm-icon">→ For Everyone</div>
+      <div class="bm-title">Burn What You Can</div>
+      <div class="bm-desc">100 tokens or 10 million — the ledger doesn't judge. It just records. Every tx hash is permanent.</div>
+    </div>
+    <div class="burn-model-card">
+      <div class="bm-icon">→ For Whales</div>
+      <div class="bm-title">Make It Count</div>
+      <div class="bm-desc">A single massive burn gets immortalized in the ledger and announced in Discord. Flex responsibly.</div>
+    </div>
+    <div class="burn-model-card">
+      <div class="bm-icon">→ For The Record</div>
+      <div class="bm-title">It Stays Forever</div>
+      <div class="bm-desc">When this is over, the ledger stays. An immutable on-chain body count funded by people who gave a damn.</div>
+    </div>
+  </div>
+</section>
+
 <!-- TOKENOMICS -->
 <section class="section reveal">
-  <div class="section-label">// 004 — Tokenomics</div>
-  <h2>Fair Launch. Community Burns.</h2>
+  <div class="section-label">// 004 — The Numbers</div>
+  <h2>Fair Launch.<br>No Bullshit.</h2>
   <div class="tokenomics-grid">
     <div class="tok-cell"><div class="val">1,000,000,000</div><div class="key">Total Supply</div></div>
     <div class="tok-cell"><div class="val">Solana</div><div class="key">Chain</div></div>
@@ -377,9 +542,11 @@ footer p { font-family: var(--font-mono); font-size: 0.6rem; color: var(--grey-t
   </div>
 </section>
 
+<!-- CTA -->
 <section class="cta">
-  <h2>This Is<br><span style="color:var(--red-bright)">Wrong.</span></h2>
-  <p>We can't stop the war. But we can count it. And every count burns — together.</p>
+  <div class="cta-tag">// You made it this far</div>
+  <h2>Still<br><span class="accent">Wrong.</span></h2>
+  <p class="cta-sub">Buy $WRONG. Burn $WRONG. Watch a billion tokens disappear in real time as the world does its thing. <em>This is fine.</em></p>
   <div class="cta-buttons">
     <a href="#" class="btn primary">Join Discord</a>
     <a href="burn.html" class="btn">How To Burn</a>
@@ -388,7 +555,10 @@ footer p { font-family: var(--font-mono); font-size: 0.6rem; color: var(--grey-t
 </section>
 
 <footer>
-  <p>$WRONG is a meme coin and a protest. Not financial advice. Not political affiliation.<br>All burn events sourced from official government and UN sources only. Burns are community-initiated and community-executed.</p>
+  <p>
+    $WRONG is a meme coin. Not financial advice. Not political affiliation. Not a solution — just a record.<br>
+    All burn events sourced from DoD, UN OCHA, UN OHCHR, IAEA only. Community-powered. On-chain. Permanent.
+  </p>
 </footer>
 
 <script>
