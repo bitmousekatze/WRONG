@@ -228,9 +228,11 @@ nav .links a:hover, nav .links a.active { color: var(--white); }
 footer { padding:2rem; text-align:center; border-top:1px solid var(--grey-mid); }
 footer p { font-family:var(--font-mono); font-size:0.6rem; color:var(--grey-text); letter-spacing:1px; line-height:1.8; }
 
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-@keyframes spin   { to{transform:rotate(360deg)} }
-@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes blink      { 0%,100%{opacity:1} 50%{opacity:0.3} }
+@keyframes spin       { to{transform:rotate(360deg)} }
+@keyframes fadeUp     { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes statPulse  { 0%,100%{opacity:1} 50%{opacity:0.25} }
+.stat-loading { animation: statPulse 1.4s ease-in-out infinite; color: var(--grey-text) !important; }
 
 @media(max-width:800px){
   .contrib-table-head,
@@ -588,7 +590,7 @@ async function parallel(items, fn, concurrency = 3, delayMs = 250) {
   return results;
 }
 
-async function fetchBurnTransactions() {
+async function fetchBurnTransactions(onEventReady) {
   try {
     const burns   = {};
     let   txCount = 0;
@@ -617,46 +619,46 @@ async function fetchBurnTransactions() {
       }
     }, 3, 200);
 
-    // ── Step 2: fetch full tx history by ATA address via Helius enhanced API ──
+    // ── Step 2: fetch tx history per ATA, process and notify as each event lands ──
     const activeEntries = ataResults.filter(r => r.ata);
-    const txResults = await parallel(activeEntries, async ({ ev, ata }) => {
+    await parallel(activeEntries, async ({ ev, ata }) => {
       try {
         const url = `https://api.helius.xyz/v0/addresses/${ata}/transactions`
                   + `?api-key=${CONFIG.HELIUS_KEY}&limit=100`;
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const txs = await res.json();
-        return { ev, ata, txs: Array.isArray(txs) ? txs : [] };
-      } catch (e) {
-        console.warn(`[WRONG] Tx history failed for ${ev.ref}:`, e.message);
-        return { ev, ata, txs: [] };
-      }
-    }, 3, 250);
 
-    txResults.forEach(({ ev, ata, txs }) => {
-      txs.forEach(tx => {
-        // Match $WRONG transfers going TO this burn address.
-        // toUserAccount = wallet owner; toTokenAccount = the ATA itself.
-        // Check both since Helius may populate either depending on tx type.
-        const transfers = (tx.tokenTransfers || []).filter(t =>
-          t.mint === CONFIG.TOKEN_MINT &&
-          Number(t.tokenAmount) > 0 &&
-          (t.toUserAccount === ev.burnAddr || t.toTokenAccount === ata)
-        );
-        transfers.forEach(transfer => {
-          txCount++;
-          if (!burns[ev.ref]) burns[ev.ref] = [];
-          burns[ev.ref].push({
-            wallet: transfer.fromUserAccount || 'Unknown',
-            amount: Number(transfer.tokenAmount),
-            tx:     tx.signature || '',
-            date:   tx.timestamp
-                    ? new Date(tx.timestamp * 1000).toISOString().split('T')[0]
-                    : '—'
+        const eventBurns = [];
+        (Array.isArray(txs) ? txs : []).forEach(tx => {
+          // Match $WRONG transfers going TO this burn address.
+          // toUserAccount = wallet owner; toTokenAccount = the ATA itself.
+          const transfers = (tx.tokenTransfers || []).filter(t =>
+            t.mint === CONFIG.TOKEN_MINT &&
+            Number(t.tokenAmount) > 0 &&
+            (t.toUserAccount === ev.burnAddr || t.toTokenAccount === ata)
+          );
+          transfers.forEach(transfer => {
+            txCount++;
+            eventBurns.push({
+              wallet: transfer.fromUserAccount || 'Unknown',
+              amount: Number(transfer.tokenAmount),
+              tx:     tx.signature || '',
+              date:   tx.timestamp
+                      ? new Date(tx.timestamp * 1000).toISOString().split('T')[0]
+                      : '—'
+            });
           });
         });
-      });
-    });
+
+        burns[ev.ref] = eventBurns;
+        // Notify caller immediately so it can patch the card without waiting for all events
+        if (onEventReady) onEventReady(ev.ref, eventBurns);
+      } catch (e) {
+        console.warn(`[WRONG] Tx history failed for ${ev.ref}:`, e.message);
+        // Don't call onEventReady on error — caller keeps whatever it already had
+      }
+    }, 3, 250);
 
     return { ok: true, txCount, burns };
   } catch (err) {
@@ -749,25 +751,36 @@ function copyBurnUrl() {
 async function loadChainData() {
   if (isLoading) return;
   isLoading = true;
-  setStatus('loading', 'Connecting to Solana...');
+  setStatus('loading', 'Syncing with Solana...');
   document.getElementById('refreshBtn').disabled = true;
-  showGridLoading();
 
-  const result = await fetchBurnTransactions();
+  // First load: build all 49 card shells immediately so the page isn't blank.
+  // Refresh: leave existing cards in place — patchEventCard() will update them live.
+  const firstLoad = document.getElementById('eventsGrid').children.length === 0
+                    || document.getElementById('eventsGrid').querySelector('.loading-placeholder');
+  if (firstLoad) renderEvents(currentFilter);
+
+  // Stats go into loading state — they only reveal once ALL events are done
+  showStatsLoading();
+
+  const result = await fetchBurnTransactions((ref, eventBurns) => {
+    // Called as each event's API call resolves — patch just that card live
+    chainBurns[ref] = eventBurns;
+    patchEventCard(ref);
+  });
 
   if (!result.ok) {
-    setStatus('error', `RPC error — ${result.reason}`);
+    setStatus('error', `Error — ${result.reason}`);
   } else {
-    // Merge: only overwrite events that returned data — keep existing records for
-    // any event whose API call was silently rate-limited (returned empty).
+    // Final pass: apply any event data that came back (onEventReady already handled most of it)
     Object.keys(result.burns).forEach(ref => { chainBurns[ref] = result.burns[ref]; });
-    document.getElementById('txScanned').textContent  = result.txCount;
+    document.getElementById('txScanned').textContent   = result.txCount;
     document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
     setStatus('live', 'Live — reading directly from Solana');
   }
 
+  // Reveal the final total only after everything has finished loading
   updateStats();
-  renderEvents(currentFilter);
   isLoading = false;
   document.getElementById('refreshBtn').disabled = false;
 }
@@ -778,9 +791,13 @@ function setStatus(state, msg) {
     `<strong>${{ live:'LIVE', error:'OFFLINE', loading:'SYNCING' }[state]}</strong> — ${msg}`;
 }
 
-function showGridLoading() {
-  document.getElementById('eventsGrid').innerHTML =
-    '<div class="loading-placeholder"><div class="spinner"></div><p>Reading burn transactions from Solana...</p></div>';
+function showStatsLoading() {
+  document.getElementById('statBurned').textContent = '—';
+  document.getElementById('statSupply').textContent = '—';
+  document.getElementById('statPct').textContent    = '—';
+  ['statBurned', 'statSupply', 'statPct'].forEach(id =>
+    document.getElementById(id).classList.add('stat-loading')
+  );
 }
 
 function updateStats() {
@@ -790,9 +807,52 @@ function updateStats() {
   const remaining = supply - totalBurned;
   const pct       = ((totalBurned / supply) * 100).toFixed(2);
 
-  document.getElementById('statBurned').textContent  = totalBurned > 0 ? totalBurned.toLocaleString() : '0';
-  document.getElementById('statSupply').textContent  = remaining.toLocaleString();
-  document.getElementById('statPct').textContent     = pct + '%';
+  document.getElementById('statBurned').textContent = totalBurned > 0 ? totalBurned.toLocaleString() : '0';
+  document.getElementById('statSupply').textContent = remaining.toLocaleString();
+  document.getElementById('statPct').textContent    = pct + '%';
+  ['statBurned', 'statSupply', 'statPct'].forEach(id =>
+    document.getElementById(id).classList.remove('stat-loading')
+  );
+}
+
+// Update a single event card in place — no full grid re-render
+function patchEventCard(ref) {
+  const ev = EVENTS.find(e => e.ref === ref);
+  if (!ev) return;
+  const contribs  = (chainBurns[ref] || []).slice().sort((a,b) => b.amount - a.amount);
+  const burned    = contribs.reduce((s, c) => s + c.amount, 0);
+  const pct       = ev.target > 0 ? Math.min(100, (burned / ev.target) * 100) : 0;
+  const done      = pct >= 100;
+  const hasAny    = burned > 0;
+  const remainTxt = done ? 'Target reached' : (ev.target - burned).toLocaleString() + ' remaining';
+  const contribLbl = contribs.length === 0
+    ? 'No burns yet — be first'
+    : `${contribs.length} burner${contribs.length !== 1 ? 's' : ''}`;
+
+  const bnEl = document.getElementById(`bn-${ref}`);
+  const rnEl = document.getElementById(`rn-${ref}`);
+  const pfEl = document.getElementById(`pf-${ref}`);
+  const stEl = document.getElementById(`st-${ref}`);
+  const clEl = document.getElementById(`cl-${ref}`);
+  const tlEl = document.getElementById(`toggle-label-${ref}`);
+  const pnEl = document.getElementById(`panel-${ref}`);
+
+  if (bnEl) bnEl.textContent = (burned > 0 ? burned.toLocaleString() : '0') + ' burned';
+  if (rnEl) rnEl.textContent = remainTxt;
+  if (pfEl) {
+    pfEl.className = `prog-fill ${done ? 'c-complete' : hasAny ? 'c-active' : 'c-open'}`;
+    requestAnimationFrame(() => { pfEl.style.width = pct.toFixed(2) + '%'; });
+  }
+  if (stEl) {
+    stEl.className   = `prog-status ${done ? 's-complete' : hasAny ? 's-active' : 's-open'}`;
+    stEl.textContent = done ? '● COMPLETE' : hasAny ? '● ACTIVE' : '○ OPEN';
+  }
+  if (clEl) clEl.textContent = contribLbl;
+  if (tlEl) tlEl.textContent = contribs.length > 0 ? `Show burners (${contribs.length})` : 'No burns yet';
+  // Only rebuild contributors panel if it's not currently open (avoid collapsing it mid-read)
+  if (pnEl && !pnEl.classList.contains('open')) {
+    pnEl.innerHTML = buildContribTable(contribs, ref);
+  }
 }
 
 // ================================================================
@@ -847,15 +907,15 @@ function renderEvents(filter) {
         <div class="event-source">📎 ${ev.source} &nbsp;·&nbsp; ${ev.count}</div>
 
         <div class="prog-numbers">
-          <span class="prog-burned-num">${burned > 0 ? burned.toLocaleString() : '0'} burned</span>
-          <span class="prog-remain-num">${remainTxt}</span>
+          <span class="prog-burned-num" id="bn-${ev.ref}">${burned > 0 ? burned.toLocaleString() : '0'} burned</span>
+          <span class="prog-remain-num" id="rn-${ev.ref}">${remainTxt}</span>
         </div>
         <div class="prog-track">
-          <div class="prog-fill ${fillCls}" style="width:0%" data-pct="${pct.toFixed(2)}"></div>
+          <div class="prog-fill ${fillCls}" id="pf-${ev.ref}" style="width:0%" data-pct="${pct.toFixed(2)}"></div>
         </div>
         <div class="prog-footer">
-          <span class="prog-contrib-label">${contribLbl}</span>
-          <span class="prog-status ${statusCls}">${statusTxt}</span>
+          <span class="prog-contrib-label" id="cl-${ev.ref}">${contribLbl}</span>
+          <span class="prog-status ${statusCls}" id="st-${ev.ref}">${statusTxt}</span>
         </div>
 
         <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1rem;flex-wrap:wrap;gap:0.8rem;">
